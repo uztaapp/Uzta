@@ -4,7 +4,7 @@ import { ArrowLeft, Trash2, Minus, Plus, CalendarDays } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 import { futureSlot } from "../lib/local-model";
 export function Cesta() {
-  const { data, run } = useDemo();
+  const { data, run, mode, busy } = useDemo();
   const navigate = useNavigate();
   const [checkout, setCheckout] = useState(false);
   const [slot, setSlot] = useState("");
@@ -17,10 +17,10 @@ export function Cesta() {
     (sum, p) => sum + p.priceCents * data.quantities[p.id],
     0,
   );
-  function reserve() {
+  async function reserve() {
     if (submitting.current) return;
     submitting.current = true;
-    const ok = run({
+    const ok = await run({
       type: "reserve",
       id: requestId.current,
       slotId: slot,
@@ -28,7 +28,10 @@ export function Cesta() {
     });
     submitting.current = false;
     if (ok)
-      void navigate({ to: "/pedidos", search: { pedido: requestId.current } });
+      void navigate({
+        to: "/pedidos",
+        search: mode === "cloud" ? {} : { pedido: requestId.current },
+      });
   }
   return (
     <>
@@ -153,16 +156,20 @@ export function Cesta() {
               )}
               {!data.sessionActive ? (
                 <p>
-                  Abre tu perfil local para continuar:{" "}
+                  {mode === "cloud"
+                    ? "Inicia sesión para reservar:"
+                    : "Abre tu perfil local para continuar:"}{" "}
                   <Link to="/perfil">Mi perfil</Link>.
                 </p>
               ) : null}
               <button
                 className="primary"
-                disabled={!slot || !items.length || !data.sessionActive}
+                disabled={busy || !slot || !items.length || !data.sessionActive}
                 onClick={reserve}
               >
-                Guardar reserva local
+                {mode === "cloud"
+                  ? "Confirmar reserva"
+                  : "Guardar reserva local"}
               </button>
               <button
                 className="text-button"
@@ -173,8 +180,9 @@ export function Cesta() {
             </section>
           )}
           <p className="subtle">
-            Solo en este navegador · Sin reservas ni mensajes enviados al
-            exterior
+            {mode === "cloud"
+              ? "La reserva se confirmará con el stock y la franja disponibles del productor."
+              : "Solo en este navegador · Sin reservas ni mensajes enviados al exterior"}
           </p>
         </aside>
       </div>

@@ -8,17 +8,19 @@ import {
   futureSlot,
   type Product,
 } from "../lib/local-model";
+import { CreateStore } from "../components/create-store";
 export function Gestion({ section }: { section: string }) {
-  const { data, run, show } = useDemo();
-  const farm = data.farms.find((f) => f.id === "urki")!;
+  const { data, run, show, mode, busy, managedFarmId } = useDemo();
+  const farm = data.farms.find((f) => f.id === managedFarmId)!;
   const [edit, setEdit] = useState<Product | null>(null);
   const [saved, setSaved] = useState("");
   const [error, setError] = useState("");
-  function saveFarm(event: FormEvent<HTMLFormElement>) {
+  async function saveFarm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     if (
-      run({
+      await run({
         type: "farm",
         value: {
           ...farm,
@@ -29,12 +31,13 @@ export function Gestion({ section }: { section: string }) {
         },
       })
     )
-      setSaved("Tienda guardada en este equipo.");
+      setSaved("Tienda guardada.");
   }
-  function saveProduct(event: FormEvent<HTMLFormElement>) {
+  async function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!edit) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const price = Number(String(form.get("price")).replace(",", "."));
     const stock = Number(form.get("stock"));
     if (
@@ -47,7 +50,7 @@ export function Gestion({ section }: { section: string }) {
       return;
     }
     if (
-      run({
+      await run({
         type: "product",
         value: {
           ...edit,
@@ -65,9 +68,10 @@ export function Gestion({ section }: { section: string }) {
       setSaved("Producto guardado.");
     }
   }
-  function addSlot(event: FormEvent<HTMLFormElement>) {
+  async function addSlot(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const next = {
       id: crypto.randomUUID(),
       date: String(form.get("date")),
@@ -89,7 +93,7 @@ export function Gestion({ section }: { section: string }) {
       return;
     }
     if (
-      run({
+      await run({
         type: "farm",
         value: {
           ...farm,
@@ -97,11 +101,12 @@ export function Gestion({ section }: { section: string }) {
         },
       })
     ) {
-      event.currentTarget.reset();
+      formElement.reset();
       setError("");
       setSaved("Franja de recogida añadida.");
     }
   }
+  if (!farm) return <CreateStore />;
   const ownOrders = data.orders.filter(
     (o) => o.farmId === farm.id && !o.example,
   );
@@ -109,7 +114,8 @@ export function Gestion({ section }: { section: string }) {
   return (
     <section className="management">
       <p className="subtle">
-        Gestión local de {farm.name} · Perfil de prueba del productor
+        {mode === "demo" ? "Gestión de demostración" : "Tu tienda"} ·{" "}
+        {farm.name}
       </p>
       {saved ? (
         <p role="status" className="success">
@@ -118,45 +124,47 @@ export function Gestion({ section }: { section: string }) {
       ) : null}
       {section === "tienda" ? (
         <form className="uzta-form" onSubmit={saveFarm}>
-          <h2>Mi tienda</h2>
-          <label>
-            Nombre de la tienda
-            <input
-              name="name"
-              required
-              maxLength={100}
-              defaultValue={farm.name}
-            />
-          </label>
-          <label>
-            Ubicación
-            <input
-              name="location"
-              required
-              maxLength={100}
-              defaultValue={farm.location}
-            />
-          </label>
-          <label>
-            Descripción
-            <textarea
-              name="description"
-              maxLength={2000}
-              defaultValue={farm.description}
-            />
-          </label>
-          <label className="check-label">
-            <input
-              type="checkbox"
-              name="ecological"
-              defaultChecked={farm.ecological}
-            />{" "}
-            Producción ecológica (dato local de ejemplo)
-          </label>
-          <button className="primary">Guardar tienda</button>
-          <Link to="/productor" search={{ tienda: farm.id }}>
-            Ver la tienda
-          </Link>
+          <fieldset disabled={busy}>
+            <h2>Mi tienda</h2>
+            <label>
+              Nombre de la tienda
+              <input
+                name="name"
+                required
+                maxLength={100}
+                defaultValue={farm.name}
+              />
+            </label>
+            <label>
+              Ubicación
+              <input
+                name="location"
+                required
+                maxLength={100}
+                defaultValue={farm.location}
+              />
+            </label>
+            <label>
+              Descripción
+              <textarea
+                name="description"
+                maxLength={2000}
+                defaultValue={farm.description}
+              />
+            </label>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                name="ecological"
+                defaultChecked={farm.ecological}
+              />{" "}
+              Producción ecológica
+            </label>
+            <button className="primary">Guardar tienda</button>
+            <Link to="/productor" search={{ tienda: farm.id }}>
+              Ver la tienda
+            </Link>
+          </fieldset>
         </form>
       ) : null}
       {section === "productos" ? (
@@ -174,7 +182,7 @@ export function Gestion({ section }: { section: string }) {
                   unit: "kg",
                   stock: 0,
                   category: "Verduras",
-                  crop: [25, 328, 111, 75],
+                  crop: mode === "demo" ? [25, 328, 111, 75] : [0, 0, 0, 0],
                   featured: true,
                   active: true,
                 });
@@ -227,9 +235,9 @@ export function Gestion({ section }: { section: string }) {
                   </span>
                   <button
                     aria-label={`Retirar franja ${s.date} ${s.start}`}
-                    onClick={() => {
+                    onClick={async () => {
                       if (
-                        run({
+                        await run({
                           type: "farm",
                           value: {
                             ...farm,
@@ -253,23 +261,25 @@ export function Gestion({ section }: { section: string }) {
             <p>No hay franjas publicadas.</p>
           ) : null}
           <form className="uzta-form" onSubmit={addSlot}>
-            <h3>Añadir franja de recogida</h3>
-            <label>
-              Fecha
-              <input type="date" name="date" min={localDate()} required />
-            </label>
-            <div className="form-columns">
+            <fieldset disabled={busy}>
+              <h3>Añadir franja de recogida</h3>
               <label>
-                Desde
-                <input type="time" name="start" required />
+                Fecha
+                <input type="date" name="date" min={localDate()} required />
               </label>
-              <label>
-                Hasta
-                <input type="time" name="end" required />
-              </label>
-            </div>
-            {error ? <p role="alert">{error}</p> : null}
-            <button className="primary">Añadir franja</button>
+              <div className="form-columns">
+                <label>
+                  Desde
+                  <input type="time" name="start" required />
+                </label>
+                <label>
+                  Hasta
+                  <input type="time" name="end" required />
+                </label>
+              </div>
+              {error ? <p role="alert">{error}</p> : null}
+              <button className="primary">Añadir franja</button>
+            </fieldset>
           </form>
         </>
       ) : null}
@@ -277,11 +287,13 @@ export function Gestion({ section }: { section: string }) {
         <>
           <h2>Estadísticas</h2>
           <p className="subtle">
-            Solo reservas creadas en este navegador; los ejemplos no cuentan.
+            {mode === "demo"
+              ? "Solo reservas locales; los ejemplos no cuentan."
+              : "Reservas de tu tienda guardadas en UZTA."}
           </p>
           <dl className="stats">
             <div>
-              <dt>Reservas locales</dt>
+              <dt>{mode === "demo" ? "Reservas locales" : "Reservas"}</dt>
               <dd>{ownOrders.length}</dd>
             </div>
             <div>
@@ -317,79 +329,82 @@ export function Gestion({ section }: { section: string }) {
           close={() => setEdit(null)}
         >
           <form className="uzta-form" onSubmit={saveProduct}>
-            <label>
-              Nombre
-              <input
-                name="name"
-                required
-                maxLength={100}
-                defaultValue={edit.name}
-              />
-            </label>
-            <div className="form-columns">
+            <fieldset disabled={busy}>
               <label>
-                Precio (€)
+                Nombre
                 <input
-                  name="price"
-                  type="number"
-                  min="0.01"
-                  max="10000"
-                  step="0.01"
+                  name="name"
                   required
-                  defaultValue={edit.priceCents / 100}
+                  maxLength={100}
+                  defaultValue={edit.name}
+                />
+              </label>
+              <div className="form-columns">
+                <label>
+                  Precio (€)
+                  <input
+                    name="price"
+                    type="number"
+                    min="0.01"
+                    max="10000"
+                    step="0.01"
+                    required
+                    defaultValue={edit.priceCents / 100}
+                  />
+                </label>
+                <label>
+                  Unidad
+                  <select name="unit" defaultValue={edit.unit}>
+                    <option value="kg">kg</option>
+                    <option value="docena">docena</option>
+                    <option value="unidad">unidad</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Existencias
+                <input
+                  name="stock"
+                  type="number"
+                  min="0"
+                  max="100000"
+                  step="1"
+                  required
+                  defaultValue={edit.stock}
                 />
               </label>
               <label>
-                Unidad
-                <select name="unit" defaultValue={edit.unit}>
-                  <option value="kg">kg</option>
-                  <option value="docena">docena</option>
-                  <option value="unidad">unidad</option>
+                Categoría
+                <select name="category" defaultValue={edit.category}>
+                  {categories.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
                 </select>
               </label>
-            </div>
-            <label>
-              Existencias
-              <input
-                name="stock"
-                type="number"
-                min="0"
-                max="100000"
-                step="1"
-                required
-                defaultValue={edit.stock}
-              />
-            </label>
-            <label>
-              Categoría
-              <select name="category" defaultValue={edit.category}>
-                {categories.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </label>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                name="active"
-                defaultChecked={edit.active}
-              />{" "}
-              Publicado
-            </label>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                name="featured"
-                defaultChecked={edit.featured}
-              />{" "}
-              Mostrar en inicio
-            </label>
-            <p className="subtle">
-              Imagen de ejemplo de la maqueta; no se han añadido fotografías
-              reales.
-            </p>
-            {error ? <p role="alert">{error}</p> : null}
-            <button className="primary">Guardar producto</button>
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  name="active"
+                  defaultChecked={edit.active}
+                />{" "}
+                Publicado
+              </label>
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  name="featured"
+                  defaultChecked={edit.featured}
+                />{" "}
+                Mostrar en inicio
+              </label>
+              <p className="subtle">
+                {mode === "demo"
+                  ? "Imagen de ejemplo de la maqueta."
+                  : "Este producto todavía no tiene fotografía."}
+              </p>
+              {error ? <p role="alert">{error}</p> : null}
+              <button className="primary">Guardar producto</button>
+            </fieldset>
           </form>
         </Modal>
       ) : null}

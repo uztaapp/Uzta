@@ -1,133 +1,69 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useRef,
-  useEffect,
-  useId,
-  type ReactNode,
-  type CSSProperties,
-} from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 import {
   STORAGE_KEY,
   readStore,
   transition,
   seedStore,
-  type LocalStore,
   type Command,
 } from "./lib/local-model";
+import { AppContext, useUzta, type AppContextValue } from "./app-context";
+import { CloudProvider } from "./cloud-provider";
+import { Modal } from "./components/presentation";
+export { Photo, Modal } from "./components/presentation";
 export { euro } from "./lib/local-model";
+export const useDemo = useUzta;
 function loadBrowserStore() {
   try {
     return readStore(window.localStorage);
   } catch {
     return {
       value: seedStore(),
-      error:
-        "El navegador no permite guardar datos locales. Se muestran ejemplos sin sobrescribir datos.",
+      error: "No se pueden leer los datos de demostración; no se sobrescriben.",
     };
   }
 }
-export function Photo({
-  crop,
-  className = "",
-  label,
-}: {
-  crop: number[];
-  className?: string;
-  label: string;
-}) {
-  const [x, y, width, height] = crop;
-  const style: CSSProperties = {
-    backgroundImage: "url(/images/uzta-reference.png)",
-    backgroundSize: `${(1536 / width) * 100}% ${(1024 / height) * 100}%`,
-    backgroundPosition: `${(x / (1536 - width)) * 100}% ${(y / (1024 - height)) * 100}%`,
-  };
-  return (
-    <div
-      role="img"
-      aria-label={label}
-      className={`photo ${className}`}
-      style={style}
-    />
-  );
-}
-export function Modal({
-  title,
-  close,
-  children,
-}: {
-  title: string;
-  close: () => void;
-  children: ReactNode;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  const titleId = useId();
-  const closeRef = useRef(close);
-  closeRef.current = close;
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    ref.current
-      ?.querySelector<HTMLElement>("input,select,textarea,button,a[href]")
-      ?.focus();
-    return () => previous?.focus();
-  }, []);
-  return (
-    <div className="modal-backdrop">
-      <section
-        ref={ref}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="notice"
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.stopPropagation();
-            closeRef.current();
-          }
-          if (event.key === "Tab") {
-            const nodes = Array.from(
-              ref.current?.querySelectorAll<HTMLElement>(
-                "button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled)",
-              ) ?? [],
-            );
-            const first = nodes[0],
-              last = nodes.at(-1);
-            if (event.shiftKey && document.activeElement === first) {
-              event.preventDefault();
-              last?.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-              event.preventDefault();
-              first?.focus();
-            }
-          }
-        }}
-      >
-        <div className="modal-heading">
-          <h2 id={titleId}>{title}</h2>
-          <button aria-label="Cerrar diálogo" onClick={close}>
-            ×
-          </button>
-        </div>
-        {children}
-      </section>
-    </div>
-  );
-}
-type Demo = {
-  data: LocalStore;
-  run: (command: Command) => boolean;
-  show: (text: string) => void;
-  storageError: string;
-};
-const Context = createContext<Demo | null>(null);
 export function DemoProvider({ children }: { children: ReactNode }) {
+  const [mode, setMode] = useState<"demo" | "cloud">(() => {
+    if (import.meta.env.MODE === "test") return "demo";
+    try {
+      return localStorage.getItem("uzta.view.v1") === "demo" ? "demo" : "cloud";
+    } catch {
+      return "cloud";
+    }
+  });
+  function switchMode(next: "demo" | "cloud") {
+    try {
+      localStorage.setItem("uzta.view.v1", next);
+    } catch {}
+    setMode(next);
+  }
+  return mode === "demo" ? (
+    <LocalDemoProvider switchMode={switchMode}>{children}</LocalDemoProvider>
+  ) : (
+    <CloudProvider switchMode={switchMode}>{children}</CloudProvider>
+  );
+}
+export function ModeBanner() {
+  const { mode } = useDemo();
+  return mode === "demo" ? (
+    <div className="local-strip">
+      Demostración · Datos de ejemplo separados de tu cuenta
+    </div>
+  ) : null;
+}
+function LocalDemoProvider({
+  children,
+  switchMode,
+}: {
+  children: ReactNode;
+  switchMode: AppContextValue["switchMode"];
+}) {
   const [loaded] = useState(loadBrowserStore);
   const [data, setData] = useState(loaded.value);
   const current = useRef(data);
   const [storageError, setStorageError] = useState(loaded.error);
   const [notice, show] = useState("");
-  function run(command: Command) {
+  async function run(command: Command) {
     if (loaded.error) {
       show(loaded.error);
       return false;
@@ -170,7 +106,25 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("storage", sync);
   }, []);
   return (
-    <Context.Provider value={{ data, run, show, storageError }}>
+    <AppContext.Provider
+      value={{
+        data,
+        run,
+        show,
+        storageError,
+        mode: "demo",
+        busy: false,
+        managedFarmId: "urki",
+        userId: null,
+        switchMode,
+        refresh: async () => {},
+        signIn: async () => {},
+        signUp: async () => "",
+        signOut: async () => {
+          await run({ type: "session", active: false });
+        },
+      }}
+    >
       {storageError ? (
         <div role="alert" className="storage-error">
           {storageError}
@@ -185,11 +139,6 @@ export function DemoProvider({ children }: { children: ReactNode }) {
           </button>
         </Modal>
       ) : null}
-    </Context.Provider>
+    </AppContext.Provider>
   );
-}
-export function useDemo() {
-  const value = useContext(Context);
-  if (!value) throw Error("UZTA provider missing");
-  return value;
 }

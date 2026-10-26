@@ -11,13 +11,13 @@ export function Pedidos() {
   const [tab, setTab] = useState(
     search.vista === "productor" ? "Como productor" : "Compras",
   );
-  const { data, run } = useDemo();
+  const { data, run, mode, managedFarmId, userId, busy, refresh } = useDemo();
   const navigate = useNavigate();
   const selected = data.orders.find((o) => o.id === search.pedido);
   const visible =
     tab === "Compras"
-      ? data.orders
-      : data.orders.filter((o) => o.farmId === "urki");
+      ? data.orders.filter((o) => mode === "demo" || o.customerId === userId)
+      : data.orders.filter((o) => o.farmId === managedFarmId);
   const date = (value: string) =>
     new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(
       new Date(value + "T12:00:00"),
@@ -40,8 +40,17 @@ export function Pedidos() {
         ))}
       </div>
       <p className="subtle">
-        Reservas guardadas solo en este navegador. Los ejemplos están señalados.
+        {mode === "demo"
+          ? "Reservas de demostración guardadas en este navegador."
+          : "Tus reservas y su estado actual."}
       </p>
+      <button
+        className="text-button"
+        disabled={busy}
+        onClick={() => void refresh()}
+      >
+        Actualizar pedidos
+      </button>
       <div className="orders" role="tabpanel">
         {visible.map((o) => (
           <button
@@ -60,7 +69,7 @@ export function Pedidos() {
             <div className="order-top">
               <Photo
                 className="avatar"
-                crop={[383, 184, 78, 82]}
+                crop={mode === "demo" ? [383, 184, 78, 82] : [0, 0, 0, 0]}
                 label="Productor de ejemplo"
               />
               <div>
@@ -86,7 +95,11 @@ export function Pedidos() {
               Recogida: {o.pickup.start} – {o.pickup.end}
             </p>
             <small>
-              {o.example ? "Ejemplo de la maqueta" : "Reserva local"}
+              {o.example
+                ? "Ejemplo de la maqueta"
+                : mode === "cloud"
+                  ? "Reserva"
+                  : "Reserva local"}
             </small>
           </button>
         ))}
@@ -102,7 +115,9 @@ export function Pedidos() {
           title={
             selected.example
               ? "Pedido de ejemplo"
-              : "Detalle de la reserva local"
+              : mode === "cloud"
+                ? "Detalle de la reserva"
+                : "Detalle de la reserva local"
           }
           close={() =>
             void navigate({
@@ -145,13 +160,16 @@ export function Pedidos() {
           <p className="subtle">
             {selected.example
               ? "Ejemplo ilustrativo, sin reserva real."
-              : "Conservado en este equipo. No enviado al productor."}
+              : mode === "cloud"
+                ? "Reserva guardada en tu cuenta de UZTA."
+                : "Conservado en este equipo. No enviado al productor."}
           </p>
           {tab === "Como productor" &&
           !selected.example &&
           selected.status === "Pendiente" ? (
             <button
               className="primary"
+              disabled={busy}
               onClick={() => run({ type: "complete", id: selected.id })}
             >
               Marcar recogido

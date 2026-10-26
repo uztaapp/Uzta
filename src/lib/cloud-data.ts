@@ -1,0 +1,536 @@
+import { z } from "zod";
+import type { User, SupabaseClient } from "@supabase/supabase-js";
+import { cloudClient } from "./cloud-client";
+import {
+  seedStore,
+  futureSlot,
+  type LocalStore,
+  type Command,
+  type Farm,
+  type Slot,
+} from "./local-model";
+
+const uuid = z.uuid();
+const cartSchema = z.object({
+  quantities: z.record(uuid, z.number().int().min(0).max(100000)),
+  message: z.string().max(1000),
+});
+export const cartKey = (userId: string | null) =>
+  `uzta.cloud.cart.v1.${userId ?? "guest"}`;
+export const pendingCheckoutKey = (userId: string) =>
+  `uzta.cloud.checkout.v1.${userId}`;
+const pendingSchema = z.object({ id: uuid, fingerprint: z.string() });
+function cartFingerprint(data: LocalStore, slot: Slot | undefined) {
+  return JSON.stringify({
+    items: Object.entries(data.quantities)
+      .filter(([, q]) => q > 0)
+      .sort(([a], [b]) => a.localeCompare(b)),
+    message: data.message,
+    pickup: slot ? { date: slot.date, start: slot.start, end: slot.end } : null,
+  });
+}
+function savedOrderFingerprint(order: LocalStore["orders"][number]) {
+  return JSON.stringify({
+    items: order.lines
+      .map((l) => [l.productId, l.quantity] as [string, number])
+      .sort(([a], [b]) => a.localeCompare(b)),
+    message: order.message,
+    pickup: {
+      date: order.pickup.date,
+      start: order.pickup.start,
+      end: order.pickup.end,
+    },
+  });
+}
+export function readCloudCart(userId: string | null) {
+  const raw = localStorage.getItem(cartKey(userId));
+  return raw
+    ? cartSchema.parse(JSON.parse(raw))
+    : { quantities: {}, message: "" };
+}
+export function writeCloudCart(
+  userId: string | null,
+  value: ReturnType<typeof readCloudCart>,
+) {
+  localStorage.setItem(
+    cartKey(userId),
+    JSON.stringify(cartSchema.parse(value)),
+  );
+}
+export function emptyCloudData(): LocalStore {
+  return {
+    ...seedStore(),
+    profile: { name: "", email: "", location: "", language: "Español" },
+    sessionActive: false,
+    farms: [],
+    products: [],
+    quantities: {},
+    favorites: [],
+    orders: [],
+    message: "",
+  };
+}
+export function madridParts(instant: string) {
+  const parts = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(instant));
+  const p = Object.fromEntries(parts.map((x) => [x.type, x.value]));
+  return {
+    date: `${p.year}-${p.month}-${p.day}`,
+    time: `${p.hour}:${p.minute}`,
+  };
+}
+export function madridToUtc(date: string, time: string) {
+  z.iso.date().parse(date);
+  if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) throw Error("Hora no válida.");
+  const [y, m, d] = date.split("-").map(Number);
+  const [h, min] = time.split(":").map(Number);
+  const target = Date.UTC(y, m - 1, d, h, min);
+  let utc = target;
+  for (let i = 0; i < 3; i++) {
+    const p = madridParts(new Date(utc).toISOString());
+    const [py, pm, pd] = p.date.split("-").map(Number);
+    const [ph, pmin] = p.time.split(":").map(Number);
+    utc += target - Date.UTC(py, pm - 1, pd, ph, pmin);
+  }
+  const p = madridParts(new Date(utc).toISOString());
+  const same = (t: number) => {
+    const q = madridParts(new Date(t).toISOString());
+    return q.date === date && q.time === time;
+  };
+  if (
+    p.date !== date ||
+    p.time !== time ||
+    same(utc - 3600000) ||
+    same(utc + 3600000)
+  )
+    throw Error(
+      "Esta hora coincide con un cambio de horario. Elige otra franja.",
+    );
+  return new Date(utc).toISOString();
+}
+export function cloudMessage(error: unknown) {
+  const code =
+    typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : "";
+  if (code === "23505")
+    return "Este registro ya existe. Actualiza la pantalla antes de repetir.";
+  if (code === "42501")
+    return "Tu cuenta no tiene permiso para realizar esta operación.";
+  if (code === "P0001")
+    return "No se ha confirmado la operación. Revisa el stock, el productor y la franja de recogida.";
+  if (error instanceof Error && !("code" in error)) return error.message;
+  return "No se pudo completar la operación. Comprueba tu conexión y vuelve a intentarlo.";
+}
+function check<T>(result: { data: T; error: unknown }): T {
+  if (result.error) throw result.error;
+  return result.data;
+}
+const producerRow = z.object({
+  id: uuid,
+  owner_id: uuid,
+  name: z.string(),
+  location: z.string(),
+  description: z.string(),
+  ecological: z.boolean(),
+  active: z.boolean(),
+});
+const productRow = z.object({
+  id: uuid,
+  producer_id: uuid,
+  name: z.string(),
+  price_cents: z.number().int().positive(),
+  unit: z.enum(["kg", "docena", "unidad"]),
+  category: z.enum([
+    "Verduras",
+    "Frutas",
+    "Huevos",
+    "Lácteos",
+    "Miel",
+    "Otros",
+  ]),
+  stock_units: z.number().int().nonnegative(),
+  active: z.boolean(),
+  featured: z.boolean().optional(),
+});
+const slotRow = z.object({
+  id: uuid,
+  producer_id: uuid,
+  starts_at: z.string(),
+  ends_at: z.string(),
+  active: z.boolean(),
+});
+export async function loadCloudData(
+  user: User | null,
+  api: SupabaseClient = cloudClient(),
+) {
+  const [farmResponse, productResponse, slotResponse] = await Promise.all([
+    api.from("uzta_producers").select("*").order("created_at"),
+    api.from("uzta_products").select("*"),
+    api.from("uzta_pickup_slots").select("*").order("starts_at"),
+  ]);
+  const farms = z.array(producerRow).parse(check(farmResponse));
+  const products = z.array(productRow).parse(check(productResponse));
+  const slots = z.array(slotRow).parse(check(slotResponse));
+  const data = emptyCloudData();
+  let profile: { display_name: string; location: string } | null = null;
+  let orders: any[] = [];
+  let favorites: { product_id: string }[] = [];
+  if (user) {
+    const profileRead = check(
+      await api
+        .from("uzta_profiles")
+        .select("display_name,location")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    );
+    profile = profileRead;
+    if (!profile) {
+      const name =
+        typeof user.user_metadata?.display_name === "string"
+          ? user.user_metadata.display_name.trim().slice(0, 100)
+          : "";
+      check(
+        await api.from("uzta_profiles").upsert(
+          {
+            user_id: user.id,
+            display_name: name || "Mi cuenta",
+            location: "",
+            language: "es",
+          },
+          { onConflict: "user_id", ignoreDuplicates: true },
+        ),
+      );
+      profile = check(
+        await api
+          .from("uzta_profiles")
+          .select("display_name,location")
+          .eq("user_id", user.id)
+          .single(),
+      );
+    }
+    const [o, f] = await Promise.all([
+      api
+        .from("uzta_orders")
+        .select("*,items:uzta_order_items(*)")
+        .order("created_at", { ascending: false }),
+      api.from("uzta_favorites").select("product_id").eq("user_id", user.id),
+    ]);
+    orders = check(o) ?? [];
+    favorites = check(f) ?? [];
+  }
+  data.profile = {
+    name: profile?.display_name ?? "",
+    email: user?.email ?? "",
+    location: profile?.location ?? "",
+    language: "Español",
+  };
+  data.sessionActive = !!user;
+  data.farms = farms.map((f) => ({
+    id: f.id,
+    name: f.name,
+    location: f.location,
+    description: f.description,
+    ecological: f.ecological,
+    distance: "",
+    slots: slots
+      .filter((s) => s.producer_id === f.id && s.active)
+      .map((s) => ({
+        id: s.id,
+        date: madridParts(s.starts_at).date,
+        start: madridParts(s.starts_at).time,
+        end: madridParts(s.ends_at).time,
+      })),
+  }));
+  data.products = products.map((p) => ({
+    id: p.id,
+    farmId: p.producer_id,
+    name: p.name,
+    priceCents: p.price_cents,
+    unit: p.unit,
+    stock: p.stock_units,
+    category: p.category,
+    crop: [0, 0, 0, 0],
+    featured: p.featured ?? true,
+    active: p.active && !!farms.find((f) => f.id === p.producer_id)?.active,
+  }));
+  data.favorites = favorites.map((f) => f.product_id);
+  data.orders = orders.map((o) => ({
+    id: o.id,
+    farmId: o.producer_id,
+    customerId: o.customer_id,
+    farmName: o.producer_name,
+    createdAt: o.created_at,
+    pickup: {
+      id: o.id,
+      date: madridParts(o.pickup_starts_at).date,
+      start: madridParts(o.pickup_starts_at).time,
+      end: madridParts(o.pickup_ends_at).time,
+    },
+    message: o.message,
+    status: o.status,
+    example: false,
+    lines: o.items.map((l: any) => ({
+      productId: l.product_id,
+      name: l.product_name,
+      priceCents: l.unit_price_cents,
+      unit: l.unit,
+      quantity: l.quantity,
+      crop: [0, 0, 0, 0],
+    })),
+  }));
+  const cart = readCloudCart(user?.id ?? null);
+  data.quantities = cart.quantities;
+  data.message = cart.message;
+  if (user) {
+    const pendingRaw = localStorage.getItem(pendingCheckoutKey(user.id));
+    if (pendingRaw) {
+      const pending = pendingSchema.parse(JSON.parse(pendingRaw));
+      const order = data.orders.find((o) => o.id === pending.id);
+      if (order) {
+        const cartSlot = { ...order.pickup, id: "" };
+        const matches =
+          savedOrderFingerprint(order) === cartFingerprint(data, cartSlot);
+        if (matches) {
+          data.quantities = {};
+          data.message = "";
+          try {
+            writeCloudCart(user.id, { quantities: {}, message: "" });
+            localStorage.removeItem(pendingCheckoutKey(user.id));
+          } catch {
+            /* Keep the receipt marker so a reload cannot duplicate this order. */
+          }
+        } else {
+          try {
+            localStorage.removeItem(pendingCheckoutKey(user.id));
+          } catch {
+            /* Preserve the existing receipt marker rather than create a second order. */
+          }
+        }
+      }
+    }
+  }
+  for (const [id, quantity] of Object.entries(data.quantities)) {
+    if (quantity > 0 && !data.products.some((p) => p.id === id))
+      data.products.push({
+        id,
+        farmId: "unavailable",
+        name: "Producto no disponible",
+        priceCents: 0,
+        unit: "unidad",
+        stock: 0,
+        category: "Otros",
+        crop: [0, 0, 0, 0],
+        featured: false,
+        active: false,
+      });
+  }
+  return {
+    data,
+    managedFarmId: farms.find((f) => f.owner_id === user?.id)?.id ?? null,
+  };
+}
+export function cartTransition(data: LocalStore, command: Command) {
+  const cart = { quantities: { ...data.quantities }, message: data.message };
+  if (command.type === "message") cart.message = command.value;
+  else if (command.type === "remove") delete cart.quantities[command.id];
+  else if (command.type === "quantity") {
+    const p = data.products.find((p) => p.id === command.id);
+    if (!p?.active) throw Error("El producto ya no está disponible.");
+    if (
+      command.delta > 0 &&
+      data.products.some(
+        (other) =>
+          (cart.quantities[other.id] ?? 0) > 0 && other.farmId !== p.farmId,
+      )
+    )
+      throw Error(
+        "La cesta pertenece a otro productor. Termina o vacía la cesta antes de cambiar.",
+      );
+    const q = Math.max(0, (cart.quantities[p.id] ?? 0) + command.delta);
+    if (q > p.stock) throw Error("No hay suficiente stock disponible.");
+    cart.quantities[p.id] = q;
+  } else throw Error("Operación de cesta desconocida.");
+  return cartSchema.parse(cart);
+}
+export async function persistCloudCommand(
+  data: LocalStore,
+  command: Command,
+  user: User | null,
+  managedFarmId: string | null,
+  api: SupabaseClient = cloudClient(),
+) {
+  if (!user) throw Error("Inicia sesión en UZTA para continuar.");
+  if (command.type === "favorite") {
+    uuid.parse(command.id);
+    if (data.favorites.includes(command.id))
+      check(
+        await api
+          .from("uzta_favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("product_id", command.id),
+      );
+    else
+      check(
+        await api
+          .from("uzta_favorites")
+          .upsert(
+            { user_id: user.id, product_id: command.id },
+            { onConflict: "user_id,product_id", ignoreDuplicates: true },
+          ),
+      );
+  } else if (command.type === "profile") {
+    if (command.value.email !== user.email)
+      throw Error(
+        "El correo pertenece a tu cuenta. Edita aquí solo tu nombre y ubicación.",
+      );
+    check(
+      await api.from("uzta_profiles").upsert(
+        {
+          user_id: user.id,
+          display_name: command.value.name.trim(),
+          location: command.value.location.trim(),
+          language: "es",
+        },
+        { onConflict: "user_id" },
+      ),
+    );
+  } else if (command.type === "product") {
+    if (command.value.farmId !== managedFarmId)
+      throw Error("Este producto no pertenece a tu tienda.");
+    const p = command.value;
+    uuid.parse(p.id);
+    check(
+      await api.from("uzta_products").upsert(
+        {
+          id: p.id,
+          producer_id: p.farmId,
+          name: p.name.trim(),
+          price_cents: p.priceCents,
+          unit: p.unit,
+          category: p.category,
+          stock_units: p.stock,
+          active: p.active,
+          featured: p.featured,
+        },
+        { onConflict: "id" },
+      ),
+    );
+  } else if (command.type === "farm") {
+    const f = command.value;
+    uuid.parse(f.id);
+    if (managedFarmId && f.id !== managedFarmId)
+      throw Error("Esta tienda no pertenece a tu cuenta.");
+    if (!f.name.trim() || !f.location.trim())
+      throw Error("Completa el nombre y la ubicación de tu tienda.");
+    const previous = data.farms.find((x) => x.id === f.id);
+    const changed =
+      !previous ||
+      ["name", "location", "description", "ecological"].some(
+        (k) => (previous as any)[k] !== (f as any)[k],
+      );
+    if (changed)
+      check(
+        await api.from("uzta_producers").upsert(
+          {
+            id: f.id,
+            owner_id: user.id,
+            name: f.name.trim(),
+            location: f.location.trim(),
+            description: f.description,
+            ecological: f.ecological,
+            active: true,
+          },
+          { onConflict: "id" },
+        ),
+      );
+    const added = f.slots.filter(
+      (s) => !previous?.slots.some((old) => old.id === s.id),
+    );
+    for (const slot of added) {
+      if (!futureSlot(slot) || slot.start >= slot.end)
+        throw Error("Selecciona una franja futura válida.");
+      if (
+        f.slots.some(
+          (other) =>
+            other.id !== slot.id &&
+            other.date === slot.date &&
+            other.start < slot.end &&
+            other.end > slot.start,
+        )
+      )
+        throw Error("Las franjas no se pueden solapar.");
+      check(
+        await api.from("uzta_pickup_slots").insert({
+          id: slot.id,
+          producer_id: f.id,
+          starts_at: madridToUtc(slot.date, slot.start),
+          ends_at: madridToUtc(slot.date, slot.end),
+          active: true,
+        }),
+      );
+    }
+    const removed =
+      previous?.slots.filter((s) => !f.slots.some((now) => now.id === s.id)) ??
+      [];
+    for (const slot of removed)
+      check(
+        await api
+          .from("uzta_pickup_slots")
+          .update({ active: false })
+          .eq("id", slot.id)
+          .eq("producer_id", f.id),
+      );
+  } else if (command.type === "reserve") {
+    uuid.parse(command.id);
+    uuid.parse(command.slotId);
+    const items = data.products.filter((p) => (data.quantities[p.id] ?? 0) > 0);
+    if (!items.length) throw Error("La cesta está vacía.");
+    if (items.some((p) => !p.active || data.quantities[p.id] > p.stock))
+      throw Error("Revisa la disponibilidad de los productos de la cesta.");
+    if (new Set(items.map((p) => p.farmId)).size !== 1)
+      throw Error("La cesta debe pertenecer a un productor.");
+    const raw = localStorage.getItem(pendingCheckoutKey(user.id));
+    const previous = raw ? pendingSchema.parse(JSON.parse(raw)) : null;
+    const slot = data.farms
+      .find((f) => f.id === items[0].farmId)
+      ?.slots.find((s) => s.id === command.slotId);
+    const pending = previous ?? {
+      id: command.id,
+      fingerprint: cartFingerprint(data, slot),
+    };
+    localStorage.setItem(pendingCheckoutKey(user.id), JSON.stringify(pending));
+    const response = await api.rpc("uzta_reserve_order", {
+      p_id: pending.id,
+      p_slot: command.slotId,
+      p_items: items.map((p) => ({
+        product_id: p.id,
+        quantity: data.quantities[p.id],
+      })),
+      p_message: data.message,
+    });
+    if (response.error) {
+      const code = String(response.error.code ?? "");
+      if (["P0001", "42501", "23503", "22023", "22P02"].includes(code))
+        localStorage.removeItem(pendingCheckoutKey(user.id));
+      throw response.error;
+    }
+    if (response.data !== pending.id)
+      throw Error(
+        "No se pudo confirmar la reserva. Actualiza tus pedidos antes de repetir.",
+      );
+  } else if (command.type === "complete") {
+    const order = data.orders.find((o) => o.id === command.id);
+    if (!order || order.farmId !== managedFarmId)
+      throw Error("Esta reserva no pertenece a tu tienda.");
+    check(await api.rpc("uzta_complete_order", { p_id: command.id }));
+  } else throw Error("Operación no disponible para esta cuenta.");
+}

@@ -13,7 +13,7 @@ export function Inicio() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
-  const { data, run } = useDemo();
+  const { data, run, mode, busy } = useDemo();
   const visible = data.products.filter(
     (p) =>
       p.active &&
@@ -39,7 +39,7 @@ export function Inicio() {
       <h1 className="sr-only">Inicio</h1>
       <p className="location">
         <MapPin size={17} />
-        {data.profile.location}
+        {data.profile.location || "Productos cerca de ti"}
       </p>
       <label className="search">
         <Search size={21} />
@@ -137,7 +137,11 @@ export function Inicio() {
         })}
       </div>
       {!visible.length ? (
-        <p className="empty">No hay productos en esta selección.</p>
+        <p className="empty">
+          {busy
+            ? "Cargando productos…"
+            : "Todavía no hay productos publicados en esta selección."}
+        </p>
       ) : null}
       <div className="section-heading">
         <h2>Directamente del productor</h2>
@@ -151,7 +155,7 @@ export function Inicio() {
             className="farm-banner"
           >
             <Photo
-              crop={[365, 96, 285, 82]}
+              crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
               label={`Tienda de ejemplo: ${f.name}`}
             />
             <div>

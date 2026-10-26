@@ -13,14 +13,22 @@ import { Photo, euro, useDemo } from "../design";
 import { futureSlot } from "../lib/local-model";
 export function Productor() {
   const [tab, setTab] = useState("Productos");
-  const { data, run } = useDemo();
+  const { data, run, mode, busy } = useDemo();
   const search = useSearch({ strict: false }) as { tienda?: string };
-  const farm = data.farms.find((f) => f.id === (search.tienda ?? "urki"));
+  const farm = data.farms.find(
+    (f) =>
+      f.id ===
+      (search.tienda ?? (mode === "demo" ? "urki" : data.farms[0]?.id)),
+  );
   const [added, setAdded] = useState("");
   if (!farm)
     return (
       <div className="empty">
-        <h1>Productor no encontrado</h1>
+        <h1>
+          {search.tienda
+            ? "Productor no encontrado"
+            : "Aún no hay productores publicados"}
+        </h1>
         <Link to="/">Volver al inicio</Link>
       </div>
     );
@@ -34,7 +42,7 @@ export function Productor() {
     <>
       <div className="producer-hero">
         <Photo
-          crop={[365, 96, 285, 82]}
+          crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
           label={`Caserío de ejemplo de ${farm.name}`}
         />
         <Link className="hero-back" to="/" aria-label="Volver al inicio">
@@ -44,13 +52,13 @@ export function Productor() {
       <div className="producer-intro">
         <Photo
           className="avatar farm-avatar"
-          crop={[383, 184, 78, 82]}
+          crop={mode === "demo" ? [383, 184, 78, 82] : [0, 0, 0, 0]}
           label="Productor de ejemplo"
         />
         <h1>{farm.name}</h1>
         <div className="farm-meta">
           {farm.ecological ? <span className="eco">♧ Ecológico</span> : null}
-          {farm.id === "urki" ? (
+          {mode === "demo" && farm.id === "urki" ? (
             <span>
               <Star size={18} fill="#efb329" color="#efb329" />{" "}
               <strong>4,8</strong> (32) <small>Maqueta</small>
@@ -115,10 +123,10 @@ export function Productor() {
                     </div>
                     <button
                       className="add"
-                      disabled={!p.stock}
+                      disabled={busy || !p.stock}
                       aria-label={`Añadir ${p.name} a la cesta`}
-                      onClick={() => {
-                        if (run({ type: "quantity", id: p.id, delta: 1 }))
+                      onClick={async () => {
+                        if (await run({ type: "quantity", id: p.id, delta: 1 }))
                           setAdded(`${p.name} añadido a la cesta.`);
                       }}
                     >

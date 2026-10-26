@@ -12,7 +12,7 @@ import {
   ClipboardList,
   UserRound,
 } from "lucide-react";
-import { DemoProvider } from "./design";
+import { DemoProvider, ModeBanner } from "./design";
 import { Inicio } from "./pages/inicio";
 import { Productor } from "./pages/productor";
 import { Cesta } from "./pages/cesta";
@@ -28,9 +28,7 @@ const destinations = [
 export function Shell() {
   return (
     <DemoProvider>
-      <div className="local-strip">
-        UZTA local · Datos guardados en este navegador
-      </div>
+      <ModeBanner />
       <div className="app">
         <a className="skip" href="#contenido">
           Saltar al contenido

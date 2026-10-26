@@ -7,7 +7,11 @@ function walk(dir) {
 }
 const files = [...walk("src"), "vite.config.ts", "index.html", "package.json"];
 for (const file of files) {
-  const s = readFileSync(file, "utf8");
+  const raw = readFileSync(file, "utf8");
+  const s = raw
+    .replaceAll("abgysktjctrxfkcejjwu.supabase.co", "AUTHORIZED_UZTA")
+    .replaceAll("uzta-nu.vercel.app", "AUTHORIZED_UZTA")
+    .replaceAll("${UZTA_PROJECT}.supabase.co", "AUTHORIZED_UZTA");
   assert(
     !/supabase\.co|vercel\.app|lovable\.app|sb_secret_|eyJ[A-Za-z0-9_-]+\./.test(
       s,
@@ -15,7 +19,8 @@ for (const file of files) {
     `Remote reference: ${file}`,
   );
   assert(
-    !/fetch\s*\(|XMLHttpRequest|createClient\s*\(/.test(s),
+    !/fetch\s*\(|XMLHttpRequest/.test(s) &&
+      (file === "src/lib/cloud-client.ts" || !/createClient\s*\(/.test(s)),
     `Network client: ${file}`,
   );
 }
@@ -42,6 +47,13 @@ if (existsSync(".git/config"))
     !/\[remote /.test(readFileSync(".git/config", "utf8")),
     "Git remote must remain disconnected",
   );
+const config = JSON.parse(
+  readFileSync("config/uzta-cloud.public.json", "utf8"),
+);
+assert.equal(config.projectRef, "abgysktjctrxfkcejjwu");
+assert.equal(config.url, "https://abgysktjctrxfkcejjwu.supabase.co");
+assert.equal(config.siteUrl, "https://uzta-nu.vercel.app");
+assert(config.publishableKey.startsWith("sb_publishable_"));
 console.log(
-  "PASS: independent UZTA source, own local configuration, no cloud links, credentials, network client or deployment scripts.",
+  "PASS: independent UZTA source; only the authorized UZTA cloud project and public key; no foreign account bindings or secret credentials.",
 );

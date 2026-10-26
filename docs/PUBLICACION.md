@@ -1,5 +1,7 @@
 # Publicación de UZTA · 26/10/2026
 
+Actualización autenticada preparada, todavía NO publicada. El paquete nuevo está en `outputs/uzta-publicacion-autenticada/uzta.zip`, respecto a la carpeta del trabajo. La revisión automática bloqueó su carga desde New Project por riesgo de duplicar el proyecto. Para actualizar el proyecto existente, abrir https://vercel.com/uzta1/uzta y arrastrar ese ZIP sobre la página, como indica el propio panel. No crear otro proyecto. La información inferior describe el despliegue anterior que continúa publicado.
+
 - URL: https://uzta-nu.vercel.app/
 - Panel propio: https://vercel.com/uzta1/uzta
 - Espacio: uzta1, cuenta visible uztaapp-4801, plan Hobby.

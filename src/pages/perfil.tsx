@@ -17,8 +17,9 @@ import {
 import { Photo, Modal, useDemo } from "../design";
 import { profileSchema } from "../lib/local-model";
 import { Gestion } from "./gestion";
+import { Access } from "../components/access";
 export function Perfil() {
-  const { data, run, show } = useDemo();
+  const { data, run, show, mode, busy, switchMode, signOut } = useDemo();
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { apartado?: string };
   const [editing, setEditing] = useState(false);
@@ -29,9 +30,10 @@ export function Perfil() {
     horarios: "Horarios y entregas",
     estadisticas: "Estadísticas",
   };
-  function save(event: FormEvent<HTMLFormElement>) {
+  async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const result = profileSchema.safeParse({
       ...data.profile,
       name: form.get("name"),
@@ -42,11 +44,12 @@ export function Perfil() {
       setError(result.error.issues[0].message);
       return;
     }
-    if (run({ type: "profile", value: result.data })) {
+    if (await run({ type: "profile", value: result.data })) {
       setEditing(false);
       setError("");
     }
   }
+  if (mode === "cloud" && !data.sessionActive) return <Access />;
   if (!data.sessionActive)
     return (
       <div className="info-panel">
@@ -92,7 +95,7 @@ export function Perfil() {
         <div className="profile-person">
           <Photo
             className="avatar"
-            crop={[1294, 123, 57, 60]}
+            crop={mode === "demo" ? [1294, 123, 57, 60] : [0, 0, 0, 0]}
             label="Avatar de ejemplo"
           />
           <div>
@@ -158,12 +161,19 @@ export function Perfil() {
           );
         })}
       </div>
+      {mode === "demo" ? (
+        <button className="primary" onClick={() => switchMode("cloud")}>
+          Entrar en mi cuenta de UZTA
+        </button>
+      ) : null}
       <div className="profile-bottom">
         <button
           className="profile-row"
           onClick={() =>
             show(
-              "Los cambios se guardan en este navegador. Para probar una reserva: configura tu tienda y sus franjas de recogida, añade productos a la cesta, elige una fecha y guarda la reserva. Puedes consultarla en Pedidos.",
+              mode === "cloud"
+                ? "Tu perfil, tienda y reservas se guardan en tu cuenta. Las reservas se consultan en Pedidos y las recogidas en Como productor."
+                : "Los datos de demostración se guardan solo en este navegador.",
             )
           }
         >
@@ -175,7 +185,7 @@ export function Perfil() {
           className="profile-row"
           onClick={() =>
             show(
-              "Este entorno sirve para desarrollo local y no presta un servicio comercial. No efectúa pagos ni envía reservas. Las condiciones de uso públicas y los textos legales deben definirse antes de publicar UZTA.",
+              "UZTA no procesa pagos. Las condiciones de venta y uso comercial están pendientes de aprobación. No introduzcas datos sensibles mientras se verifica el servicio.",
             )
           }
         >
@@ -183,51 +193,58 @@ export function Perfil() {
           <span>Condiciones de uso</span>
           <ChevronRight />
         </button>
-        <button
-          className="profile-row"
-          onClick={() => run({ type: "session", active: false })}
-        >
+        <button className="profile-row" onClick={() => void signOut()}>
           <LogOut />
-          <span>Cerrar sesión local</span>
+          <span>
+            {mode === "cloud" ? "Cerrar sesión" : "Cerrar sesión local"}
+          </span>
           <ChevronRight />
         </button>
       </div>
       {editing ? (
-        <Modal title="Editar perfil local" close={() => setEditing(false)}>
+        <Modal
+          title={mode === "cloud" ? "Editar perfil" : "Editar perfil local"}
+          close={() => setEditing(false)}
+        >
           <form className="uzta-form" onSubmit={save}>
-            <label>
-              Nombre
-              <input
-                name="name"
-                required
-                maxLength={100}
-                defaultValue={data.profile.name}
-              />
-            </label>
-            <label>
-              Correo electrónico
-              <input
-                type="email"
-                name="email"
-                required
-                maxLength={200}
-                defaultValue={data.profile.email}
-              />
-            </label>
-            <label>
-              Ubicación
-              <input
-                name="location"
-                required
-                maxLength={200}
-                defaultValue={data.profile.location}
-              />
-            </label>
-            <p className="subtle">
-              Se guarda solo en este navegador. Usa datos de prueba.
-            </p>
-            {error ? <p role="alert">{error}</p> : null}
-            <button className="primary">Guardar perfil</button>
+            <fieldset disabled={busy}>
+              <label>
+                Nombre
+                <input
+                  name="name"
+                  required
+                  maxLength={100}
+                  defaultValue={data.profile.name}
+                />
+              </label>
+              <label>
+                Correo electrónico
+                <input
+                  readOnly={mode === "cloud"}
+                  type="email"
+                  name="email"
+                  required
+                  maxLength={200}
+                  defaultValue={data.profile.email}
+                />
+              </label>
+              <label>
+                Ubicación
+                <input
+                  name="location"
+                  required
+                  maxLength={200}
+                  defaultValue={data.profile.location}
+                />
+              </label>
+              <p className="subtle">
+                {mode === "cloud"
+                  ? "Tu nombre y ubicación se guardan en tu cuenta de UZTA. El correo se gestiona desde el acceso a tu cuenta."
+                  : "Se guarda solo en este navegador. Usa datos de prueba."}
+              </p>
+              {error ? <p role="alert">{error}</p> : null}
+              <button className="primary">Guardar perfil</button>
+            </fieldset>
           </form>
         </Modal>
       ) : null}

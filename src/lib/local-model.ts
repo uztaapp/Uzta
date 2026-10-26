@@ -47,6 +47,7 @@ const lineSchema = z.object({
 });
 const orderSchema = z.object({
   id: z.string(),
+  customerId: z.string().optional(),
   farmId: z.string(),
   farmName: z.string(),
   createdAt: z.string(),

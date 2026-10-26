@@ -43,6 +43,8 @@ Las 16 pruebas automatizadas del adaptador (local y UZTA real con transporte sim
 
 ## Pendiente
 
+Actualización posterior: la interfaz local ya integra Auth y persistencia. Los párrafos inferiores describen el hito anterior; el estado vigente y sus límites están en INTEGRACION-REAL.md. La migración adicional `20261026205213_uzta_product_visibility.sql` también se aplicó desde el SQL Editor y se verificó `featured boolean NOT NULL`. Ambas migraciones requieren reconciliar el historial antes de usar `db push`.
+
 La web publicada y el servidor de desarrollo siguen usando el modelo de demostración en el navegador. Aún no se ha integrado un inicio de sesión real ni la persistencia Supabase de esas pantallas.
 No se ha migrado localStorage, creado usuarios reales, enviado correos o insertado pedidos. La integración deberá verificar Auth con usuarios de prueba, permisos de productor/comprador y concurrencia antes de sustituir el guardado actual.
 

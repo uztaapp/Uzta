@@ -1,0 +1,179 @@
+import React from "react";
+import { beforeEach, afterEach, test, expect, vi } from "vitest";
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  cleanup,
+  act,
+} from "@testing-library/react";
+import { CloudProvider } from "./cloud-provider";
+import { useUzta } from "./app-context";
+import { Access } from "./components/access";
+import { emptyCloudData } from "./lib/cloud-data";
+const mocks = vi.hoisted(() => ({
+  getSession: vi.fn(),
+  getUser: vi.fn(),
+  signInWithPassword: vi.fn(),
+  signUp: vi.fn(),
+  signOut: vi.fn(),
+  load: vi.fn(),
+  persist: vi.fn(),
+  callback: null as null | ((event: string, session: any) => void),
+}));
+vi.mock("./lib/cloud-client", () => ({
+  authReturnUrl: () => "https://uzta-nu.vercel.app/",
+  cloudClient: () => ({
+    auth: {
+      getSession: mocks.getSession,
+      getUser: mocks.getUser,
+      signInWithPassword: mocks.signInWithPassword,
+      signUp: mocks.signUp,
+      signOut: mocks.signOut,
+      onAuthStateChange: (callback: any) => {
+        mocks.callback = callback;
+        return { data: { subscription: { unsubscribe: () => {} } } };
+      },
+    },
+  }),
+}));
+vi.mock("./lib/cloud-data", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./lib/cloud-data")>();
+  return {
+    ...actual,
+    loadCloudData: mocks.load,
+    persistCloudCommand: mocks.persist,
+  };
+});
+const account = {
+  id: "00000000-0000-4000-8000-000000000001",
+  email: "usuario@example.test",
+};
+function Probe() {
+  const value = useUzta();
+  return (
+    <>
+      <div data-testid="identity">
+        {value.data.sessionActive ? value.data.profile.name : "Visitante"}
+      </div>
+      {!value.data.sessionActive ? (
+        <Access />
+      ) : (
+        <button onClick={() => void value.signOut()}>Salir</button>
+      )}
+    </>
+  );
+}
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.callback = null;
+  mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
+  mocks.getUser.mockResolvedValue({ data: { user: account }, error: null });
+  mocks.load.mockImplementation(async (user) => ({
+    data: {
+      ...emptyCloudData(),
+      sessionActive: !!user,
+      profile: {
+        name: user ? "Persona real" : "",
+        email: user?.email ?? "",
+        location: "",
+        language: "Español",
+      },
+    },
+    managedFarmId: null,
+  }));
+  mocks.persist.mockResolvedValue(undefined);
+  mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+  mocks.signInWithPassword.mockResolvedValue({
+    data: { session: null },
+    error: null,
+  });
+  mocks.signOut.mockImplementation(async () => {
+    mocks.callback?.("SIGNED_OUT", null);
+    return { error: null };
+  });
+});
+afterEach(() => cleanup());
+test("signed-out cloud view never starts with the demonstration identity", async () => {
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Iniciar sesión" }),
+    ).not.toBeDisabled(),
+  );
+  expect(screen.getByTestId("identity")).toHaveTextContent("Visitante");
+  expect(screen.queryByText("Ana García")).not.toBeInTheDocument();
+  expect(mocks.load).toHaveBeenCalledWith(null);
+});
+test("an invalid restored session never loads private account data", async () => {
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: "fixture", user: account } },
+    error: null,
+  });
+  mocks.getUser.mockResolvedValue({
+    data: { user: null },
+    error: { message: "invalid" },
+  });
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "sesión no es válida",
+  );
+  expect(mocks.load).not.toHaveBeenCalled();
+  expect(screen.getByTestId("identity")).toHaveTextContent("Visitante");
+});
+test("a verified session shows its own profile and sign-out removes that identity", async () => {
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: "fixture", user: account } },
+    error: null,
+  });
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  expect(await screen.findByText("Persona real")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Salir" }));
+  await waitFor(() =>
+    expect(screen.getByTestId("identity")).toHaveTextContent("Visitante"),
+  );
+  expect(mocks.signOut).toHaveBeenCalledWith({ scope: "local" });
+});
+test("registration waits for confirmation and passes only the approved return URL", async () => {
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Iniciar sesión" }),
+    ).not.toBeDisabled(),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Crear una cuenta" }));
+  fireEvent.change(screen.getByLabelText("Nombre"), {
+    target: { value: "Persona de prueba" },
+  });
+  fireEvent.change(screen.getByLabelText("Correo electrónico"), {
+    target: { value: "prueba@example.test" },
+  });
+  fireEvent.change(screen.getByLabelText("Contraseña"), {
+    target: { value: "fixture-only-password" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Crear cuenta" }));
+  expect(await screen.findByRole("status")).toHaveTextContent(
+    "confirmar la cuenta",
+  );
+  expect(mocks.signUp.mock.calls[0][0].options.emailRedirectTo).toBe(
+    "https://uzta-nu.vercel.app/",
+  );
+  expect(screen.getByTestId("identity")).toHaveTextContent("Visitante");
+});

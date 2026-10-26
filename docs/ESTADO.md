@@ -1,5 +1,7 @@
 # Estado de UZTA · 26/10/2026
 
+Estado vigente: conexión autenticada implementada en local y compilada, pendiente de actualizar el despliegue existente. Véase INTEGRACION-REAL.md. El informe inferior conserva el hito anterior a la integración.
+
 Actualización: la base real de UZTA ya está creada y verificada en el proyecto `abgysktjctrxfkcejjwu`. Véase SUPABASE-REAL.md. La interfaz todavía usa guardado en el navegador; su integración autenticada es el siguiente trabajo pendiente. Las notas sobre Docker de este informe solo afectan al entorno de Supabase local, que sigue sin estar instalado.
 
 ## Implementación local

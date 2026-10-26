@@ -1135,3 +1135,73 @@ nav a.active svg {
     font-size: 15px;
   }
 }
+
+.photo-placeholder {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #eef1e5, #dde7d0);
+  color: #657e4c;
+  font-size: 38px;
+}
+.photo-placeholder span {
+  font-family: Outfit, sans-serif;
+  opacity: 0.7;
+}
+.producer-hero > .photo-placeholder {
+  height: 225px;
+  font-size: 75px;
+}
+.farm-banner > .photo-placeholder {
+  height: 190px;
+}
+.access-panel {
+  max-width: 460px;
+  margin: 25px auto;
+}
+.access-panel > p {
+  line-height: 1.6;
+  margin: 18px 0;
+}
+.access-panel hr {
+  border: 0;
+  border-top: 1px solid #dce0d2;
+  margin: 30px 0 15px;
+}
+.access-panel .text-button {
+  display: block;
+  margin-top: 20px;
+}
+.uzta-form fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.uzta-form input[readonly] {
+  background: #eeeee6;
+  color: #666e60;
+}
+.loading-status {
+  text-align: center;
+  padding: 8px;
+  margin: 0;
+  background: #f1f4e9;
+  font-size: 12px;
+  color: #586f43;
+}
+.storage-error .text-button {
+  margin-left: 15px;
+}
+.management > p {
+  margin: 15px 0;
+}
+.product-image > .photo-placeholder {
+  width: 100%;
+  aspect-ratio: 1.42;
+}
+.primary[disabled] {
+  opacity: 0.5;
+}
