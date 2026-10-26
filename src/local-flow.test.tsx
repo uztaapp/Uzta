@@ -22,6 +22,43 @@ async function open(path: string) {
   render(<RouterProvider router={router} />);
   return router;
 }
+
+test("search and all-products expose published products that are not featured", async () => {
+  const data = seedStore();
+  data.products.find((p) => p.id === "hierbas")!.featured = false;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  await open("/");
+  expect(
+    screen.queryByRole("heading", { name: "Hierbas aromáticas" }),
+  ).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Buscar productos"), {
+    target: { value: "AROMATICAS" },
+  });
+  expect(
+    screen.getByRole("heading", { name: "Hierbas aromáticas" }),
+  ).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Buscar productos"), {
+    target: { value: "" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /Ver todos/ }));
+  expect(
+    screen.getByRole("heading", { name: "Hierbas aromáticas" }),
+  ).toBeInTheDocument();
+});
+
+test("an unavailable basket item must be removed or reduced before checkout", async () => {
+  const data = seedStore();
+  data.products[0].stock = 1;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  await open("/cesta");
+  expect(
+    screen.getByRole("button", { name: "Confirmar reserva" }),
+  ).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Reducir Tomates" }));
+  expect(
+    screen.getByRole("button", { name: "Confirmar reserva" }),
+  ).not.toBeDisabled();
+});
 test("producer product edits affect the catalogue and survive navigation", async () => {
   await open("/perfil?apartado=productos");
   fireEvent.click(screen.getAllByRole("button", { name: "Editar" })[0]);

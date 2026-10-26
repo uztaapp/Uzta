@@ -1,4 +1,11 @@
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  lazy,
+  Suspense,
+  type ReactNode,
+} from "react";
 import {
   STORAGE_KEY as LEGACY_STORAGE_KEY,
   readStore,
@@ -7,7 +14,11 @@ import {
   type Command,
 } from "./lib/local-model";
 import { AppContext, useUzta, type AppContextValue } from "./app-context";
-import { CloudProvider } from "./cloud-provider";
+const CloudProvider = lazy(() =>
+  import("./cloud-provider").then((module) => ({
+    default: module.CloudProvider,
+  })),
+);
 import { Modal } from "./components/presentation";
 export { Photo, Modal } from "./components/presentation";
 export { euro } from "./lib/local-model";
@@ -42,7 +53,15 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   return mode === "demo" ? (
     <LocalDemoProvider switchMode={switchMode}>{children}</LocalDemoProvider>
   ) : (
-    <CloudProvider switchMode={switchMode}>{children}</CloudProvider>
+    <Suspense
+      fallback={
+        <p role="status" className="loading-status">
+          Abriendo UZTA…
+        </p>
+      }
+    >
+      <CloudProvider switchMode={switchMode}>{children}</CloudProvider>
+    </Suspense>
   );
 }
 export function ModeBanner() {

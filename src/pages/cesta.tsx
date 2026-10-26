@@ -17,21 +17,28 @@ export function Cesta() {
     (sum, p) => sum + p.priceCents * data.quantities[p.id],
     0,
   );
+  const unavailable = items.some(
+    (p) => !p.active || data.quantities[p.id] > p.stock,
+  );
+  const validSlot = slots.some((s) => s.id === slot);
   async function reserve() {
     if (submitting.current) return;
     submitting.current = true;
-    const ok = await run({
-      type: "reserve",
-      id: requestId.current,
-      slotId: slot,
-      now: new Date().toISOString(),
-    });
-    submitting.current = false;
-    if (ok)
-      void navigate({
-        to: "/pedidos",
-        search: mode === "cloud" ? {} : { pedido: requestId.current },
+    try {
+      const ok = await run({
+        type: "reserve",
+        id: requestId.current,
+        slotId: slot,
+        now: new Date().toISOString(),
       });
+      if (ok)
+        void navigate({
+          to: "/pedidos",
+          search: mode === "cloud" ? {} : { pedido: requestId.current },
+        });
+    } finally {
+      submitting.current = false;
+    }
   }
   return (
     <>
@@ -54,6 +61,7 @@ export function Cesta() {
                 </p>
                 <div className="quantity">
                   <button
+                    disabled={busy}
                     aria-label={`Reducir ${p.name}`}
                     onClick={() =>
                       run({ type: "quantity", id: p.id, delta: -1 })
@@ -65,7 +73,9 @@ export function Cesta() {
                     {data.quantities[p.id]}
                   </output>
                   <button
-                    disabled={data.quantities[p.id] >= p.stock}
+                    disabled={
+                      busy || !p.active || data.quantities[p.id] >= p.stock
+                    }
                     aria-label={`Aumentar ${p.name}`}
                     onClick={() =>
                       run({ type: "quantity", id: p.id, delta: 1 })
@@ -82,6 +92,7 @@ export function Cesta() {
               </div>
               <div className="item-end">
                 <button
+                  disabled={busy}
                   aria-label={`Eliminar ${p.name}`}
                   onClick={() => run({ type: "remove", id: p.id })}
                 >
@@ -106,6 +117,7 @@ export function Cesta() {
           <label className="message">
             Añadir un mensaje al productor (opcional)
             <textarea
+              disabled={busy}
               maxLength={1000}
               value={data.message}
               onChange={(e) => run({ type: "message", value: e.target.value })}
@@ -116,7 +128,7 @@ export function Cesta() {
             <>
               <button
                 className="primary"
-                disabled={!items.length}
+                disabled={busy || unavailable || !items.length}
                 onClick={() => setCheckout(true)}
               >
                 Confirmar reserva
@@ -164,7 +176,13 @@ export function Cesta() {
               ) : null}
               <button
                 className="primary"
-                disabled={busy || !slot || !items.length || !data.sessionActive}
+                disabled={
+                  busy ||
+                  unavailable ||
+                  !validSlot ||
+                  !items.length ||
+                  !data.sessionActive
+                }
                 onClick={reserve}
               >
                 {mode === "cloud"

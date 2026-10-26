@@ -57,6 +57,22 @@ function Probe() {
       <div data-testid="identity">
         {value.data.sessionActive ? value.data.profile.name : "Visitante"}
       </div>
+      <button onClick={() => void value.refresh()}>Actualizar datos</button>
+      <button
+        disabled={value.busy}
+        onClick={() =>
+          void value.run({
+            type: "profile",
+            value: {
+              ...value.data.profile,
+              name: "Nombre guardado",
+              location: "Localidad de prueba",
+            },
+          })
+        }
+      >
+        Guardar nombre
+      </button>
       {!value.data.sessionActive ? (
         <Access />
       ) : (
@@ -95,6 +111,104 @@ beforeEach(() => {
   });
 });
 afterEach(() => cleanup());
+test("session transport failure stops loading and can be retried without reloading the page", async () => {
+  mocks.getSession.mockRejectedValueOnce(Error("offline"));
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "recuperar la sesión",
+  );
+  expect(screen.queryByText("Actualizando UZTA…")).not.toBeInTheDocument();
+  expect(mocks.load).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+  await waitFor(() => expect(mocks.load).toHaveBeenCalledWith(null));
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+test("a sign-out transport failure preserves the current identity and reports the failure", async () => {
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: "fixture", user: account } },
+    error: null,
+  });
+  mocks.signOut.mockRejectedValueOnce(Error("offline"));
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await screen.findByText("Persona real");
+  fireEvent.click(screen.getByRole("button", { name: "Salir" }));
+  expect(await screen.findByRole("dialog")).toHaveTextContent(
+    "No se pudo cerrar la sesión",
+  );
+  expect(screen.getByTestId("identity")).toHaveTextContent("Persona real");
+  expect(screen.queryByText("Actualizando UZTA…")).not.toBeInTheDocument();
+});
+
+test("a late post-save read cannot overwrite data loaded after an auth refresh", async () => {
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: "fixture", user: account } },
+    error: null,
+  });
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await screen.findByText("Persona real");
+  let oldRead: (value: any) => void = () => {};
+  // A background read has already captured old data, but its response arrives late.
+  const original = mocks.load.getMockImplementation()!;
+  const oldData = await original(account);
+  mocks.load.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        oldRead = resolve;
+      }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Guardar nombre" }));
+  await waitFor(() => expect(mocks.load).toHaveBeenCalledTimes(2));
+  mocks.load.mockImplementationOnce(async () => ({
+    ...oldData,
+    data: {
+      ...oldData.data,
+      profile: { ...oldData.data.profile, name: "Nombre guardado" },
+    },
+  }));
+  await act(async () => {
+    mocks.callback?.("TOKEN_REFRESHED", {
+      access_token: "new-fixture",
+      user: account,
+    });
+  });
+  await screen.findByText("Nombre guardado");
+  await act(async () => {
+    oldRead(oldData);
+  });
+  expect(screen.getByTestId("identity")).toHaveTextContent("Nombre guardado");
+});
+
+test("a failed private save keeps the current data and shows the failure", async () => {
+  mocks.getSession.mockResolvedValue({
+    data: { session: { access_token: "fixture", user: account } },
+    error: null,
+  });
+  mocks.persist.mockRejectedValueOnce(Error("No se pudo guardar el cambio."));
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await screen.findByText("Persona real");
+  fireEvent.click(screen.getByRole("button", { name: "Guardar nombre" }));
+  expect(await screen.findByRole("dialog")).toHaveTextContent(
+    "No se pudo guardar el cambio",
+  );
+  expect(screen.getByTestId("identity")).toHaveTextContent("Persona real");
+});
 test("signed-out cloud view never starts with the demonstration identity", async () => {
   render(
     <CloudProvider switchMode={() => {}}>

@@ -21,6 +21,7 @@ export function CloudProvider({
 }) {
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [sessionAttempt, setSessionAttempt] = useState(0);
   const [data, setData] = useState(emptyCloudData);
   const [managedFarmId, setManagedFarmId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -39,17 +40,27 @@ export function CloudProvider({
   useEffect(() => {
     alive.current = true;
     let active = true;
+    let receivedAuthEvent = false;
     const client = cloudClient();
-    client.auth.getSession().then(({ data, error }) => {
-      if (!active) return;
-      if (error)
-        setError("No se pudo recuperar la sesión. Vuelve a iniciar sesión.");
-      setSession(data.session);
-      setInitialized(true);
-    });
+    client.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!active || receivedAuthEvent) return;
+        if (error) throw error;
+        setSession(data.session);
+        setInitialized(true);
+      })
+      .catch(() => {
+        if (!active || receivedAuthEvent) return;
+        setError(
+          "No se pudo recuperar la sesión. Comprueba tu conexión y pulsa Reintentar.",
+        );
+        setBusy(false);
+      });
     const { data: subscription } = client.auth.onAuthStateChange(
       (_event, next) => {
         if (active) {
+          receivedAuthEvent = true;
           setSession(next);
           setInitialized(true);
         }
@@ -61,7 +72,7 @@ export function CloudProvider({
       epoch.current++;
       subscription.subscription.unsubscribe();
     };
-  }, []);
+  }, [sessionAttempt]);
   async function refresh() {
     const generation = ++epoch.current;
     setBusy(true);
@@ -126,6 +137,7 @@ export function CloudProvider({
     if (saving.current || busy) return false;
     saving.current = true;
     setBusy(true);
+    const generation = ++epoch.current;
     const actor = user.current;
     const own = managedFarmId;
     let saved = false;
@@ -134,7 +146,12 @@ export function CloudProvider({
       saved = true;
       if (actor?.id !== user.current?.id) return false;
       const loaded = await loadCloudData(actor);
-      if (!alive.current || actor?.id !== user.current?.id) return false;
+      if (
+        !alive.current ||
+        actor?.id !== user.current?.id ||
+        generation !== epoch.current
+      )
+        return false;
       setManagedFarmId(loaded.managedFarmId);
       update(loaded.data);
       return true;
@@ -147,7 +164,7 @@ export function CloudProvider({
       return saved;
     } finally {
       saving.current = false;
-      if (alive.current) setBusy(false);
+      if (alive.current && generation === epoch.current) setBusy(false);
     }
   }
   async function signIn(email: string, password: string) {
@@ -179,18 +196,25 @@ export function CloudProvider({
   }
   async function signOut() {
     setBusy(true);
-    const result = await cloudClient().auth.signOut({ scope: "local" });
-    if (result.error) {
+    try {
+      const result = await cloudClient().auth.signOut({ scope: "local" });
+      if (result.error) {
+        setBusy(false);
+        show("No se pudo cerrar la sesión. Inténtalo de nuevo.");
+        return;
+      }
+      user.current = null;
+      epoch.current++;
+      setSession(null);
+      setUserId(null);
+      setManagedFarmId(null);
+      update(emptyCloudData());
+    } catch {
+      show(
+        "No se pudo cerrar la sesión. Comprueba tu conexión e inténtalo de nuevo.",
+      );
       setBusy(false);
-      show("No se pudo cerrar la sesión. Inténtalo de nuevo.");
-      return;
     }
-    user.current = null;
-    epoch.current++;
-    setSession(null);
-    setUserId(null);
-    setManagedFarmId(null);
-    update(emptyCloudData());
   }
   return (
     <AppContext.Provider
@@ -213,7 +237,17 @@ export function CloudProvider({
       {error ? (
         <div role="alert" className="storage-error">
           {error}
-          <button className="text-button" onClick={() => void refresh()}>
+          <button
+            className="text-button"
+            onClick={() => {
+              if (initialized) void refresh();
+              else {
+                setError("");
+                setBusy(true);
+                setSessionAttempt((n) => n + 1);
+              }
+            }}
+          >
             Reintentar
           </button>
         </div>

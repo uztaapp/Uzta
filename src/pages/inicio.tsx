@@ -13,14 +13,26 @@ export function Inicio() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const normalize = (text: string) =>
+    text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase("es")
+      .trim();
   const { data, run, mode, busy } = useDemo();
   const visible = data.products.filter(
     (p) =>
       p.active &&
-      (p.featured || data.favorites.includes(p.id)) &&
+      (showAll ||
+        !!query.trim() ||
+        !!category ||
+        onlyFavorites ||
+        p.featured ||
+        data.favorites.includes(p.id)) &&
       (!category || p.category === category) &&
       (!onlyFavorites || data.favorites.includes(p.id)) &&
-      p.name.toLocaleLowerCase("es").includes(query.toLocaleLowerCase("es")),
+      normalize(p.name).includes(normalize(query)),
   );
   return (
     <>
@@ -73,6 +85,7 @@ export function Inicio() {
         <h2>Productos cerca de ti</h2>
         <button
           onClick={() => {
+            setShowAll(true);
             setCategory("");
             setQuery("");
             setOnlyFavorites(false);
