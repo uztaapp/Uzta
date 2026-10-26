@@ -175,10 +175,35 @@ export function Productor() {
         {tab === "Opiniones" ? (
           <div className="info-panel">
             <h2>Opiniones</h2>
-            <p>
-              La valoración 4,8 de la maqueta es ilustrativa. Aún no hay
-              opiniones verificadas. No se muestran reseñas inventadas.
-            </p>
+            {mode === "demo" ? (
+              <>
+                <p className="subtle">
+                  Opiniones ficticias para mostrar el diseño.
+                </p>
+                {[
+                  ["Maite", "Productos frescos y recogida muy cómoda."],
+                  [
+                    "Jon",
+                    "Nos ha gustado conocer la huerta y llevarnos productos de temporada.",
+                  ],
+                  [
+                    "Lucía",
+                    "Buena presentación y trato cercano en este ejemplo de tienda.",
+                  ],
+                ].map(([name, text]) => (
+                  <article className="demo-review" key={name}>
+                    <strong>
+                      {name}{" "}
+                      <span aria-label="5 estrellas de ejemplo">★★★★★</span>
+                    </strong>
+                    <p>{text}</p>
+                    <small>Ejemplo · no verificada</small>
+                  </article>
+                ))}
+              </>
+            ) : (
+              <p>Aún no hay opiniones verificadas para este productor.</p>
+            )}
           </div>
         ) : null}
       </section>

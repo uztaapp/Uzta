@@ -1,0 +1,564 @@
+/* Shared layout and finish from the approved five-screen UZTA mockup. */
+.order-card > small {
+  display: block;
+  font-size: 9px;
+  margin-top: 4px;
+  color: #748065;
+}
+.orders .order-card {
+  padding: 13px;
+}
+.orders .order-photos .photo {
+  width: 43px;
+  height: 43px;
+}
+.orders .order-photos {
+  margin: 9px 0 6px;
+}
+.orders .order-card p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.demo-review {
+  padding: 15px 0;
+  border-bottom: 1px solid #e7e3d8;
+}
+.demo-review strong {
+  display: flex;
+  justify-content: space-between;
+}
+.demo-review strong span {
+  color: #b28a2c;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+.demo-review small {
+  color: #727768;
+}
+:root {
+  --uzta-paper: #f8f6ef;
+  --uzta-card: #fffdf8;
+  --uzta-olive: #38552a;
+  --uzta-line: #e7e3d8;
+  --uzta-width: 460px;
+}
+body {
+  background: #eae9e1;
+  color: #20251c;
+  line-height: 1.4;
+}
+.app {
+  width: 100%;
+  max-width: var(--uzta-width);
+  min-height: 100dvh;
+  padding: 0 18px;
+  background: var(--uzta-paper);
+  box-shadow: 0 0 65px #343d2210;
+}
+main {
+  min-height: 100dvh;
+  padding: 24px 0 104px;
+}
+h1,
+h2,
+h3 {
+  letter-spacing: -0.035em;
+}
+h1 {
+  font-size: 25px;
+  font-weight: 650;
+}
+h2 {
+  font-size: 20px;
+}
+h3 {
+  font-size: 16px;
+}
+.page-title {
+  min-height: 44px;
+  margin-bottom: 24px;
+}
+.page-title h1 {
+  font-size: 23px;
+}
+.home-heading {
+  margin: 6px 0 18px;
+}
+.logo {
+  font-size: 37px;
+  letter-spacing: -0.045em;
+  gap: 3px;
+}
+.logo small {
+  font-size: 12px;
+  letter-spacing: 0;
+  margin-top: 3px;
+}
+.location {
+  margin: 14px 0;
+  font-size: 14px;
+}
+.search {
+  border-radius: 15px;
+  padding: 12px 14px;
+  background: #fffdf9;
+  border-color: var(--uzta-line);
+}
+.search input {
+  font-size: 14px;
+  min-width: 0;
+}
+.categories {
+  gap: 5px;
+  padding: 18px 0 9px;
+}
+.categories button {
+  min-width: 0;
+  padding: 0;
+  gap: 7px;
+  font-size: 11px;
+}
+.categories button > span {
+  width: 49px;
+  height: 49px;
+  font-size: 28px;
+  background: radial-gradient(circle at 35% 25%, #f3f5df, #dce5bd);
+}
+.section-heading {
+  margin: 21px 0 12px;
+  gap: 8px;
+}
+.section-heading h2 {
+  font-size: 20px;
+}
+.section-heading button {
+  font-size: 12px;
+}
+.filter-pill {
+  padding: 5px 10px;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+.product-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+}
+.product-card {
+  border-radius: 11px;
+  background: var(--uzta-card);
+  border: 1px solid #fffdf8;
+}
+.product-image .photo {
+  aspect-ratio: 1.35;
+  border-radius: 10px;
+}
+.product-copy {
+  padding: 8px 7px 10px;
+}
+.product-copy h3 {
+  font-size: 15px;
+  line-height: 1.2;
+}
+.product-copy > p {
+  font-size: 14px;
+  margin: 4px 0 8px;
+}
+.product-copy > small {
+  font-size: 10px;
+  gap: 4px;
+  color: #3b4831;
+}
+.product-copy small span:first-child {
+  min-width: 0;
+}
+.heart {
+  background: #23311e70;
+  border: 1px solid #ffffff50;
+  padding: 4px;
+}
+.heart svg {
+  width: 19px;
+  height: 19px;
+}
+.eco {
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 10px;
+  background: #5b8e39;
+}
+.farm-grid {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.farm-banner {
+  border-radius: 12px;
+}
+.farm-banner > .photo,
+.farm-banner > .photo-placeholder {
+  height: 145px;
+}
+.farm-banner > div:not(.photo) {
+  left: 15px;
+  bottom: 14px;
+}
+.farm-banner strong {
+  font-size: 21px;
+  letter-spacing: -0.025em;
+}
+.farm-banner span {
+  font-size: 13px;
+}
+nav {
+  width: min(100%, var(--uzta-width));
+  background: #fcfaf5f5;
+  border-color: var(--uzta-line);
+  padding: 10px 8px max(12px, env(safe-area-inset-bottom));
+}
+nav a {
+  font-size: 10px;
+  gap: 4px;
+}
+.nav-icon {
+  position: relative;
+  display: inline-flex;
+}
+.nav-icon > svg {
+  stroke-width: 1.5;
+}
+.nav-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #df512f;
+  border: 1.5px solid var(--uzta-paper);
+  border-radius: 20px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 3px;
+  color: white;
+  font-size: 9px;
+  display: grid;
+  place-items: center;
+}
+nav a.active {
+  color: #34572a;
+}
+nav a.active .nav-icon > svg {
+  fill: #d9e4c7;
+  stroke-width: 2;
+}
+.producer-hero {
+  margin: -24px -18px 0;
+  border-radius: 0;
+}
+.producer-hero > .photo,
+.producer-hero > .photo-placeholder {
+  height: 235px;
+}
+.producer-intro {
+  padding: 57px 0 18px;
+}
+.producer-intro h1 {
+  font-size: 29px;
+  line-height: 1.15;
+}
+.producer-intro > p:last-child {
+  font-size: 14px;
+  line-height: 1.55;
+}
+.farm-avatar {
+  left: 0;
+  width: 94px;
+  height: 94px;
+  border-color: var(--uzta-paper);
+}
+.producer-tabs {
+  gap: 3px;
+  margin-bottom: 17px;
+}
+.producer-tabs button {
+  font-size: 11px;
+  padding: 12px 5px;
+  gap: 6px;
+}
+.producer-products {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.producer-products article {
+  gap: 12px;
+  padding: 12px 0;
+}
+.producer-products .photo {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+.producer-products h3 {
+  font-size: 15px;
+}
+.producer-products p {
+  font-size: 14px;
+  margin: 4px 0;
+}
+.producer-products small {
+  font-size: 10px;
+}
+.add {
+  min-width: 32px;
+  min-height: 32px;
+}
+.basket-layout {
+  grid-template-columns: 1fr;
+  gap: 27px;
+}
+.basket-item {
+  gap: 12px;
+  padding: 17px 0;
+}
+.basket-item > .photo {
+  width: 84px;
+  height: 88px;
+}
+.basket-item h2 {
+  font-size: 16px;
+}
+.basket-item p {
+  font-size: 13px;
+}
+.basket-item .item-end {
+  padding-bottom: 5px;
+}
+.quantity {
+  margin-top: 9px;
+  height: 33px;
+  width: 98px;
+}
+.quantity button {
+  display: grid;
+  place-items: center;
+  min-width: 33px;
+  min-height: 33px;
+}
+.total {
+  padding: 15px 13px;
+  border-radius: 12px;
+  font-size: 14px;
+  background: #efede3;
+}
+.primary,
+.notice > button {
+  background: linear-gradient(#466336, #365129);
+  border-color: #2e4724;
+  box-shadow: inset 0 1px #ffffff12;
+  border-radius: 11px;
+  font-size: 16px;
+  padding: 13px 16px;
+  min-height: 46px;
+}
+.message {
+  font-size: 13px;
+}
+.message textarea {
+  height: 103px;
+  font-size: 13px;
+  background: #fdfbf6;
+}
+.pickup-note {
+  font-size: 12px;
+  margin: 20px 8px;
+}
+.segmented {
+  gap: 14px;
+  max-width: 330px;
+  margin-bottom: 17px;
+}
+.segmented button {
+  padding: 8px 14px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+.segmented button[aria-selected="true"] {
+  background: linear-gradient(#456035, #344f28);
+}
+.orders {
+  grid-template-columns: 1fr;
+  gap: 13px;
+  margin-top: 16px;
+}
+.order-card {
+  background: var(--uzta-card);
+  border-radius: 13px;
+  padding: 15px;
+  border: 1px solid #f1eee5;
+}
+.order-top h2 {
+  font-size: 16px;
+  line-height: 1.2;
+}
+.order-top .avatar {
+  width: 46px;
+  height: 46px;
+}
+.order-top > div {
+  min-width: 0;
+}
+.status {
+  padding: 4px 7px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+.order-photos {
+  margin-top: 12px;
+}
+.order-card p {
+  font-size: 13px;
+}
+.profile-card,
+.producer-menu,
+.profile-bottom,
+.producer-heading {
+  max-width: none;
+}
+.profile-card {
+  background: var(--uzta-card);
+  border-radius: 13px;
+  padding: 16px 14px 0;
+}
+.profile-person {
+  gap: 13px;
+}
+.profile-person .avatar {
+  width: 67px;
+  height: 67px;
+}
+.profile-person h2 {
+  font-size: 20px;
+}
+.profile-person p {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.profile-row {
+  padding: 17px 2px;
+  font-size: 14px;
+  gap: 14px;
+}
+.profile-row > svg {
+  stroke-width: 1.5;
+}
+.profile-row:last-child {
+  border-bottom: 0;
+}
+.producer-heading {
+  font-size: 19px;
+  margin: 26px 0 12px;
+}
+.producer-menu {
+  gap: 6px;
+}
+.producer-menu .profile-row {
+  background: #e8edda;
+  border-radius: 9px;
+  padding: 13px 12px;
+}
+.profile-bottom {
+  border-radius: 13px;
+  margin-top: 26px;
+  background: var(--uzta-card);
+}
+.photo-placeholder {
+  background: radial-gradient(ellipse at 35% 20%, #f2f1d8, #dce6cb);
+  color: #6d8652;
+}
+.photo-placeholder > svg {
+  width: 37%;
+  height: 37%;
+  max-width: 90px;
+  max-height: 90px;
+  opacity: 0.7;
+}
+.local-strip {
+  max-width: var(--uzta-width);
+  margin: auto;
+  padding: 7px 12px;
+  font-size: 10px;
+  background: #e8eddb;
+}
+.loading-status {
+  border-radius: 0 0 9px 9px;
+}
+.access-panel {
+  margin: 20px 0;
+}
+.access-panel h1 {
+  font-size: 25px;
+}
+.access-panel > p {
+  font-size: 14px;
+}
+.uzta-form input,
+.uzta-form textarea,
+.uzta-form select,
+.checkout select {
+  font-size: 14px;
+  border-radius: 10px;
+  background: var(--uzta-card);
+}
+.management > .subtle {
+  font-size: 12px;
+}
+.notice {
+  border-radius: 18px;
+}
+@media (hover: hover) {
+  .product-card {
+    transition:
+      transform 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+  .product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px #293c1c0e;
+  }
+  .producer-menu .profile-row:hover {
+    background: #dfe8cd;
+  }
+}
+@media (max-width: 360px) {
+  .app {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .categories button > span {
+    width: 42px;
+    height: 42px;
+    font-size: 25px;
+  }
+  .section-heading h2 {
+    font-size: 18px;
+  }
+  .producer-hero {
+    margin-left: -14px;
+    margin-right: -14px;
+  }
+  .order-card {
+    padding: 12px;
+  }
+  .order-top {
+    gap: 8px;
+  }
+  .order-top h2 {
+    font-size: 14px;
+  }
+  .basket-item > .photo {
+    width: 70px;
+    height: 82px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-card {
+    transition: none;
+  }
+}

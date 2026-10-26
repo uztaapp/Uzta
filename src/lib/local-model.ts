@@ -173,6 +173,37 @@ export function seedStore(): LocalStore {
   // Locations not supplied in the mockup are kept explicitly unspecified.
   farms[1].location = "Ubicación pendiente";
   farms[2].location = "Ubicación pendiente";
+  farms[1].location = "Bassussarry";
+  farms[1].description =
+    "Granja ficticia de huevos camperos. Recogida directa con reserva previa en esta demostración.";
+  farms[2].location = "Villefranque";
+  farms[2].description =
+    "Huerta ficticia de verduras de temporada, recién recogidas para la venta directa.";
+  farms[3].distance = "12 km";
+  farms[3].description =
+    "Quesería ficticia con quesos de cabra y productos lácteos artesanos de demostración.";
+  farms.push({
+    id: "lorea",
+    name: "Huerta Lorea",
+    location: "Espelette",
+    distance: "9 km",
+    description:
+      "Productor ficticio de fruta de temporada y miel. Todos los anuncios son ejemplos de diseño.",
+    ecological: false,
+    slots: [],
+  });
+  const nextDay = new Date();
+  nextDay.setDate(nextDay.getDate() + 3);
+  farms.forEach((farm) => {
+    farm.slots = [
+      {
+        id: `demo-${farm.id}`,
+        date: localDate(nextDay),
+        start: "10:00",
+        end: "12:00",
+      },
+    ];
+  });
   const products: Product[] = [
     {
       id: "tomates",
@@ -247,6 +278,80 @@ export function seedStore(): LocalStore {
       active: true,
     },
   ];
+  products.push(
+    {
+      id: "patatas",
+      farmId: "urki",
+      name: "Patatas de temporada",
+      priceCents: 180,
+      unit: "kg",
+      stock: 25,
+      category: "Verduras",
+      crop: [382, 849, 62, 38],
+      featured: true,
+      active: true,
+    },
+    {
+      id: "queso-cabra",
+      farmId: "itxassou",
+      name: "Queso de cabra",
+      priceCents: 625,
+      unit: "unidad",
+      stock: 16,
+      category: "Lácteos",
+      crop: [1057, 703, 35, 36],
+      featured: true,
+      active: true,
+    },
+    {
+      id: "manzanas",
+      farmId: "lorea",
+      name: "Manzanas de temporada",
+      priceCents: 290,
+      unit: "kg",
+      stock: 24,
+      category: "Frutas",
+      crop: [0, 0, 0, 0],
+      featured: true,
+      active: true,
+    },
+    {
+      id: "miel",
+      farmId: "lorea",
+      name: "Miel de flores · 500 g",
+      priceCents: 750,
+      unit: "unidad",
+      stock: 18,
+      category: "Miel",
+      crop: [0, 0, 0, 0],
+      featured: true,
+      active: true,
+    },
+    {
+      id: "hierbas",
+      farmId: "borda",
+      name: "Hierbas aromáticas",
+      priceCents: 180,
+      unit: "unidad",
+      stock: 20,
+      category: "Otros",
+      crop: [0, 0, 0, 0],
+      featured: true,
+      active: true,
+    },
+    {
+      id: "zanahorias-borda",
+      farmId: "borda",
+      name: "Zanahorias de huerta",
+      priceCents: 240,
+      unit: "kg",
+      stock: 18,
+      category: "Verduras",
+      crop: [186, 327, 113, 100],
+      featured: true,
+      active: true,
+    },
+  );
   const snapshot = (id: string, quantity: number) => {
     const p = products.find((p) => p.id === id)!;
     return {
@@ -293,7 +398,36 @@ export function seedStore(): LocalStore {
     products,
     quantities: { tomates: 2, zanahorias: 1, huevos: 1, lechuga: 2 },
     favorites: [],
-    orders: [example],
+    orders: [
+      example,
+      {
+        ...example,
+        id: "ejemplo-poules",
+        farmId: "poules",
+        farmName: farms[1].name,
+        status: "Completado",
+        pickup: { ...example.pickup, date: "2026-10-24" },
+        lines: [snapshot("huevos-poules", 2)],
+      },
+      {
+        ...example,
+        id: "ejemplo-borda",
+        farmId: "borda",
+        farmName: farms[2].name,
+        status: "Completado",
+        pickup: { ...example.pickup, date: "2026-10-23" },
+        lines: [snapshot("lechuga-borda", 3), snapshot("zanahorias-borda", 2)],
+      },
+      {
+        ...example,
+        id: "ejemplo-itxassou",
+        farmId: "itxassou",
+        farmName: farms[3].name,
+        status: "Completado",
+        pickup: { ...example.pickup, date: "2026-10-17" },
+        lines: [snapshot("queso-cabra", 2)],
+      },
+    ],
     message: "",
   };
 }
@@ -434,12 +568,15 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
   s.revision++;
   return storeSchema.parse(s);
 }
-export function readStore(storage: Pick<Storage, "getItem">): {
+export function readStore(
+  storage: Pick<Storage, "getItem">,
+  key = STORAGE_KEY,
+): {
   value: LocalStore;
   error: string;
 } {
   try {
-    const raw = storage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(key);
     return {
       value: raw ? storeSchema.parse(JSON.parse(raw)) : seedStore(),
       error: "",

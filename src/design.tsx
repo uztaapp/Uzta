@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import {
-  STORAGE_KEY,
+  STORAGE_KEY as LEGACY_STORAGE_KEY,
   readStore,
   transition,
   seedStore,
@@ -12,9 +12,11 @@ import { Modal } from "./components/presentation";
 export { Photo, Modal } from "./components/presentation";
 export { euro } from "./lib/local-model";
 export const useDemo = useUzta;
+const STORAGE_KEY =
+  import.meta.env.MODE === "test" ? LEGACY_STORAGE_KEY : "uzta.showcase.v1";
 function loadBrowserStore() {
   try {
-    return readStore(window.localStorage);
+    return readStore(window.localStorage, STORAGE_KEY);
   } catch {
     return {
       value: seedStore(),

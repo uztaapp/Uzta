@@ -12,7 +12,7 @@ import {
   ClipboardList,
   UserRound,
 } from "lucide-react";
-import { DemoProvider, ModeBanner } from "./design";
+import { DemoProvider, ModeBanner, useDemo } from "./design";
 import { Inicio } from "./pages/inicio";
 import { Productor } from "./pages/productor";
 import { Cesta } from "./pages/cesta";
@@ -36,21 +36,34 @@ export function Shell() {
         <main id="contenido">
           <Outlet />
         </main>
-        <nav aria-label="Navegación principal">
-          {destinations.map(([to, label, Icon]) => (
-            <Link
-              key={to}
-              to={to}
-              activeOptions={{ exact: true }}
-              activeProps={{ className: "active", "aria-current": "page" }}
-            >
-              <Icon size={22} />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
+        <BottomNavigation />
       </div>
     </DemoProvider>
+  );
+}
+function BottomNavigation() {
+  const { data } = useDemo();
+  const count = Object.values(data.quantities).filter((q) => q > 0).length;
+  return (
+    <nav aria-label="Navegación principal">
+      {destinations.map(([to, label, Icon]) => (
+        <Link
+          key={to}
+          to={to}
+          aria-label={label}
+          activeOptions={{ exact: true }}
+          activeProps={{ className: "active", "aria-current": "page" }}
+        >
+          <span className="nav-icon">
+            <Icon size={22} />
+            {to === "/cesta" && count > 0 ? (
+              <span className="nav-count">{count}</span>
+            ) : null}
+          </span>
+          <span>{label}</span>
+        </Link>
+      ))}
+    </nav>
   );
 }
 const root = createRootRoute({

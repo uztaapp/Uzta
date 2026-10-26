@@ -88,7 +88,7 @@ describe("UZTA local reservations", () => {
     ).toThrow(/otro productor/);
     s.products[0].stock = 1;
     expect(() => transition(s, reserve)).toThrow(/disponibilidad/);
-    expect(s.orders).toHaveLength(1);
+    expect(s.orders).toEqual(seedStore().orders);
     expect(s.products[0].stock).toBe(1);
   });
   it("rejects missing or expired pickup slots and a closed local profile", () => {

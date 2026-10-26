@@ -5,6 +5,7 @@ import {
   type ReactNode,
   type CSSProperties,
 } from "react";
+import { Sprout, Apple, Flower2, Milk, UserRound, Store } from "lucide-react";
 export function Photo({
   crop,
   className = "",
@@ -15,6 +16,17 @@ export function Photo({
   label: string;
 }) {
   const [x, y, width, height] = crop;
+  const Illustration = /manzana/i.test(label)
+    ? Apple
+    : /miel/i.test(label)
+      ? Flower2
+      : /queso/i.test(label)
+        ? Milk
+        : /avatar|productor/i.test(label)
+          ? UserRound
+          : /tienda|caserío/i.test(label)
+            ? Store
+            : Sprout;
   if (width <= 0 || height <= 0)
     return (
       <div
@@ -22,7 +34,7 @@ export function Photo({
         aria-label={`Sin foto: ${label}`}
         className={`photo photo-placeholder ${className}`}
       >
-        <span aria-hidden="true">♧</span>
+        <Illustration aria-hidden="true" strokeWidth={1.25} />
       </div>
     );
   const style: CSSProperties = {

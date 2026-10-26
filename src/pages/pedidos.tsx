@@ -44,13 +44,15 @@ export function Pedidos() {
           ? "Reservas de demostración guardadas en este navegador."
           : "Tus reservas y su estado actual."}
       </p>
-      <button
-        className="text-button"
-        disabled={busy}
-        onClick={() => void refresh()}
-      >
-        Actualizar pedidos
-      </button>
+      {mode === "cloud" ? (
+        <button
+          className="text-button"
+          disabled={busy}
+          onClick={() => void refresh()}
+        >
+          Actualizar pedidos
+        </button>
+      ) : null}
       <div className="orders" role="tabpanel">
         {visible.map((o) => (
           <button
@@ -89,7 +91,8 @@ export function Pedidos() {
               <ChevronRight />
             </div>
             <p>
-              {o.lines.length} productos · {euro(lineTotal(o.lines))}
+              {o.lines.length} {o.lines.length === 1 ? "producto" : "productos"}{" "}
+              · {euro(lineTotal(o.lines))}
             </p>
             <p>
               Recogida: {o.pickup.start} – {o.pickup.end}
