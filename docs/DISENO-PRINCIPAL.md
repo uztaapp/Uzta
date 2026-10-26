@@ -9,3 +9,7 @@ La nueva demostración utiliza `uzta.showcase.v1`. Los datos anteriores de `uzta
 Verificación: revisión visual de inicio, productor, cesta, pedidos y perfil en el navegador local; sin errores de consola en ese recorrido. Comprobación de TypeScript, compilación y 33 pruebas de aplicación. La reserva real no se vuelve a ejecutar para comprobar cambios visuales.
 
 La vista previa está en http://127.0.0.1:5178/. El paquete `outputs/uzta-publicacion-diseno/uzta.zip` está preparado para actualizar el proyecto existente de Vercel. Este cambio todavía no está publicado en la web pública.
+
+Actualización posterior: diseño publicado y verificado en el despliegue `9Ru7dctwGajZs2b5RhPkz6iZD12W` del proyecto existente. Inicio y perfil real cargan sin errores de consola en el recorrido observado.
+
+Se añade en el código local Perfil → «Ver catálogo de demostración» para usuarios autenticados. Cambia a la demostración sin llamar al cierre de sesión de Supabase; el botón «Entrar en mi cuenta de UZTA» restaura la cuenta. Compilación y 33 pruebas correctas. Este pequeño acceso nuevo está pendiente de publicar mediante `outputs/uzta-publicacion-selector/uzta.zip`; conserva el diseño y las validaciones anteriores.

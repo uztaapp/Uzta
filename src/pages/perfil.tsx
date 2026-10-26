@@ -165,7 +165,11 @@ export function Perfil() {
         <button className="primary" onClick={() => switchMode("cloud")}>
           Entrar en mi cuenta de UZTA
         </button>
-      ) : null}
+      ) : (
+        <button className="primary" onClick={() => switchMode("demo")}>
+          Ver catálogo de demostración
+        </button>
+      )}
       <div className="profile-bottom">
         <button
           className="profile-row"
