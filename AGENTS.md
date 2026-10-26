@@ -1,3 +1,3 @@
 UZTA is an independent local project with its own source, history, data and configuration.
-No cloud credentials, links, pushes, deployments or remote database commands.
+The user authorized UZTA hosting in Vercel team uzta1 (team_XJRMq1o5ddhNRBAfLXOyZD6d) and its independent Supabase project abgysktjctrxfkcejjwu. Use only these targets after verifying access; never use any previous account or project. Keep secrets out of source and preserve existing local data. The current hosted preview must be identified as a browser-storage demonstration until real Auth/API integration is verified.
 Approved UZTA mockup: public/images/uzta-reference.png. Follow its five screens; do not invent unrelated features or business policies. All seeded people, stock and orders are local examples from the mockup. Keep user-entered local data separate from any real service.
