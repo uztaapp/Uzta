@@ -1,0 +1,48 @@
+{
+  "name": "uzta-local",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5178 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4178 --strictPort",
+    "test": "vitest run",
+    "check:isolation": "node scripts/check-isolation.mjs",
+    "test:db": "node scripts/verify-database.mjs",
+    "format": "prettier --write src scripts vite.config.ts vitest.config.ts package.json",
+    "format:check": "prettier --check src scripts vite.config.ts vitest.config.ts package.json"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "1.5.0",
+    "@tanstack/react-router": "1.170.41",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "0.575.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-merge": "3.7.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.12",
+    "@tailwindcss/vite": "4.3.3",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.3",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "jsdom": "20.0.3",
+    "prettier": "3.7.3",
+    "supabase": "2.122.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vitest": "4.1.12"
+  },
+  "engines": {
+    "node": "24.x",
+    "npm": "11.x"
+  }
+}
