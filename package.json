@@ -12,8 +12,9 @@
     "test:db": "node scripts/verify-database.mjs",
     "format": "prettier --write src scripts server vite.config.ts vitest.config.ts package.json",
     "format:check": "prettier --check src scripts server vite.config.ts vitest.config.ts package.json",
-    "test:adapter": "node --test server/local-supabase.test.mjs",
-    "check:local": "node scripts/local-preflight.mjs"
+    "test:adapter": "node --test server/local-supabase.test.mjs server/uzta-cloud.test.mjs",
+    "check:local": "node scripts/local-preflight.mjs",
+    "check:cloud": "node scripts/check-uzta-cloud.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.5.0",
