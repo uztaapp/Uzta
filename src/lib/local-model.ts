@@ -16,7 +16,7 @@ const slotSchema = z.object({
   start: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
   end: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
 });
-const farmSchema = z.object({
+export const farmSchema = z.object({
   id: z.string(),
   name: z.string().trim().min(1).max(100),
   location: z.string().trim().min(1).max(100),
@@ -25,7 +25,7 @@ const farmSchema = z.object({
   ecological: z.boolean(),
   slots: z.array(slotSchema),
 });
-const productSchema = z.object({
+export const productSchema = z.object({
   id: z.string(),
   farmId: z.string(),
   name: z.string().trim().min(1).max(100),

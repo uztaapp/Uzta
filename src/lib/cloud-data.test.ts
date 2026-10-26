@@ -153,6 +153,138 @@ function order() {
 beforeEach(() => localStorage.clear());
 afterEach(() => vi.restoreAllMocks());
 describe("cloud data boundary", () => {
+  it("creates a store only for the verified account and excludes presentation-only fields", async () => {
+    const f = fixture();
+    const farm = {
+      id: FARM,
+      name: " Mi tienda ",
+      location: "Localidad de prueba",
+      description: "Prueba",
+      ecological: false,
+      distance: "Sin calcular",
+      slots: [],
+    };
+    await persistCloudCommand(
+      emptyCloudData(),
+      { type: "farm", value: farm },
+      user,
+      null,
+      f.api,
+    );
+    expect(f.log[0].value).toEqual({
+      id: FARM,
+      owner_id: USER,
+      name: "Mi tienda",
+      location: "Localidad de prueba",
+      description: "Prueba",
+      ecological: false,
+      active: true,
+    });
+    await expect(
+      persistCloudCommand(
+        emptyCloudData(),
+        { type: "farm", value: farm },
+        user,
+        OTHER,
+        f.api,
+      ),
+    ).rejects.toThrow(/pertenece/);
+    expect(f.log).toHaveLength(1);
+  });
+  it("validates all new pickup slots before any store write", async () => {
+    const f = fixture();
+    const { data } = await loadCloudData(user, f.api);
+    f.log.length = 0;
+    const farm = {
+      ...data.farms[0],
+      name: "Cambio pendiente",
+      slots: [
+        { id: ORDER, date: "2040-01-03", start: "10:00", end: "11:00" },
+        { id: ORDER2, date: "2040-01-03", start: "10:30", end: "11:30" },
+      ],
+    };
+    await expect(
+      persistCloudCommand(
+        data,
+        { type: "farm", value: farm },
+        user,
+        FARM,
+        f.api,
+      ),
+    ).rejects.toThrow(/solapar/);
+    expect(f.log).toHaveLength(0);
+  });
+  it("sends new pickup slots together with Madrid timezone conversion", async () => {
+    const f = fixture();
+    const { data } = await loadCloudData(user, f.api);
+    f.log.length = 0;
+    const farm = {
+      ...data.farms[0],
+      slots: [
+        ...data.farms[0].slots,
+        { id: ORDER, date: "2040-01-03", start: "10:00", end: "12:00" },
+      ],
+    };
+    await persistCloudCommand(
+      data,
+      { type: "farm", value: farm },
+      user,
+      FARM,
+      f.api,
+    );
+    expect(f.log).toHaveLength(1);
+    expect(f.log[0]).toMatchObject({
+      table: "uzta_pickup_slots",
+      operation: "insert",
+      value: [
+        {
+          id: ORDER,
+          producer_id: FARM,
+          starts_at: "2040-01-03T09:00:00.000Z",
+          ends_at: "2040-01-03T11:00:00.000Z",
+          active: true,
+        },
+      ],
+    });
+  });
+  it("rejects invalid product values and another producer before writing", async () => {
+    const f = fixture();
+    const { data } = await loadCloudData(user, f.api);
+    f.log.length = 0;
+    await expect(
+      persistCloudCommand(
+        data,
+        { type: "product", value: { ...data.products[0], priceCents: -1 } },
+        user,
+        FARM,
+        f.api,
+      ),
+    ).rejects.toThrow();
+    await expect(
+      persistCloudCommand(
+        data,
+        { type: "product", value: { ...data.products[0], farmId: OTHER } },
+        user,
+        FARM,
+        f.api,
+      ),
+    ).rejects.toThrow(/pertenece/);
+    expect(f.log).toHaveLength(0);
+    await persistCloudCommand(
+      data,
+      { type: "product", value: data.products[0] },
+      user,
+      FARM,
+      f.api,
+    );
+    expect(f.log[0].value).toMatchObject({
+      producer_id: FARM,
+      price_cents: 280,
+      stock_units: 20,
+      featured: false,
+    });
+    expect(f.log[0].value).not.toHaveProperty("crop");
+  });
   it("converts Madrid pickup times correctly and rejects DST gaps and ambiguous repeated hours", () => {
     expect(madridToUtc("2026-01-15", "17:00")).toBe("2026-01-15T16:00:00.000Z");
     expect(madridToUtc("2026-07-15", "17:00")).toBe("2026-07-15T15:00:00.000Z");

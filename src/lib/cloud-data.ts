@@ -4,6 +4,8 @@ import { cloudClient } from "./cloud-client";
 import {
   seedStore,
   futureSlot,
+  farmSchema,
+  productSchema,
   type LocalStore,
   type Command,
   type Farm,
@@ -406,8 +408,9 @@ export async function persistCloudCommand(
   } else if (command.type === "product") {
     if (command.value.farmId !== managedFarmId)
       throw Error("Este producto no pertenece a tu tienda.");
-    const p = command.value;
+    const p = productSchema.parse(command.value);
     uuid.parse(p.id);
+    uuid.parse(p.farmId);
     check(
       await api.from("uzta_products").upsert(
         {
@@ -425,13 +428,41 @@ export async function persistCloudCommand(
       ),
     );
   } else if (command.type === "farm") {
-    const f = command.value;
+    const f = farmSchema.parse(command.value);
     uuid.parse(f.id);
     if (managedFarmId && f.id !== managedFarmId)
       throw Error("Esta tienda no pertenece a tu cuenta.");
     if (!f.name.trim() || !f.location.trim())
       throw Error("Completa el nombre y la ubicación de tu tienda.");
     const previous = data.farms.find((x) => x.id === f.id);
+    if (new Set(f.slots.map((s) => s.id)).size !== f.slots.length)
+      throw Error("Hay franjas de recogida duplicadas.");
+    const added = f.slots.filter(
+      (s) => !previous?.slots.some((old) => old.id === s.id),
+    );
+    // Validate every new slot before sending any store or schedule changes.
+    const newSlots = added.map((slot) => {
+      uuid.parse(slot.id);
+      if (!futureSlot(slot) || slot.start >= slot.end)
+        throw Error("Selecciona una franja futura válida.");
+      if (
+        f.slots.some(
+          (other) =>
+            other.id !== slot.id &&
+            other.date === slot.date &&
+            other.start < slot.end &&
+            other.end > slot.start,
+        )
+      )
+        throw Error("Las franjas no se pueden solapar.");
+      return {
+        id: slot.id,
+        producer_id: f.id,
+        starts_at: madridToUtc(slot.date, slot.start),
+        ends_at: madridToUtc(slot.date, slot.end),
+        active: true,
+      };
+    });
     const changed =
       !previous ||
       ["name", "location", "description", "ecological"].some(
@@ -452,32 +483,8 @@ export async function persistCloudCommand(
           { onConflict: "id" },
         ),
       );
-    const added = f.slots.filter(
-      (s) => !previous?.slots.some((old) => old.id === s.id),
-    );
-    for (const slot of added) {
-      if (!futureSlot(slot) || slot.start >= slot.end)
-        throw Error("Selecciona una franja futura válida.");
-      if (
-        f.slots.some(
-          (other) =>
-            other.id !== slot.id &&
-            other.date === slot.date &&
-            other.start < slot.end &&
-            other.end > slot.start,
-        )
-      )
-        throw Error("Las franjas no se pueden solapar.");
-      check(
-        await api.from("uzta_pickup_slots").insert({
-          id: slot.id,
-          producer_id: f.id,
-          starts_at: madridToUtc(slot.date, slot.start),
-          ends_at: madridToUtc(slot.date, slot.end),
-          active: true,
-        }),
-      );
-    }
+    if (newSlots.length)
+      check(await api.from("uzta_pickup_slots").insert(newSlots));
     const removed =
       previous?.slots.filter((s) => !f.slots.some((now) => now.id === s.id)) ??
       [];
