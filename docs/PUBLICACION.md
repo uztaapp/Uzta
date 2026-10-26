@@ -21,3 +21,7 @@ Es una demostración pública de UZTA con guardado en cada navegador. Supabase n
 Los datos guardados en localhost permanecen en su origen; no se han trasladado ni eliminado. El dominio publicado usa su propio almacenamiento y comienza con los ejemplos de la maqueta.
 
 La autorización de los conectores sigue pendiente para las nuevas cuentas; la publicación se realizó desde la sesión nueva del navegador. La siguiente actualización requerirá una nueva carga o configurar posteriormente una conexión de repositorio exclusiva para UZTA.
+
+## Actualización confirmada
+El usuario cargó el paquete en el proyecto existente. Verificado en el panel: Production Ready, despliegue 4CUzhE4CELbAc5UYUwH6zUuYCngH. El dominio https://uzta-nu.vercel.app/perfil muestra el acceso real; el inicio muestra el catálogo vacío sin errores de consola en la comprobación. La publicación pendiente indicada arriba queda resuelta. Sigue pendiente el recorrido autenticado con cuenta confirmada por el usuario.
+
