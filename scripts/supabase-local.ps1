@@ -3,7 +3,8 @@ $ErrorActionPreference = 'Stop'
 Set-Location (Split-Path $PSScriptRoot -Parent)
 if (Test-Path 'supabase/.temp/project-ref') { throw 'Este proyecto está vinculado a la nube. Se bloquea la operación.' }
 if ((Get-Content 'supabase/config.toml' -Raw) -notmatch 'project_id = "uzta-local"') { throw 'Identidad local incorrecta.' }
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { throw 'Docker no está instalado o no está en PATH. No se ha iniciado ninguna base de datos.' }
+& node (Join-Path $PSScriptRoot 'local-preflight.mjs')
+if ($LASTEXITCODE -ne 0) { throw 'Las comprobaciones locales han bloqueado la operación. No se ha iniciado ni detenido ningún contenedor.' }
 $env:SUPABASE_HOME = Join-Path (Get-Location) '.local/supabase-cli'
 $env:SUPABASE_TELEMETRY_DISABLED = '1'
 $env:SUPABASE_NO_UPDATE_NOTIFIER = '1'

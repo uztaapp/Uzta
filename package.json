@@ -10,8 +10,10 @@
     "test": "vitest run",
     "check:isolation": "node scripts/check-isolation.mjs",
     "test:db": "node scripts/verify-database.mjs",
-    "format": "prettier --write src scripts vite.config.ts vitest.config.ts package.json",
-    "format:check": "prettier --check src scripts vite.config.ts vitest.config.ts package.json"
+    "format": "prettier --write src scripts server vite.config.ts vitest.config.ts package.json",
+    "format:check": "prettier --check src scripts server vite.config.ts vitest.config.ts package.json",
+    "test:adapter": "node --test server/local-supabase.test.mjs",
+    "check:local": "node scripts/local-preflight.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "1.5.0",

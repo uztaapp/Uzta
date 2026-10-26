@@ -47,9 +47,12 @@ Para pasar a otra tienda, primero termina o vacía la cesta actual. No se combin
 npm.cmd run build
 npm.cmd test
 npm.cmd run test:db
+npm.cmd run test:adapter
 npm.cmd run check:isolation
 npm.cmd run format:check
 ```
 
 `test:db` usa PostgreSQL desechable en memoria, no una conexión externa. Consulta [Estado](docs/ESTADO.md), [Supabase local](docs/SUPABASE-LOCAL.md) y [Arquitectura](docs/ARQUITECTURA.md).
 La aplicación tiene repositorio, configuración y datos propios. No hay remoto Git, despliegues, credenciales reales ni servicios de nube conectados.
+
+El adaptador local está preparado pero sin activar. `npm.cmd run check:local` comprueba los requisitos sin cambiar nada. Véase [Adaptador local](docs/ADAPTADOR-LOCAL.md).
