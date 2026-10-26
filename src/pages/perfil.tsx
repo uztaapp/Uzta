@@ -18,12 +18,14 @@ import { Photo, Modal, useDemo } from "../design";
 import { profileSchema } from "../lib/local-model";
 import { Gestion } from "./gestion";
 import { Access } from "../components/access";
+import { UsageGuide } from "../components/usage-guide";
 export function Perfil() {
   const { data, run, show, mode, busy, switchMode, signOut } = useDemo();
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { apartado?: string };
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
+  const [guideOpen, setGuideOpen] = useState(false);
   const labels: Record<string, string> = {
     tienda: "Mi tienda",
     productos: "Productos",
@@ -171,16 +173,7 @@ export function Perfil() {
         </button>
       )}
       <div className="profile-bottom">
-        <button
-          className="profile-row"
-          onClick={() =>
-            show(
-              mode === "cloud"
-                ? "Tu perfil, tienda y reservas se guardan en tu cuenta. Las reservas se consultan en Pedidos y las recogidas en Como productor."
-                : "Los datos de demostración se guardan solo en este navegador.",
-            )
-          }
-        >
+        <button className="profile-row" onClick={() => setGuideOpen(true)}>
           <HelpCircle />
           <span>Ayuda y soporte</span>
           <ChevronRight />
@@ -205,6 +198,14 @@ export function Perfil() {
           <ChevronRight />
         </button>
       </div>
+      {guideOpen ? (
+        <Modal title="Cómo usar UZTA" close={() => setGuideOpen(false)}>
+          <UsageGuide
+            demo={mode === "demo"}
+            close={() => setGuideOpen(false)}
+          />
+        </Modal>
+      ) : null}
       {editing ? (
         <Modal
           title={mode === "cloud" ? "Editar perfil" : "Editar perfil local"}

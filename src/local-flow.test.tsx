@@ -22,6 +22,15 @@ async function open(path: string) {
   render(<RouterProvider router={router} />);
   return router;
 }
+test("profile help explains the existing buyer and producer flows without promising payments", async () => {
+  await open("/perfil");
+  fireEvent.click(screen.getByRole("button", { name: /Ayuda y soporte/ }));
+  const dialog = await screen.findByRole("dialog");
+  expect(dialog).toHaveTextContent("Cómo usar UZTA");
+  expect(dialog).toHaveTextContent("Comprar al productor");
+  expect(dialog).toHaveTextContent("Gestionar tu tienda");
+  expect(dialog).toHaveTextContent("todavía no tramita pagos");
+});
 
 test("search and all-products expose published products that are not featured", async () => {
   const data = seedStore();

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 import { futureSlot } from "../lib/local-model";
+import { ShareStore } from "../components/share-store";
 export function Productor() {
   const [tab, setTab] = useState("Productos");
   const { data, run, mode, busy } = useDemo();
@@ -48,6 +49,7 @@ export function Productor() {
         <Link className="hero-back" to="/" aria-label="Volver al inicio">
           <ArrowLeft />
         </Link>
+        <ShareStore id={farm.id} name={farm.name} demo={mode === "demo"} />
       </div>
       <div className="producer-intro">
         <Photo

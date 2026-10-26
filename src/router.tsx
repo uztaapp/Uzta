@@ -4,6 +4,7 @@ import {
   createRouter,
   Outlet,
   Link,
+  useRouterState,
 } from "@tanstack/react-router";
 import {
   Home,
@@ -18,6 +19,7 @@ import { Productor } from "./pages/productor";
 import { Cesta } from "./pages/cesta";
 import { Pedidos } from "./pages/pedidos";
 import { Perfil } from "./pages/perfil";
+import { AppRecovery } from "./components/app-recovery";
 const destinations = [
   ["/", "Inicio", Home],
   ["/productor", "Productor", Sprout],
@@ -26,6 +28,9 @@ const destinations = [
   ["/perfil", "Perfil", UserRound],
 ] as const;
 export function Shell() {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
   return (
     <DemoProvider>
       <ModeBanner />
@@ -34,7 +39,9 @@ export function Shell() {
           Saltar al contenido
         </a>
         <main id="contenido">
-          <Outlet />
+          <AppRecovery key={pathname}>
+            <Outlet />
+          </AppRecovery>
         </main>
         <BottomNavigation />
       </div>

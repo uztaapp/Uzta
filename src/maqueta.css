@@ -1,4 +1,41 @@
 /* Shared layout and finish from the approved five-screen UZTA mockup. */
+.hero-share {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  color: white;
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  background: #20321b60;
+}
+.usage-guide h3 {
+  margin-top: 22px;
+}
+.usage-guide ol {
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.usage-guide li {
+  margin: 8px 0;
+  padding-left: 3px;
+}
+.guide-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.guide-links a {
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #e8edda;
+  color: #345227;
+  font-size: 13px;
+}
 .order-card > small {
   display: block;
   font-size: 9px;
