@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import {
   Home,
+  Search,
   Sprout,
   ShoppingBasket,
   ClipboardList,
@@ -51,6 +52,9 @@ export function Shell() {
 }
 function BottomNavigation() {
   useLanguage();
+  const onHome = useRouterState({
+    select: (state) => state.location.pathname === "/",
+  });
   const { data } = useDemo();
   const count = Object.values(data.quantities).filter((q) => q > 0).length;
   return (
@@ -59,17 +63,21 @@ function BottomNavigation() {
         <Link
           key={to}
           to={to}
-          aria-label={t(label)}
+          aria-label={onHome && to === "/productor" ? "Explorar" : t(label)}
           activeOptions={{ exact: true }}
           activeProps={{ className: "active", "aria-current": "page" }}
         >
           <span className="nav-icon">
-            <Icon size={22} />
+            {onHome && to === "/productor" ? (
+              <Search size={22} />
+            ) : (
+              <Icon size={22} />
+            )}
             {to === "/cesta" && count > 0 ? (
               <span className="nav-count">{count}</span>
             ) : null}
           </span>
-          <span>{t(label)}</span>
+          <span>{onHome && to === "/productor" ? "Explorar" : t(label)}</span>
         </Link>
       ))}
     </nav>

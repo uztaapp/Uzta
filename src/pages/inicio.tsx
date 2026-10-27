@@ -1,3 +1,4 @@
+import "./inicio.css";
 import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -6,14 +7,17 @@ import {
   MapPin,
   Heart,
   ChevronRight,
-  ShoppingBasket,
-  Leaf,
+  Sprout,
+  ChevronDown,
+  ShoppingCart,
 } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 import { NearbyControls } from "../components/nearby-controls";
 import { withinRadius, distanceLabel, type Position } from "../lib/nearby";
 export function Inicio() {
   useLanguage();
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [allFarms, setAllFarms] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
@@ -46,30 +50,38 @@ export function Inicio() {
       normalize(p.name).includes(normalize(query)),
   );
   return (
-    <>
+    <div className="uzta-home">
       <div className="home-heading">
         <div className="logo">
-          <Leaf fill="currentColor" size={27} /> UZTA
+          <Sprout aria-hidden="true" size={30} /> UZTA
           <small>{t("Del productor a tu mesa")}</small>
         </div>
         <Link to="/cesta" aria-label="Abrir cesta" className="basket-shortcut">
-          <ShoppingBasket />
+          <ShoppingCart aria-hidden="true" />
           <span>
             {Object.values(data.quantities).filter((q) => q > 0).length}
           </span>
         </Link>
       </div>
       <h1 className="sr-only">{t("Inicio")}</h1>
-      <p className="location">
-        <MapPin size={17} />
-        {data.profile.location || "Productos cerca de ti"}
-      </p>
-      <NearbyControls
-        center={center}
-        radius={radius}
-        onCenter={setCenter}
-        onRadius={setRadius}
-      />
+      <button
+        className="home-location"
+        aria-expanded={locationOpen}
+        aria-controls="home-zone"
+        onClick={() => setLocationOpen(!locationOpen)}
+      >
+        <MapPin size={16} aria-hidden="true" />
+        {data.profile.location || t("Productos cerca de ti")}
+        <ChevronDown size={13} aria-hidden="true" />
+      </button>
+      <div id="home-zone" className="home-zone" hidden={!locationOpen}>
+        <NearbyControls
+          center={center}
+          radius={radius}
+          onCenter={setCenter}
+          onRadius={setRadius}
+        />
+      </div>
       <label className="search">
         <Search size={21} />
         <input
@@ -112,14 +124,20 @@ export function Inicio() {
           <ChevronRight size={14} />
         </button>
       </div>
-      <button
-        className="filter-pill"
-        aria-pressed={onlyFavorites}
-        onClick={() => setOnlyFavorites(!onlyFavorites)}
-      >
-        <Heart size={15} />
-        {t("Mis favoritos")}
-      </button>
+      <details className="home-filters">
+        <summary>
+          <Heart size={13} />
+          {t("Mis favoritos")}
+        </summary>
+        <button
+          className="filter-pill"
+          aria-pressed={onlyFavorites}
+          onClick={() => setOnlyFavorites(!onlyFavorites)}
+        >
+          <Heart size={15} />
+          {t("Mis favoritos")}
+        </button>
+      </details>
       <div className="product-grid">
         {visible.map((p) => {
           const farm = data.farms.find((f) => f.id === p.farmId)!;
@@ -185,10 +203,19 @@ export function Inicio() {
       ) : null}
       <div className="section-heading">
         <h2>{t("Directamente del productor")}</h2>
+        <button
+          aria-label="Mostrar todos los productores"
+          onClick={() => setAllFarms(!allFarms)}
+          aria-expanded={allFarms}
+        >
+          {t("Ver todos")}
+          <ChevronRight size={14} />
+        </button>
       </div>
       <div className="farm-grid">
         {data.farms
           .filter((f) => withinRadius(f.position, center, radius))
+          .slice(0, allFarms ? undefined : 1)
           .map((f) => (
             <Link
               key={f.id}
@@ -198,7 +225,7 @@ export function Inicio() {
             >
               <Photo
                 crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
-                label={`Tienda de ejemplo: ${f.name}`}
+                label={`${mode === "demo" ? "Tienda de ejemplo" : "Tienda"}: ${f.name}`}
               />
               <div>
                 <strong>{f.name}</strong>
@@ -215,6 +242,6 @@ export function Inicio() {
             </Link>
           ))}
       </div>
-    </>
+    </div>
   );
 }

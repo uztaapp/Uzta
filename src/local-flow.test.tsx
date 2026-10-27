@@ -24,6 +24,7 @@ async function open(path: string) {
 }
 test("nearby catalogue excludes other areas without storing the search coordinates", async () => {
   await open("/");
+  fireEvent.click(screen.getByRole("button", { name: "Bayona" }));
   fireEvent.change(screen.getByLabelText("Latitud"), {
     target: { value: "43.45" },
   });
