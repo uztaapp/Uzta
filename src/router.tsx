@@ -9,12 +9,22 @@ import {
 import {
   Home,
   Search,
-  Sprout,
   ShoppingBasket,
   ClipboardList,
   UserRound,
 } from "lucide-react";
 import { DemoProvider, ModeBanner, useDemo } from "./design";
+import { lazy, Suspense } from "react";
+const Explorar = lazy(() =>
+  import("./pages/explorar").then((module) => ({ default: module.Explorar })),
+);
+function ExploreRoute() {
+  return (
+    <Suspense fallback={<p role="status">Cargando Explorar…</p>}>
+      <Explorar />
+    </Suspense>
+  );
+}
 import { Inicio } from "./pages/inicio";
 import { Productor } from "./pages/productor";
 import { Cesta } from "./pages/cesta";
@@ -24,7 +34,7 @@ import { AppRecovery, RootRecovery } from "./components/app-recovery";
 import { t, useLanguage } from "./lib/language";
 const destinations = [
   ["/", "Inicio", Home],
-  ["/productor", "Productor", Sprout],
+  ["/explorar", "Explorar", Search],
   ["/cesta", "Cesta", ShoppingBasket],
   ["/pedidos", "Pedidos", ClipboardList],
   ["/perfil", "Perfil", UserRound],
@@ -52,10 +62,6 @@ export function Shell() {
 }
 function BottomNavigation() {
   useLanguage();
-  const referenceNavigation = useRouterState({
-    select: (state) =>
-      ["/", "/pedidos", "/perfil"].includes(state.location.pathname),
-  });
   const { data } = useDemo();
   const count = Object.values(data.quantities).filter((q) => q > 0).length;
   return (
@@ -64,25 +70,17 @@ function BottomNavigation() {
         <Link
           key={to}
           to={to}
-          aria-label={
-            referenceNavigation && to === "/productor" ? "Explorar" : t(label)
-          }
+          aria-label={t(label)}
           activeOptions={{ exact: true }}
           activeProps={{ className: "active", "aria-current": "page" }}
         >
           <span className="nav-icon">
-            {referenceNavigation && to === "/productor" ? (
-              <Search size={22} />
-            ) : (
-              <Icon size={22} />
-            )}
+            <Icon size={22} />
             {to === "/cesta" && count > 0 ? (
               <span className="nav-count">{count}</span>
             ) : null}
           </span>
-          <span>
-            {referenceNavigation && to === "/productor" ? "Explorar" : t(label)}
-          </span>
+          <span>{t(label)}</span>
         </Link>
       ))}
     </nav>
@@ -102,6 +100,11 @@ const home = createRoute({
   getParentRoute: () => root,
   path: "/",
   component: Inicio,
+});
+const explore = createRoute({
+  getParentRoute: () => root,
+  path: "/explorar",
+  component: ExploreRoute,
 });
 const producer = createRoute({
   getParentRoute: () => root,
@@ -137,6 +140,7 @@ const profile = createRoute({
 });
 export const routeTree = root.addChildren([
   home,
+  explore,
   producer,
   basket,
   orders,

@@ -40,21 +40,26 @@ test("all five direct routes render offline, without any backend request", async
       await screen.findByRole("heading", { level: 1, name: title }),
     ).toBeInTheDocument();
     expect(screen.getByRole("navigation")).toBeInTheDocument();
-    expect(
-      screen
-        .getAllByRole("link", {
-          name:
-            (
-              {
-                "Ferme de l’Urki": "Productor",
-                "Cesta de compra": "Cesta",
-                "Mis pedidos": "Pedidos",
-                "Mi perfil": "Perfil",
-              } as Record<string, string>
-            )[title] ?? title,
-        })
-        .some((x) => x.getAttribute("aria-current") === "page"),
-    ).toBe(true);
+    if (path !== "/productor")
+      expect(
+        screen
+          .getAllByRole("link", {
+            name:
+              (
+                {
+                  "Cesta de compra": "Cesta",
+                  "Mis pedidos": "Pedidos",
+                  "Mi perfil": "Perfil",
+                } as Record<string, string>
+              )[title] ?? title,
+          })
+          .some((x) => x.getAttribute("aria-current") === "page"),
+      ).toBe(true);
+    else
+      expect(screen.getByRole("link", { name: "Explorar" })).toHaveAttribute(
+        "href",
+        "/explorar",
+      );
     cleanup();
   }
   expect(network).not.toHaveBeenCalled();
