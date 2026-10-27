@@ -1,5 +1,7 @@
 # Comparación de mejoras: TRUKA → UZTA
 
+Actualización de implementación: editor de fotos de demostración e idiomas principales adaptados (véase FOTOS-E-IDIOMAS.md). El flujo de almacenamiento real de fotos y sus permisos está preparado y probado en local, pendiente de activación en UZTA (ALMACENAMIENTO-FOTOGRAFIAS.md). La tabla inferior conserva el inventario inicial; los avisos detallados de idioma, mapa, chat y alertas siguen pendientes.
+
 Revisión en modo lectura autorizada por el usuario. Referencia local saneada de `SkaCristian/reusa5`, rama `feature/home-rescue-card`, commit `9be8d847dfe51044219563acb6a57ea847a01b88`. Se comprobó que la rama existe mediante GitHub y se leyó su `roadmap.md` actual, coincidente con la copia. No se afirma haber auditado todos los cambios remotos posteriores a ese commit. No se ejecutó TRUKA ni se accedió a sus cuentas, bases, credenciales o despliegues.
 
 Se inspeccionaron rutas, bibliotecas y documentación. Tener código o una casilla marcada en TRUKA no demuestra que su producción esté verificada: el propio roadmap deja pendientes recorridos autenticados. Esta tabla distingue la existencia de la mejora en las fuentes de su implementación real en UZTA.

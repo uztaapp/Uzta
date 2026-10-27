@@ -116,7 +116,7 @@ export function Productor() {
                 .map((p) => (
                   <article key={p.id}>
                     <Photo
-                      src={p.photo}
+                      src={p.photo === undefined ? p.photoUrl : p.photo}
                       crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
                       label={p.name}
                     />

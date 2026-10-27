@@ -2,6 +2,11 @@ import { z } from "zod";
 import type { User, SupabaseClient } from "@supabase/supabase-js";
 import { cloudClient } from "./cloud-client";
 import {
+  loadProductPhotos,
+  uploadProductPhoto,
+  photoPath,
+} from "./cloud-photos";
+import {
   seedStore,
   futureSlot,
   farmSchema,
@@ -161,6 +166,7 @@ const productRow = z.object({
   stock_units: z.number().int().nonnegative(),
   active: z.boolean(),
   featured: z.boolean().optional(),
+  photo_path: z.string().nullable().optional(),
 });
 const slotRow = z.object({
   id: uuid,
@@ -251,7 +257,13 @@ export async function loadCloudData(
         end: madridParts(s.ends_at).time,
       })),
   }));
+  const photoUrls = await loadProductPhotos(
+    api,
+    products.flatMap((p) => (p.photo_path ? [p.photo_path] : [])),
+  );
   data.products = products.map((p) => ({
+    photoPath: p.photo_path,
+    photoUrl: p.photo_path ? photoUrls.get(p.photo_path) : undefined,
     id: p.id,
     farmId: p.producer_id,
     name: p.name,
@@ -411,6 +423,22 @@ export async function persistCloudCommand(
     const p = productSchema.parse(command.value);
     uuid.parse(p.id);
     uuid.parse(p.farmId);
+    const previousPhoto = data.products.find(
+      (item) => item.id === p.id,
+    )?.photoPath;
+    if (p.photoPath !== previousPhoto && p.photoPath !== undefined)
+      throw Error(
+        "No puedes cambiar directamente la referencia de una fotografía.",
+      );
+    let path = previousPhoto;
+    if (p.photo === null) path = null;
+    else if (p.photo)
+      path = await uploadProductPhoto(api, user.id, p.farmId, p.id, p.photo);
+    if (path) {
+      photoPath(path);
+      if (!path.startsWith(`${user.id}/${p.farmId}/${p.id}/`))
+        throw Error("Esta fotografía no pertenece al producto.");
+    }
     check(
       await api.from("uzta_products").upsert(
         {
@@ -423,6 +451,7 @@ export async function persistCloudCommand(
           stock_units: p.stock,
           active: p.active,
           featured: p.featured,
+          ...(path !== undefined ? { photo_path: path } : {}),
         },
         { onConflict: "id" },
       ),

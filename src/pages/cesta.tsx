@@ -61,7 +61,7 @@ export function Cesta() {
           {items.map((p) => (
             <article key={p.id} className="basket-item">
               <Photo
-                src={p.photo}
+                src={p.photo === undefined ? p.photoUrl : p.photo}
                 crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
                 label={p.name}
               />

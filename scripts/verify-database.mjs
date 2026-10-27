@@ -42,6 +42,14 @@ try {
  create schema auth; create table auth.users(id uuid primary key);
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema public,auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`);
+  // Storage API metadata fixture; no files, HTTP service or Supabase daemon.
+  await db.exec(`create schema storage;
+   create table storage.buckets(id text primary key,name text not null,public boolean not null default false,file_size_limit bigint,allowed_mime_types text[]);
+   create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text references storage.buckets(id),name text not null,unique(bucket_id,name));
+   alter table storage.objects enable row level security;
+   grant usage on schema storage to anon,authenticated;
+   grant select on storage.objects to anon,authenticated;
+   grant insert,update,delete on storage.objects to authenticated;`);
   for (const file of (await readdir("supabase/migrations"))
     .filter((f) => f.endsWith(".sql"))
     .sort())
@@ -251,6 +259,99 @@ try {
     280,
   );
   pass("price changes preserve past order snapshots");
+  const photo1 = `${owner}/${farm}/${product}/${order}.webp`;
+  const photo2 = `${owner}/${farm}/${hidden}/${order}.webp`;
+  assert.equal(
+    (
+      await db.query(
+        "select public from storage.buckets where id='uzta-product-photos'",
+      )
+    ).rows[0].public,
+    false,
+  );
+  pass("product photo bucket is private");
+  await denied(
+    () =>
+      asUser(
+        buyer,
+        "insert into storage.objects(bucket_id,name) values('uzta-product-photos',$1)",
+        [photo1],
+      ),
+    "another account cannot upload under the producer namespace",
+  );
+  await asUser(
+    owner,
+    "insert into storage.objects(bucket_id,name) values('uzta-product-photos',$1),('uzta-product-photos',$2)",
+    [photo1, photo2],
+  );
+  assert.equal((await asAnon("select * from storage.objects")).rows.length, 0);
+  pass("unlinked uploaded photos remain private");
+  await asUser(
+    owner,
+    "update public.uzta_products set photo_path=$1 where id=$2",
+    [photo1, product],
+  );
+  assert.equal((await asAnon("select * from storage.objects")).rows.length, 1);
+  pass("only a published product photo becomes readable for signing");
+  await asUser(
+    owner,
+    "update public.uzta_products set photo_path=$1 where id=$2",
+    [photo2, hidden],
+  );
+  assert.equal((await asAnon("select * from storage.objects")).rows.length, 1);
+  assert.equal(
+    (await asUser(owner, "select * from storage.objects")).rows.length,
+    2,
+  );
+  pass("hidden product photos remain owner-only");
+  await denied(
+    () =>
+      asUser(
+        owner,
+        "update public.uzta_products set photo_path=$1 where id=$2",
+        [photo2, product],
+      ),
+    "a photo cannot be attached to a different product",
+  );
+  await denied(
+    () =>
+      asUser(
+        owner,
+        "update public.uzta_products set photo_path=$1 where id=$2",
+        [`${owner}/${farm}/${product}/${slot}.webp`, product],
+      ),
+    "a missing file cannot be attached to a product",
+  );
+  assert.equal(
+    (
+      await asUser(
+        owner,
+        "delete from storage.objects where name=$1 returning id",
+        [photo1],
+      )
+    ).rows.length,
+    0,
+  );
+  assert.equal(
+    (
+      await asUser(
+        owner,
+        "update storage.objects set name=$1 where name=$2 returning id",
+        [`${owner}/${farm}/${product}/${slot}.webp`, photo1],
+      )
+    ).rows.length,
+    0,
+  );
+  pass(
+    "existing photo objects cannot be deleted or overwritten through the app",
+  );
+  await asUser(
+    owner,
+    "update public.uzta_products set active=false where id=$1",
+    [product],
+  );
+  assert.equal((await asAnon("select * from storage.objects")).rows.length, 0);
+  pass("withdrawing a product prevents new anonymous access to its photo");
   const rls = await db.query(
     "select relname,relrowsecurity from pg_class where relname like 'uzta_%' and relkind='r'",
   );

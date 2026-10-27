@@ -53,7 +53,7 @@ export function ProductPhotoEditor({
   return (
     <section className="photo-editor" aria-label={t("Fotografía del producto")}>
       <Photo
-        src={product.photo}
+        src={product.photo === undefined ? product.photoUrl : product.photo}
         crop={product.photo === null ? [0, 0, 0, 0] : product.crop}
         label={product.name || "Producto"}
       />

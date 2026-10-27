@@ -11,6 +11,7 @@ import {
 } from "../lib/local-model";
 import { CreateStore } from "../components/create-store";
 import { ProductPhotoEditor } from "../components/product-photo-editor";
+import cloudConfig from "../../config/uzta-cloud.public.json";
 export function Gestion({ section }: { section: string }) {
   useLanguage();
   const { data, run, show, mode, busy, managedFarmId } = useDemo();
@@ -201,7 +202,7 @@ export function Gestion({ section }: { section: string }) {
               .map((p) => (
                 <article key={p.id}>
                   <Photo
-                    src={p.photo}
+                    src={p.photo === undefined ? p.photoUrl : p.photo}
                     crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
                     label={p.name}
                   />
@@ -410,7 +411,7 @@ export function Gestion({ section }: { section: string }) {
                 />{" "}
                 {t("Mostrar en inicio")}
               </label>
-              {mode === "demo" ? (
+              {mode === "demo" || cloudConfig.productPhotosReady ? (
                 <ProductPhotoEditor
                   key={edit.id}
                   product={edit}

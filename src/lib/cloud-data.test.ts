@@ -153,6 +153,73 @@ function order() {
 beforeEach(() => localStorage.clear());
 afterEach(() => vi.restoreAllMocks());
 describe("cloud data boundary", () => {
+  it("persists only an uploaded photo reference, never its data URL or temporary signed URL", async () => {
+    const f = fixture();
+    const path = `${USER}/${FARM}/${PRODUCT}/${ORDER}.webp`;
+    f.rows.uzta_products[0].photo_path = path;
+    const upload = vi.fn().mockResolvedValue({ data: {}, error: null });
+    const signed = `https://abgysktjctrxfkcejjwu.supabase.co/storage/v1/object/sign/uzta-product-photos/${path}?token=fixture`;
+    (f.api as any).storage = {
+      from: () => ({
+        upload,
+        createSignedUrls: vi
+          .fn()
+          .mockResolvedValue({
+            data: [{ path, signedUrl: signed }],
+            error: null,
+          }),
+      }),
+    };
+    const { data } = await loadCloudData(user, f.api);
+    expect(data.products[0].photoUrl).toBe(signed);
+    f.log.length = 0;
+    await persistCloudCommand(
+      data,
+      {
+        type: "product",
+        value: {
+          ...data.products[0],
+          photo: `data:image/webp;base64,${btoa("RIFFxxxxWEBPtest-pixels")}`,
+        },
+      },
+      user,
+      FARM,
+      f.api,
+    );
+    const saved = f.log.find(
+      (l) => l.table === "uzta_products" && l.operation === "upsert",
+    )!.value;
+    expect(saved.photo_path).toBe(upload.mock.calls[0][0]);
+    expect(saved.photo_path).not.toBe(path);
+    expect(saved).not.toHaveProperty("photo");
+    expect(saved).not.toHaveProperty("photoUrl");
+  });
+  it("does not save product metadata when its photo upload fails", async () => {
+    const f = fixture();
+    const { data } = await loadCloudData(user, f.api);
+    f.log.length = 0;
+    (f.api as any).storage = {
+      from: () => ({
+        upload: vi.fn().mockResolvedValue({ error: { message: "offline" } }),
+      }),
+    };
+    await expect(
+      persistCloudCommand(
+        data,
+        {
+          type: "product",
+          value: {
+            ...data.products[0],
+            photo: `data:image/webp;base64,${btoa("RIFFxxxxWEBPtest-pixels")}`,
+          },
+        },
+        user,
+        FARM,
+        f.api,
+      ),
+    ).rejects.toThrow(/subir/);
+    expect(f.log).toHaveLength(0);
+  });
   it("creates a store only for the verified account and excludes presentation-only fields", async () => {
     const f = fixture();
     const farm = {

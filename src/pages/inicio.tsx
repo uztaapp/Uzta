@@ -117,7 +117,7 @@ export function Inicio() {
                   aria-label={`Ver ${p.name} de ${farm.name}`}
                 >
                   <Photo
-                    src={p.photo}
+                    src={p.photo === undefined ? p.photoUrl : p.photo}
                     crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
                     label={p.name}
                   />
