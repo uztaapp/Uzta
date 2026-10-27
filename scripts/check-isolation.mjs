@@ -1,4 +1,5 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((x) =>
@@ -42,11 +43,17 @@ assert(
     readFileSync("supabase/config.toml", "utf8"),
   ),
 );
-if (existsSync(".git/config"))
-  assert(
-    !/\[remote /.test(readFileSync(".git/config", "utf8")),
-    "Git remote must remain disconnected",
-  );
+if (existsSync(".git")) {
+  const remotes = execFileSync("git", ["remote", "-v"], { encoding: "utf8" })
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean);
+  for (const remote of remotes)
+    assert(
+      /^origin\s+https:\/\/github\.com\/uztaapp\/Uzta\.git\s+\((fetch|push)\)$/.test(remote),
+      "Only the independent UZTA GitHub repository is authorized",
+    );
+}
 const config = JSON.parse(
   readFileSync("config/uzta-cloud.public.json", "utf8"),
 );
