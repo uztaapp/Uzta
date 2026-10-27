@@ -1,0 +1,179 @@
+/* Main profile only; access, profile editor and producer-management layouts stay intact. */
+.app:has(.uzta-profile) {
+  background: #faf9f5;
+  color: #171b15;
+  padding-inline: 20px;
+}
+.app:has(.uzta-profile) main {
+  padding-top: max(22px, env(safe-area-inset-top));
+}
+.uzta-profile .page-title {
+  min-height: 44px;
+  margin-bottom: 15px;
+}
+.uzta-profile .page-title h1 {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
+}
+.uzta-profile .profile-settings {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  right: -6px;
+  width: 40px;
+  height: 40px;
+  color: #171b15;
+}
+.uzta-profile .profile-settings svg {
+  width: 23px;
+  height: 23px;
+  stroke-width: 1.6;
+}
+.uzta-profile .profile-card {
+  padding: 16px 14px 0;
+  background: #fff;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: none;
+}
+.uzta-profile .profile-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 12px;
+}
+.uzta-profile .profile-person > .avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.uzta-profile .profile-person > div:not(.photo) {
+  min-width: 0;
+}
+.uzta-profile .profile-person h2 {
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -0.35px;
+  overflow-wrap: anywhere;
+}
+.uzta-profile .profile-person p {
+  font-size: 12px;
+  color: #53594e;
+  margin: 3px 0 4px;
+  overflow-wrap: anywhere;
+}
+.uzta-profile .profile-person button {
+  font-size: 12px;
+  color: #31552b;
+  padding: 2px 0;
+}
+.uzta-profile .profile-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  gap: 11px;
+  color: #171b15;
+}
+.uzta-profile .profile-row > svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  stroke-width: 1.5;
+}
+.uzta-profile .profile-row > span {
+  flex: 1;
+  min-width: 0;
+}
+.uzta-profile .profile-row > svg:last-child {
+  width: 15px;
+  height: 15px;
+  margin-left: auto;
+}
+.uzta-profile .profile-card .profile-row {
+  min-height: 60px;
+  padding: 12px 0;
+  border-top: 1px solid #ecebe5;
+  border-bottom: 0;
+  font-size: 13px;
+}
+.uzta-profile .profile-row small {
+  display: block;
+  font-size: 11px;
+  color: #777c70;
+  margin-bottom: 3px;
+}
+.uzta-profile .producer-heading {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.45px;
+  margin: 20px 0 11px;
+  color: #171b15;
+}
+.uzta-profile .producer-menu {
+  display: grid;
+  gap: 5px;
+}
+.uzta-profile .producer-menu .profile-row {
+  min-height: 43px;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: #eaf1e4;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.uzta-profile .producer-menu .profile-row > svg {
+  color: #31552b;
+}
+.uzta-profile .profile-mode-switch {
+  display: block;
+  padding: 10px 2px;
+  margin-top: 4px;
+  color: #31552b;
+  font-size: 11px;
+  text-align: left;
+  text-decoration: underline;
+}
+.uzta-profile .profile-bottom {
+  background: #fff;
+  border: 0;
+  border-radius: 11px;
+  padding: 0 12px;
+  margin-top: 12px;
+}
+.uzta-profile .profile-bottom .profile-row {
+  min-height: 44px;
+  padding: 12px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #ecebe5;
+}
+.uzta-profile .profile-bottom .profile-row:last-child {
+  border-bottom: 0;
+}
+.app:has(.uzta-profile) > nav {
+  background: #faf9f5f5;
+  border-color: #e8e7df;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.app:has(.uzta-profile) > nav a.active {
+  color: #31552b;
+}
+.app:has(.uzta-profile) > nav a.active .nav-icon > svg {
+  color: #31552b;
+  fill: #eaf1e4;
+}
+@media (max-width: 350px) {
+  .app:has(.uzta-profile) {
+    padding-inline: 16px;
+  }
+  .uzta-profile .profile-person {
+    gap: 9px;
+  }
+  .uzta-profile .profile-person h2 {
+    font-size: 16px;
+  }
+}

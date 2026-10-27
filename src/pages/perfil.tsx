@@ -1,3 +1,4 @@
+import "./perfil.css";
 import { t, useLanguage } from "../lib/language";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
@@ -24,7 +25,8 @@ import { LanguageSelector } from "../components/language-selector";
 import { languages, currentLanguage } from "../lib/language";
 export function Perfil() {
   useLanguage();
-  const { data, run, show, mode, busy, switchMode, signOut } = useDemo();
+  const { data, run, show, mode, busy, switchMode, signOut, managedFarmId } =
+    useDemo();
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { apartado?: string };
   const [editing, setEditing] = useState(false);
@@ -92,7 +94,7 @@ export function Perfil() {
       </>
     );
   return (
-    <>
+    <div className="uzta-profile">
       <div className="page-title">
         <h1>{t("Mi perfil")}</h1>
         <button
@@ -108,7 +110,11 @@ export function Perfil() {
           <Photo
             className="avatar"
             crop={mode === "demo" ? [1294, 123, 57, 60] : [0, 0, 0, 0]}
-            label="Avatar de ejemplo"
+            label={
+              mode === "demo"
+                ? "Avatar de demostración"
+                : `Avatar de ${data.profile.name}`
+            }
           />
           <div>
             <h2>{data.profile.name}</h2>
@@ -143,40 +149,36 @@ export function Perfil() {
           ["Pedidos recibidos", "pedidos", FileText],
           ["Horarios y entregas", "horarios", Truck],
           ["Estadísticas", "estadisticas", ChartNoAxesColumn],
-        ].map(([label, section, Icon]) => {
-          const Symbol = Icon as typeof Store;
-          return (
-            <button
-              className="profile-row"
-              key={label as string}
-              onClick={() =>
-                section === "pedidos"
-                  ? void navigate({
-                      to: "/pedidos",
-                      search: { vista: "productor" },
-                    })
-                  : void navigate({
-                      to: "/perfil",
-                      search: { apartado: section as string },
-                    })
-              }
-            >
-              <Symbol />
-              <span>{t(label as string)}</span>
-              <ChevronRight />
-            </button>
-          );
-        })}
+        ]
+          .filter(
+            ([, section]) =>
+              mode === "demo" || managedFarmId || section === "tienda",
+          )
+          .map(([label, section, Icon]) => {
+            const Symbol = Icon as typeof Store;
+            return (
+              <button
+                className="profile-row"
+                key={label as string}
+                onClick={() =>
+                  section === "pedidos"
+                    ? void navigate({
+                        to: "/pedidos",
+                        search: { vista: "productor" },
+                      })
+                    : void navigate({
+                        to: "/perfil",
+                        search: { apartado: section as string },
+                      })
+                }
+              >
+                <Symbol />
+                <span>{t(label as string)}</span>
+                <ChevronRight />
+              </button>
+            );
+          })}
       </div>
-      {mode === "demo" ? (
-        <button className="primary" onClick={() => switchMode("cloud")}>
-          {t("Entrar en mi cuenta de UZTA")}
-        </button>
-      ) : (
-        <button className="primary" onClick={() => switchMode("demo")}>
-          {t("Ver catálogo de demostración")}
-        </button>
-      )}
       <div className="profile-bottom">
         <button className="profile-row" onClick={() => setGuideOpen(true)}>
           <HelpCircle />
@@ -203,6 +205,21 @@ export function Perfil() {
           <ChevronRight />
         </button>
       </div>
+      {mode === "demo" ? (
+        <button
+          className="profile-mode-switch"
+          onClick={() => switchMode("cloud")}
+        >
+          {t("Entrar en mi cuenta de UZTA")}
+        </button>
+      ) : (
+        <button
+          className="profile-mode-switch"
+          onClick={() => switchMode("demo")}
+        >
+          {t("Ver catálogo de demostración")}
+        </button>
+      )}
       {languageOpen ? (
         <Modal title={t("Idioma")} close={() => setLanguageOpen(false)}>
           <LanguageSelector />
@@ -267,6 +284,6 @@ export function Perfil() {
           </form>
         </Modal>
       ) : null}
-    </>
+    </div>
   );
 }

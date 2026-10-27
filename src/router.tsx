@@ -53,7 +53,8 @@ export function Shell() {
 function BottomNavigation() {
   useLanguage();
   const referenceNavigation = useRouterState({
-    select: (state) => ["/", "/pedidos"].includes(state.location.pathname),
+    select: (state) =>
+      ["/", "/pedidos", "/perfil"].includes(state.location.pathname),
   });
   const { data } = useDemo();
   const count = Object.values(data.quantities).filter((q) => q > 0).length;
