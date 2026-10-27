@@ -50,3 +50,9 @@ No se ha migrado localStorage, creado usuarios reales, enviado correos o inserta
 
 La migración se aplicó manualmente desde el panel, no mediante el conector ni `db push`. No se ha escrito su registro en el historial administrado de Supabase. Antes de usar migraciones CLI en este proyecto hay que reconciliar ese historial; no volver a ejecutar a ciegas los CREATE TABLE sobre las tablas ya existentes.
 Las cuentas de los conectores siguen sin autorización para este proyecto; se usó exclusivamente la sesión nueva del navegador.
+
+## Activación autorizada de ubicación — 27/10/2026
+
+Se aplicó únicamente `20261027154041_uzta_public_producer_location.sql` desde el SQL Editor del proyecto confirmado de UZTA. Añade dos campos públicos aproximados, ambos opcionales, y tres restricciones de coherencia/rango. No modifica RLS ni datos de productos/pedidos. Verificación: 1 productor, 1 producto, 1 pedido, stock 9, 0 puntos asignados, RLS activa y 3 políticas de productores conservadas. El propietario colocará su punto desde el mapa; no se asigna una localización inventada.
+
+La operación fue manual y el historial de migraciones aún debe conciliarse antes de usar un envío automático. No volver a aplicar esta migración sin comprobar el esquema. Durante la verificación, el editor conservó una sentencia anterior y una repetición fue rechazada por columna existente; se vació el editor y la consulta posterior de solo lectura confirmó el resultado correcto y los registros conservados.

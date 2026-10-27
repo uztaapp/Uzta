@@ -8,9 +8,9 @@ La posición del comprador vive únicamente en el estado de la pantalla: no se e
 
 El productor puede guardar un punto público aproximado, redondeado a dos decimales. Ambos campos deben estar completos o vacíos. La ficha ofrece un enlace explícito a OpenStreetMap con ese punto aproximado; no hay mapa incrustado, agrupación de puntos ni búsqueda por dirección. Las posiciones de las tiendas de demostración son ficticias. Los datos antiguos sin posición no se completan automáticamente.
 
-## Activación pendiente en la nube
+## Activación de ubicación en la nube
 
-La migración `20261027154041_uzta_public_producer_location.sql` añade las dos coordenadas y sus restricciones. Está probada localmente, pero no aplicada a la base real. `producerLocationsReady` permanece en `false`: el editor real sigue oculto hasta aplicar y comprobar la migración propia de UZTA. No ejecutar un envío indiscriminado de migraciones: el historial de las migraciones anteriores aplicadas manualmente debe conciliarse primero.
+La migración `20261027154041_uzta_public_producer_location.sql` se aplicó el 27/10/2026 con autorización expresa del usuario. Se comprobaron las columnas, sus tres restricciones, RLS y la conservación de productores/productos/pedidos. `producerLocationsReady` está en `true`. Mi tienda sustituye los campos numéricos por un mapa: pulsar, arrastrar el punto, usar el centro o retirar el punto; guardar sigue siendo una acción explícita de Guardar tienda. No se asignó ninguna posición real automáticamente. El historial manual debe conciliarse antes de cualquier envío automático de migraciones.
 
 ## Verificación
 
