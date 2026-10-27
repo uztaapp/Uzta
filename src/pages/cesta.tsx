@@ -1,3 +1,4 @@
+import "./cesta.css";
 import { t, useLanguage } from "../lib/language";
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -43,7 +44,7 @@ export function Cesta() {
     }
   }
   return (
-    <>
+    <div className="uzta-basket">
       <div className="page-title">
         <Link to="/" aria-label={t("Volver al inicio")}>
           <ArrowLeft />
@@ -51,9 +52,8 @@ export function Cesta() {
         <h1>{t("Cesta de compra")}</h1>
       </div>
       {farm ? (
-        <p className="subtle">
-          {t("Productos de")}
-          {farm.name}
+        <p className="subtle basket-producer">
+          {t("Productos de")} {farm.name}
         </p>
       ) : null}
       <div className="basket-layout">
@@ -223,6 +223,6 @@ export function Cesta() {
           </p>
         </aside>
       </div>
-    </>
+    </div>
   );
 }
