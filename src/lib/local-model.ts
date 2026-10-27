@@ -494,7 +494,8 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
     throw Error("Abre el perfil local para gestionar tu tienda.");
   if (command.type === "quantity") {
     const p = s.products.find((p) => p.id === command.id);
-    if (!p || !p.active) throw Error("El producto no está disponible.");
+    if (!p || (!p.active && command.delta > 0))
+      throw Error("El producto no está disponible.");
     const other = s.products.find(
       (p) =>
         (s.quantities[p.id] ?? 0) > 0 &&
@@ -505,7 +506,8 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
         "La cesta contiene productos de otro productor. Confirma esa reserva o vacía la cesta antes de cambiar de tienda.",
       );
     const quantity = Math.max(0, (s.quantities[p.id] ?? 0) + command.delta);
-    if (quantity > p.stock) throw Error("No hay suficiente stock disponible.");
+    if (command.delta > 0 && quantity > p.stock)
+      throw Error("No hay suficiente stock disponible.");
     s.quantities[p.id] = quantity;
   } else if (command.type === "remove") delete s.quantities[command.id];
   else if (command.type === "favorite") {

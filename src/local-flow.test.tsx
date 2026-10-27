@@ -22,6 +22,16 @@ async function open(path: string) {
   render(<RouterProvider router={router} />);
   return router;
 }
+
+test("a removed product photo stays removed in order thumbnails", async () => {
+  const data = seedStore();
+  data.products.find((p) => p.id === "tomates")!.photo = null;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  await open("/pedidos");
+  expect(
+    screen.getByRole("img", { name: "Sin foto: Tomates" }),
+  ).toBeInTheDocument();
+});
 test("nearby catalogue excludes other areas without storing the search coordinates", async () => {
   await open("/");
   fireEvent.click(screen.getByRole("button", { name: "Bayona" }));

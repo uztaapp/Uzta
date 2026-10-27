@@ -1,6 +1,6 @@
 # UZTA
 
-Actualización: la aplicación local abre el catálogo real de UZTA y permite registro, acceso y gestión autenticada con Supabase. La demostración se abre desde Perfil y conserva su almacenamiento separado. La versión publicada sigue siendo la demostración anterior hasta cargar el paquete `uzta-publicacion-autenticada/uzta.zip` en el proyecto existente. Véase `docs/INTEGRACION-REAL.md`; los apartados de demostración inferiores describen ese modo, no la cuenta real.
+Estado comprobado el 27/10/2026: la aplicación publicada tiene catálogo y acceso real de UZTA, pero está atrasada respecto a este repositorio y todavía no sirve `/explorar`. La copia local incluye los cinco rediseños y el mapa. La demostración mantiene datos separados. Fotos y coordenadas reales siguen pendientes de activación en Supabase. Véase [la auditoría actual](docs/AUDITORIA-2026-10-27.md); los paquetes y estados de documentos anteriores son históricos.
 
 Aplicación independiente de productos agrícolas y venta directa, en desarrollo local para Windows. Diseño basado en las cinco pantallas aprobadas: inicio, productor, cesta, pedidos y perfil.
 

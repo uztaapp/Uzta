@@ -109,7 +109,11 @@ export function Pedidos() {
                         ? product?.photoUrl
                         : product.photo
                     }
-                    crop={mode === "demo" ? p.crop : [0, 0, 0, 0]}
+                    crop={
+                      mode === "demo" && product?.photo !== null
+                        ? p.crop
+                        : [0, 0, 0, 0]
+                    }
                     label={p.name}
                   />
                 );

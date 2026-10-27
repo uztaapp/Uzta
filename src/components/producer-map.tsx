@@ -51,7 +51,11 @@ export default function ProducerMap({
         L.latLng(center.lat, center.lng).toBounds(Math.max(radius, 1) * 2000),
         { padding: [30, 150], maxZoom: 14, animate: false },
       );
-    else if (!fitted.current) {
+  }, [center, radius]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || center || fitted.current) return;
+    {
       const points = entries
         .map((e) => publicPosition(e.farm.position))
         .filter((p): p is Position => p !== null);
@@ -64,7 +68,7 @@ export default function ProducerMap({
         fitted.current = true;
       }
     }
-  }, [center, radius, entries]);
+  }, [center, entries]);
   useEffect(() => {
     const m = map.current;
     if (!m) return;

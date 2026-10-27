@@ -364,7 +364,8 @@ export function cartTransition(data: LocalStore, command: Command) {
   else if (command.type === "remove") delete cart.quantities[command.id];
   else if (command.type === "quantity") {
     const p = data.products.find((p) => p.id === command.id);
-    if (!p?.active) throw Error("El producto ya no está disponible.");
+    if (!p || (!p.active && command.delta > 0))
+      throw Error("El producto ya no está disponible.");
     if (
       command.delta > 0 &&
       data.products.some(
@@ -376,7 +377,8 @@ export function cartTransition(data: LocalStore, command: Command) {
         "La cesta pertenece a otro productor. Termina o vacía la cesta antes de cambiar.",
       );
     const q = Math.max(0, (cart.quantities[p.id] ?? 0) + command.delta);
-    if (q > p.stock) throw Error("No hay suficiente stock disponible.");
+    if (command.delta > 0 && q > p.stock)
+      throw Error("No hay suficiente stock disponible.");
     cart.quantities[p.id] = q;
   } else throw Error("Operación de cesta desconocida.");
   return cartSchema.parse(cart);
