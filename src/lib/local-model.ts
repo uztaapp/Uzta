@@ -26,6 +26,13 @@ export const farmSchema = z.object({
   description: z.string().max(2000),
   ecological: z.boolean(),
   slots: z.array(slotSchema),
+  position: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    })
+    .nullable()
+    .optional(),
 });
 export const productSchema = z.object({
   photo: productPhotoSchema,
@@ -229,6 +236,16 @@ export function seedStore(): LocalStore {
         end: "12:00",
       },
     ];
+  });
+  // Fictitious approximate map points for the independent showcase only.
+  farms.forEach((farm, index) => {
+    farm.position = [
+      { lat: 43.45, lng: -1.46 },
+      { lat: 43.47, lng: -1.51 },
+      { lat: 43.44, lng: -1.45 },
+      { lat: 43.33, lng: -1.41 },
+      { lat: 43.34, lng: -1.44 },
+    ][index];
   });
   const products: Product[] = [
     {

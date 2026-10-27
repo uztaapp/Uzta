@@ -12,6 +12,7 @@ import {
 import { CreateStore } from "../components/create-store";
 import { ProductPhotoEditor } from "../components/product-photo-editor";
 import cloudConfig from "../../config/uzta-cloud.public.json";
+import { publicPosition, validPosition } from "../lib/nearby";
 export function Gestion({ section }: { section: string }) {
   useLanguage();
   const { data, run, show, mode, busy, managedFarmId } = useDemo();
@@ -24,11 +25,26 @@ export function Gestion({ section }: { section: string }) {
     event.preventDefault();
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
+    let position = farm.position;
+    if (mode === "demo" || cloudConfig.producerLocationsReady) {
+      const lat = String(form.get("publicLatitude") ?? "").trim(),
+        lng = String(form.get("publicLongitude") ?? "").trim();
+      if (!lat && !lng) position = null;
+      else {
+        const p = { lat: Number(lat), lng: Number(lng) };
+        if (!lat || !lng || !validPosition(p)) {
+          setError("Coordenadas no válidas.");
+          return;
+        }
+        position = publicPosition(p);
+      }
+    }
     if (
       await run({
         type: "farm",
         value: {
           ...farm,
+          position,
           name: String(form.get("name")).trim(),
           location: String(form.get("location")).trim(),
           description: String(form.get("description")).trim(),
@@ -157,6 +173,40 @@ export function Gestion({ section }: { section: string }) {
                 defaultValue={farm.description}
               />
             </label>
+            {mode === "demo" || cloudConfig.producerLocationsReady ? (
+              <section className="public-location-fields">
+                <h3>{t("Ubicación pública aproximada")}</h3>
+                <div className="form-columns">
+                  <label>
+                    {t("Latitud pública")}
+                    <input
+                      name="publicLatitude"
+                      type="number"
+                      min="-90"
+                      max="90"
+                      step="any"
+                      defaultValue={farm.position?.lat ?? ""}
+                    />
+                  </label>
+                  <label>
+                    {t("Longitud pública")}
+                    <input
+                      name="publicLongitude"
+                      type="number"
+                      min="-180"
+                      max="180"
+                      step="any"
+                      defaultValue={farm.position?.lng ?? ""}
+                    />
+                  </label>
+                </div>
+                <p className="subtle">
+                  {t(
+                    "Estas coordenadas serán públicas y se redondearán a dos decimales. Deja ambos campos vacíos para retirarlas.",
+                  )}
+                </p>
+              </section>
+            ) : null}
             <label className="check-label">
               <input
                 type="checkbox"

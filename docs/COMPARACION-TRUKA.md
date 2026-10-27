@@ -1,6 +1,6 @@
 # Comparación de mejoras: TRUKA → UZTA
 
-Actualización de implementación: editor de fotos de demostración e idiomas principales adaptados (véase FOTOS-E-IDIOMAS.md). El flujo de almacenamiento real de fotos y sus permisos está preparado y probado en local, pendiente de activación en UZTA (ALMACENAMIENTO-FOTOGRAFIAS.md). La tabla inferior conserva el inventario inicial; los avisos detallados de idioma, mapa, chat y alertas siguen pendientes.
+Actualización de implementación: editor de fotos de demostración e idiomas principales adaptados (véase FOTOS-E-IDIOMAS.md). El flujo de almacenamiento real de fotos y sus permisos está preparado y probado en local, pendiente de activación en UZTA (ALMACENAMIENTO-FOTOGRAFIAS.md). La tabla inferior conserva el inventario inicial; la proximidad y el punto público aproximado están adaptados en local (PROXIMIDAD.md). Los avisos detallados de idioma, el mapa interactivo, chat y alertas siguen pendientes.
 
 Revisión en modo lectura autorizada por el usuario. Referencia local saneada de `SkaCristian/reusa5`, rama `feature/home-rescue-card`, commit `9be8d847dfe51044219563acb6a57ea847a01b88`. Se comprobó que la rama existe mediante GitHub y se leyó su `roadmap.md` actual, coincidente con la copia. No se afirma haber auditado todos los cambios remotos posteriores a ese commit. No se ejecutó TRUKA ni se accedió a sus cuentas, bases, credenciales o despliegues.
 
@@ -8,16 +8,16 @@ Se inspeccionaron rutas, bibliotecas y documentación. Tener código o una casil
 
 | Mejora encontrada | Referencia en TRUKA | Situación de UZTA |
 |---|---|---|
-| Español, francés, inglés y euskera; selección manual/automática | `src/lib/i18n`, `docs/language-selection.md` | Pendiente. UZTA solo tiene español; el selector informa de ello. No se copian traducciones de objetos e intercambios a textos agrícolas sin adaptación. |
-| Fotos optimizadas, miniaturas y eliminación de EXIF/GPS | `src/lib/image-optimize.ts` | Pendiente de integrar carga, almacenamiento propio y permisos. UZTA usa imágenes de maqueta o marcadores neutros. |
+| Español, francés, inglés y euskera; selección manual/automática | `src/lib/i18n`, `docs/language-selection.md` | Selector automático/manual y etiquetas principales adaptados en español, francés, inglés y euskera. Faltan avisos detallados y revisión lingüística. |
+| Fotos optimizadas, miniaturas y eliminación de EXIF/GPS | `src/lib/image-optimize.ts` | Editor y optimización adaptados. Almacenamiento privado y permisos probados en local; activación real pendiente. |
 | Ampliación de fotografías | `src/components/image-lightbox.tsx` | Pendiente; no se presenta como implementada. |
 | Compartir enlace público y alternativa de copia | `src/components/share-publication.tsx` | Adaptado en local para tiendas reales. Destino fijo UZTA; no incluye parámetros de sesión o vistas previas. Cancelar el menú no dispara otra acción. No se envían mensajes automáticamente. |
 | Ayuda y guía inicial | `src/components/first-visit-guide.tsx`, `docs/first-visit-guide.md` | Guía comprador/productor adaptada en local, accesible desde Ayuda y soporte. No hay todavía recorrido interactivo de primera visita. |
 | Recuperación ante errores de pantalla | `src/routes/__root.tsx` | Protección de pantalla añadida en local, con reintento y navegación conservando datos. Sin telemetría externa. |
 | Registro, sesión y perfil | `src/lib/auth-validation.ts`, `src/routes/auth.tsx` | UZTA tiene registro confirmado y perfil real; recuperación de sesión y fallos de cierre probados. Recuperación de contraseña y cambio de correo siguen pendientes. |
 | Favoritos persistentes con error de guardado honesto | `src/lib/favorites.ts`, `docs/auditoria-2026-10-13.md` | Ya implementado con datos propios en UZTA, separado por cuenta. |
-| Mapas, radios, agrupación de puntos y privacidad de ubicación | `src/lib/map-items.ts`, `docs/mapa-util.md` | Pendiente de adaptación. UZTA no calcula distancias reales; las distancias ficticias solo se muestran en demostración. |
-| Ubicación confirmada al publicar | `src/lib/publication-location.ts`, commit de referencia | Pendiente: UZTA guarda localidad escrita, no un punto confirmado. |
+| Mapas, radios, agrupación de puntos y privacidad de ubicación | `src/lib/map-items.ts`, `docs/mapa-util.md` | Radio y cálculo de distancias adaptados en local, con búsqueda privada y puntos públicos aproximados. Mapa interactivo y agrupación pendientes; migración real pendiente. |
+| Ubicación confirmada al publicar | `src/lib/publication-location.ts`, commit de referencia | Editor de coordenadas públicas aproximadas preparado y probado en local. No hay todavía selección visual de un punto en mapa. |
 | Chat y coordinación privada de recogida | `src/routes/chats.tsx`, `chat.$id.tsx` | Pendiente. El mensaje de reserva de UZTA no es un chat. |
 | Búsquedas guardadas, alertas y contador de no vistos | `src/lib/alerts.ts`, `docs/alertas-fiables.md` | Pendiente. No hay push, campana ni alertas implementadas en UZTA. |
 | Recogidas conjuntas y reglas transaccionales | `docs/compartir-y-recogidas.md` | Adaptación parcial: cesta de un productor, reserva atómica, stock y reintentos ya implementados; cancelaciones y acuerdos privados no están. |

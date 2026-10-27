@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { User, SupabaseClient } from "@supabase/supabase-js";
 import { cloudClient } from "./cloud-client";
+import { publicPosition } from "./nearby";
 import {
   loadProductPhotos,
   uploadProductPhoto,
@@ -141,6 +142,8 @@ function check<T>(result: { data: T; error: unknown }): T {
   return result.data;
 }
 const producerRow = z.object({
+  public_latitude: z.coerce.number().min(-90).max(90).nullable().optional(),
+  public_longitude: z.coerce.number().min(-180).max(180).nullable().optional(),
   id: uuid,
   owner_id: uuid,
   name: z.string(),
@@ -242,6 +245,10 @@ export async function loadCloudData(
   };
   data.sessionActive = !!user;
   data.farms = farms.map((f) => ({
+    position:
+      f.public_latitude != null && f.public_longitude != null
+        ? publicPosition({ lat: f.public_latitude, lng: f.public_longitude })
+        : undefined,
     id: f.id,
     name: f.name,
     location: f.location,
@@ -494,6 +501,7 @@ export async function persistCloudCommand(
     });
     const changed =
       !previous ||
+      JSON.stringify(previous.position) !== JSON.stringify(f.position) ||
       ["name", "location", "description", "ecological"].some(
         (k) => (previous as any)[k] !== (f as any)[k],
       );
@@ -507,6 +515,12 @@ export async function persistCloudCommand(
             location: f.location.trim(),
             description: f.description,
             ecological: f.ecological,
+            ...(f.position !== undefined
+              ? {
+                  public_latitude: publicPosition(f.position)?.lat ?? null,
+                  public_longitude: publicPosition(f.position)?.lng ?? null,
+                }
+              : {}),
             active: true,
           },
           { onConflict: "id" },

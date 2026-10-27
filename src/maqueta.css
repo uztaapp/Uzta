@@ -1,4 +1,27 @@
 /* Shared layout and finish from the approved five-screen UZTA mockup. */
+.nearby-controls {
+  margin: 10px 0 15px;
+  border: 1px solid #e1e5d5;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.nearby-controls > summary {
+  color: #38552a;
+  font-size: 13px;
+  cursor: pointer;
+}
+.nearby-controls .primary {
+  margin-top: 0;
+  font-size: 14px;
+}
+.public-location-fields {
+  padding: 12px;
+  border: 1px solid #dfe4d2;
+  border-radius: 10px;
+}
+.public-location-fields .form-columns {
+  margin-top: 12px;
+}
 .language-access {
   margin: 15px 0;
   color: #38552a;

@@ -10,12 +10,16 @@ import {
   Leaf,
 } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
+import { NearbyControls } from "../components/nearby-controls";
+import { withinRadius, distanceLabel, type Position } from "../lib/nearby";
 export function Inicio() {
   useLanguage();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [center, setCenter] = useState<Position | null>(null);
+  const [radius, setRadius] = useState(10);
   const normalize = (text: string) =>
     text
       .normalize("NFD")
@@ -26,6 +30,11 @@ export function Inicio() {
   const visible = data.products.filter(
     (p) =>
       p.active &&
+      withinRadius(
+        data.farms.find((f) => f.id === p.farmId)?.position,
+        center,
+        radius,
+      ) &&
       (showAll ||
         !!query.trim() ||
         !!category ||
@@ -55,6 +64,12 @@ export function Inicio() {
         <MapPin size={17} />
         {data.profile.location || "Productos cerca de ti"}
       </p>
+      <NearbyControls
+        center={center}
+        radius={radius}
+        onCenter={setCenter}
+        onRadius={setRadius}
+      />
       <label className="search">
         <Search size={21} />
         <input
@@ -149,7 +164,11 @@ export function Inicio() {
                     <MapPin size={12} />
                     {farm.name}
                   </span>
-                  <span>{farm.distance}</span>
+                  <span>
+                    {center
+                      ? distanceLabel(center, farm.position)
+                      : farm.distance}
+                  </span>
                 </small>
                 {!p.stock ? <small>{t("Agotado")}</small> : null}
               </div>
@@ -168,26 +187,33 @@ export function Inicio() {
         <h2>{t("Directamente del productor")}</h2>
       </div>
       <div className="farm-grid">
-        {data.farms.map((f) => (
-          <Link
-            key={f.id}
-            to="/productor"
-            search={{ tienda: f.id }}
-            className="farm-banner"
-          >
-            <Photo
-              crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
-              label={`Tienda de ejemplo: ${f.name}`}
-            />
-            <div>
-              <strong>{f.name}</strong>
-              <span>
-                {f.location} {f.distance ? `· ${f.distance}` : ""}
-              </span>
-            </div>
-            <ChevronRight />
-          </Link>
-        ))}
+        {data.farms
+          .filter((f) => withinRadius(f.position, center, radius))
+          .map((f) => (
+            <Link
+              key={f.id}
+              to="/productor"
+              search={{ tienda: f.id }}
+              className="farm-banner"
+            >
+              <Photo
+                crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
+                label={`Tienda de ejemplo: ${f.name}`}
+              />
+              <div>
+                <strong>{f.name}</strong>
+                <span>
+                  {f.location}{" "}
+                  {center
+                    ? `· ${distanceLabel(center, f.position)}`
+                    : f.distance
+                      ? `· ${f.distance}`
+                      : ""}
+                </span>
+              </div>
+              <ChevronRight />
+            </Link>
+          ))}
       </div>
     </>
   );

@@ -22,6 +22,28 @@ async function open(path: string) {
   render(<RouterProvider router={router} />);
   return router;
 }
+test("nearby catalogue excludes other areas without storing the search coordinates", async () => {
+  await open("/");
+  fireEvent.change(screen.getByLabelText("Latitud"), {
+    target: { value: "43.45" },
+  });
+  fireEvent.change(screen.getByLabelText("Longitud"), {
+    target: { value: "-1.46" },
+  });
+  fireEvent.change(screen.getByLabelText("Radio de búsqueda"), {
+    target: { value: "1" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Aplicar zona" }));
+  expect(screen.getByRole("heading", { name: "Tomates" })).toBeInTheDocument();
+  expect(
+    screen.queryByRole("heading", { name: "Lechuga" }),
+  ).not.toBeInTheDocument();
+  expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Quitar filtro de zona" }),
+  );
+  expect(screen.getByRole("heading", { name: "Lechuga" })).toBeInTheDocument();
+});
 test("profile help explains the existing buyer and producer flows without promising payments", async () => {
   await open("/perfil");
   fireEvent.click(screen.getByRole("button", { name: /Ayuda y soporte/ }));

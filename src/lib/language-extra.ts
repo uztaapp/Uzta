@@ -1,4 +1,85 @@
 export const extraLabels: Record<string, readonly [string, string, string]> = {
+  "Buscar por zona": [
+    "Rechercher par zone",
+    "Search by area",
+    "Bilatu eremuaren arabera",
+  ],
+  "Tu zona de búsqueda se usa solo en esta pantalla. No se guarda ni se envía al productor.":
+    [
+      "La zone de recherche reste sur cet écran. Elle n’est ni enregistrée ni envoyée au producteur.",
+      "Your search area is used only on this screen. It is not saved or sent to the producer.",
+      "Bilaketa eremua pantaila honetan soilik erabiltzen da. Ez da gordetzen edo ekoizleari bidaltzen.",
+    ],
+  "Usar mi ubicación": [
+    "Utiliser ma position",
+    "Use my location",
+    "Erabili nire kokapena",
+  ],
+  "Obteniendo ubicación…": [
+    "Localisation en cours…",
+    "Getting location…",
+    "Kokapena lortzen…",
+  ],
+  Latitud: ["Latitude", "Latitude", "Latitudea"],
+  Longitud: ["Longitude", "Longitude", "Longitudea"],
+  "Radio de búsqueda": [
+    "Rayon de recherche",
+    "Search radius",
+    "Bilaketa erradioa",
+  ],
+  "Aplicar zona": ["Appliquer la zone", "Apply area", "Aplikatu eremua"],
+  "Quitar filtro de zona": [
+    "Retirer le filtre de zone",
+    "Clear area filter",
+    "Kendu eremu iragazkia",
+  ],
+  "Las distancias son aproximadas. Al aplicar un radio se excluyen tiendas sin coordenadas.":
+    [
+      "Les distances sont approximatives. Les boutiques sans coordonnées sont exclues si un rayon est appliqué.",
+      "Distances are approximate. Shops without coordinates are excluded when a radius is applied.",
+      "Distantziak gutxi gorabeherakoak dira. Erradioa aplikatzean koordenaturik gabeko dendak baztertzen dira.",
+    ],
+  "Coordenadas no válidas.": [
+    "Coordonnées non valides.",
+    "Invalid coordinates.",
+    "Koordenatu baliogabeak.",
+  ],
+  "La ubicación no está disponible. Introduce una zona manualmente.": [
+    "La localisation n’est pas disponible. Saisissez une zone manuellement.",
+    "Location is unavailable. Enter an area manually.",
+    "Kokapena ez dago eskuragarri. Sartu eremu bat eskuz.",
+  ],
+  "No se pudo obtener la ubicación. Puedes introducir una zona manualmente.": [
+    "Impossible d’obtenir votre position. Vous pouvez saisir une zone manuellement.",
+    "Could not get location. You can enter an area manually.",
+    "Ezin izan da kokapena lortu. Eremu bat eskuz sar dezakezu.",
+  ],
+  "Abrir ubicación aproximada en el mapa": [
+    "Ouvrir la position approximative sur la carte",
+    "Open approximate location on map",
+    "Ireki gutxi gorabeherako kokapena mapan",
+  ],
+  "Ubicación pública aproximada": [
+    "Position publique approximative",
+    "Approximate public location",
+    "Gutxi gorabeherako kokapen publikoa",
+  ],
+  "Latitud pública": [
+    "Latitude publique",
+    "Public latitude",
+    "Latitude publikoa",
+  ],
+  "Longitud pública": [
+    "Longitude publique",
+    "Public longitude",
+    "Longitude publikoa",
+  ],
+  "Estas coordenadas serán públicas y se redondearán a dos decimales. Deja ambos campos vacíos para retirarlas.":
+    [
+      "Ces coordonnées seront publiques et arrondies à deux décimales. Videz les deux champs pour les retirer.",
+      "These coordinates will be public and rounded to two decimal places. Leave both fields empty to remove them.",
+      "Koordenatu hauek publikoak izango dira eta bi hamartarrera biribilduko dira. Utzi bi eremuak hutsik kentzeko.",
+    ],
   "Revisa el stock disponible (": [
     "Vérifiez le stock disponible (",
     "Check available stock (",

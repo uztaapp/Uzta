@@ -352,6 +352,37 @@ try {
   );
   assert.equal((await asAnon("select * from storage.objects")).rows.length, 0);
   pass("withdrawing a product prevents new anonymous access to its photo");
+  await asUser(
+    owner,
+    "update public.uzta_producers set public_latitude=43.456789,public_longitude=-1.456789 where id=$1",
+    [farm],
+  );
+  const point = (
+    await asAnon(
+      "select public_latitude,public_longitude from public.uzta_producers",
+    )
+  ).rows[0];
+  assert.equal(Number(point.public_latitude), 43.46);
+  assert.equal(Number(point.public_longitude), -1.46);
+  pass("public producer coordinates are stored with only two decimal places");
+  await denied(
+    () =>
+      asUser(
+        owner,
+        "update public.uzta_producers set public_latitude=100 where id=$1",
+        [farm],
+      ),
+    "out-of-range producer coordinates are rejected",
+  );
+  await denied(
+    () =>
+      asUser(
+        owner,
+        "update public.uzta_producers set public_latitude=null where id=$1",
+        [farm],
+      ),
+    "half-empty public coordinates are rejected",
+  );
   const rls = await db.query(
     "select relname,relrowsecurity from pg_class where relname like 'uzta_%' and relkind='r'",
   );

@@ -13,6 +13,7 @@ import {
 import { Photo, euro, useDemo } from "../design";
 import { futureSlot } from "../lib/local-model";
 import { ShareStore } from "../components/share-store";
+import { publicMapUrl } from "../lib/nearby";
 export function Productor() {
   useLanguage();
   const [tab, setTab] = useState("Productos");
@@ -157,6 +158,18 @@ export function Productor() {
             <p>
               <strong>{t("Ubicación:")}</strong> {farm.location}
             </p>
+            {publicMapUrl(farm.position) ? (
+              <p>
+                <a
+                  className="text-button"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={publicMapUrl(farm.position)!}
+                >
+                  {t("Abrir ubicación aproximada en el mapa")}
+                </a>
+              </p>
+            ) : null}
             <p>
               {t(
                 "Recogida en el productor. Las fechas y horas se seleccionan al reservar.",

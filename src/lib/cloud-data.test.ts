@@ -162,12 +162,10 @@ describe("cloud data boundary", () => {
     (f.api as any).storage = {
       from: () => ({
         upload,
-        createSignedUrls: vi
-          .fn()
-          .mockResolvedValue({
-            data: [{ path, signedUrl: signed }],
-            error: null,
-          }),
+        createSignedUrls: vi.fn().mockResolvedValue({
+          data: [{ path, signedUrl: signed }],
+          error: null,
+        }),
       }),
     };
     const { data } = await loadCloudData(user, f.api);

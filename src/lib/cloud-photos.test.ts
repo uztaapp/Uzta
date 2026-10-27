@@ -16,12 +16,10 @@ const URL = `https://abgysktjctrxfkcejjwu.supabase.co/storage/v1/object/sign/${P
 const PHOTO = `data:image/webp;base64,${btoa("RIFFxxxxWEBPtest-pixels")}`;
 function storage() {
   const upload = vi.fn().mockResolvedValue({ data: {}, error: null });
-  const sign = vi
-    .fn()
-    .mockResolvedValue({
-      data: [{ path: PATH, signedUrl: URL, error: null }],
-      error: null,
-    });
+  const sign = vi.fn().mockResolvedValue({
+    data: [{ path: PATH, signedUrl: URL, error: null }],
+    error: null,
+  });
   const from = vi.fn(() => ({ upload, createSignedUrls: sign }));
   return {
     api: { storage: { from } } as unknown as SupabaseClient,
