@@ -1,3 +1,4 @@
+import "./pedidos.css";
 import { t, t as translate, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
@@ -25,7 +26,7 @@ export function Pedidos() {
       new Date(value + "T12:00:00"),
     );
   return (
-    <>
+    <div className="uzta-orders">
       <div className="page-title">
         <h1>{t("Mis pedidos")}</h1>
       </div>
@@ -74,33 +75,61 @@ export function Pedidos() {
               <Photo
                 className="avatar"
                 crop={mode === "demo" ? [383, 184, 78, 82] : [0, 0, 0, 0]}
-                label="Productor de ejemplo"
+                label={
+                  mode === "demo"
+                    ? "Productor de ejemplo"
+                    : `Productor: ${o.farmName}`
+                }
               />
               <div>
                 <h2>{o.farmName}</h2>
-                <small>{date(o.pickup.date)}</small>
+                <small>
+                  {new Intl.DateTimeFormat("es-ES", {
+                    dateStyle: "medium",
+                    timeZone: "Europe/Madrid",
+                  }).format(new Date(o.createdAt))}
+                </small>
               </div>
               <span
-                className={`status ${o.status === "Pendiente" ? "pending" : ""}`}
+                className={`status ${o.status === "Pendiente" ? "pending" : o.status === "Completado" ? "completed" : "other"}`}
               >
                 {translate(o.status)}
               </span>
             </div>
             <div className="order-photos">
-              {o.lines.slice(0, 4).map((p) => (
-                <Photo key={p.productId} crop={p.crop} label={p.name} />
-              ))}
+              {o.lines.slice(0, 4).map((p) => {
+                const product = data.products.find(
+                  (item) => item.id === p.productId,
+                );
+                return (
+                  <Photo
+                    key={p.productId}
+                    src={
+                      product?.photo === undefined
+                        ? product?.photoUrl
+                        : product.photo
+                    }
+                    crop={mode === "demo" ? p.crop : [0, 0, 0, 0]}
+                    label={p.name}
+                  />
+                );
+              })}
               <ChevronRight />
             </div>
-            <p>
+            <p className="order-amount">
               {o.lines.length}{" "}
               {o.lines.length === 1 ? t("producto") : t("productos")} ·{" "}
               {euro(lineTotal(o.lines))}
             </p>
             <p>
-              {t("Recogida:")}
-              {o.pickup.start} – {o.pickup.end}
+              {t("Recogida:")} {o.pickup.start} – {o.pickup.end}
             </p>
+            {tab === "Como productor" ? (
+              <p className="received-order-reference">
+                Reserva #{o.id.slice(0, 8)}
+                {o.message ? ` · ${o.message}` : ""}
+              </p>
+            ) : null}
             <small>
               {o.example
                 ? t("Ejemplo de la maqueta")
@@ -185,6 +214,6 @@ export function Pedidos() {
           ) : null}
         </Modal>
       ) : null}
-    </>
+    </div>
   );
 }

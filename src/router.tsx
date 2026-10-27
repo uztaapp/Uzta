@@ -52,8 +52,8 @@ export function Shell() {
 }
 function BottomNavigation() {
   useLanguage();
-  const onHome = useRouterState({
-    select: (state) => state.location.pathname === "/",
+  const referenceNavigation = useRouterState({
+    select: (state) => ["/", "/pedidos"].includes(state.location.pathname),
   });
   const { data } = useDemo();
   const count = Object.values(data.quantities).filter((q) => q > 0).length;
@@ -63,12 +63,14 @@ function BottomNavigation() {
         <Link
           key={to}
           to={to}
-          aria-label={onHome && to === "/productor" ? "Explorar" : t(label)}
+          aria-label={
+            referenceNavigation && to === "/productor" ? "Explorar" : t(label)
+          }
           activeOptions={{ exact: true }}
           activeProps={{ className: "active", "aria-current": "page" }}
         >
           <span className="nav-icon">
-            {onHome && to === "/productor" ? (
+            {referenceNavigation && to === "/productor" ? (
               <Search size={22} />
             ) : (
               <Icon size={22} />
@@ -77,7 +79,9 @@ function BottomNavigation() {
               <span className="nav-count">{count}</span>
             ) : null}
           </span>
-          <span>{onHome && to === "/productor" ? "Explorar" : t(label)}</span>
+          <span>
+            {referenceNavigation && to === "/productor" ? "Explorar" : t(label)}
+          </span>
         </Link>
       ))}
     </nav>
