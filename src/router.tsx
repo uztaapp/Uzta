@@ -19,7 +19,8 @@ import { Productor } from "./pages/productor";
 import { Cesta } from "./pages/cesta";
 import { Pedidos } from "./pages/pedidos";
 import { Perfil } from "./pages/perfil";
-import { AppRecovery } from "./components/app-recovery";
+import { AppRecovery, RootRecovery } from "./components/app-recovery";
+import { t, useLanguage } from "./lib/language";
 const destinations = [
   ["/", "Inicio", Home],
   ["/productor", "Productor", Sprout],
@@ -49,6 +50,7 @@ export function Shell() {
   );
 }
 function BottomNavigation() {
+  useLanguage();
   const { data } = useDemo();
   const count = Object.values(data.quantities).filter((q) => q > 0).length;
   return (
@@ -57,7 +59,7 @@ function BottomNavigation() {
         <Link
           key={to}
           to={to}
-          aria-label={label}
+          aria-label={t(label)}
           activeOptions={{ exact: true }}
           activeProps={{ className: "active", "aria-current": "page" }}
         >
@@ -67,13 +69,14 @@ function BottomNavigation() {
               <span className="nav-count">{count}</span>
             ) : null}
           </span>
-          <span>{label}</span>
+          <span>{t(label)}</span>
         </Link>
       ))}
     </nav>
   );
 }
 const root = createRootRoute({
+  errorComponent: RootRecovery,
   component: Shell,
   notFoundComponent: () => (
     <>

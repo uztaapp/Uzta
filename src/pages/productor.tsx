@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link, useSearch } from "@tanstack/react-router";
 import {
@@ -13,6 +14,7 @@ import { Photo, euro, useDemo } from "../design";
 import { futureSlot } from "../lib/local-model";
 import { ShareStore } from "../components/share-store";
 export function Productor() {
+  useLanguage();
   const [tab, setTab] = useState("Productos");
   const { data, run, mode, busy } = useDemo();
   const search = useSearch({ strict: false }) as { tienda?: string };
@@ -27,10 +29,10 @@ export function Productor() {
       <div className="empty">
         <h1>
           {search.tienda
-            ? "Productor no encontrado"
-            : "Aún no hay productores publicados"}
+            ? t("Productor no encontrado")
+            : t("Aún no hay productores publicados")}
         </h1>
-        <Link to="/">Volver al inicio</Link>
+        <Link to="/">{t("Volver al inicio")}</Link>
       </div>
     );
   const tabs = [
@@ -46,7 +48,7 @@ export function Productor() {
           crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
           label={`Caserío de ejemplo de ${farm.name}`}
         />
-        <Link className="hero-back" to="/" aria-label="Volver al inicio">
+        <Link className="hero-back" to="/" aria-label={t("Volver al inicio")}>
           <ArrowLeft />
         </Link>
         <ShareStore id={farm.id} name={farm.name} demo={mode === "demo"} />
@@ -59,11 +61,13 @@ export function Productor() {
         />
         <h1>{farm.name}</h1>
         <div className="farm-meta">
-          {farm.ecological ? <span className="eco">♧ Ecológico</span> : null}
+          {farm.ecological ? (
+            <span className="eco">{t("♧ Ecológico")}</span>
+          ) : null}
           {mode === "demo" && farm.id === "urki" ? (
             <span>
               <Star size={18} fill="#efb329" color="#efb329" />{" "}
-              <strong>4,8</strong> (32) <small>Maqueta</small>
+              <strong>4,8</strong> (32) <small>{t("Maqueta")}</small>
             </span>
           ) : null}
         </div>
@@ -91,7 +95,7 @@ export function Productor() {
             onClick={() => setTab(label)}
           >
             <Icon size={22} />
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
@@ -102,7 +106,7 @@ export function Productor() {
       >
         {tab === "Productos" ? (
           <>
-            <h2>Productos disponibles</h2>
+            <h2>{t("Productos disponibles")}</h2>
             <p role="status" className="subtle">
               {added}
             </p>
@@ -124,7 +128,7 @@ export function Productor() {
                       <small>
                         {p.stock
                           ? `Disponible: ${p.stock} ${p.unit}`
-                          : "Agotado"}
+                          : t("Agotado")}
                       </small>
                     </div>
                     <button
@@ -142,26 +146,27 @@ export function Productor() {
                 ))}
             </div>
             <Link className="primary action-link" to="/cesta">
-              Ver cesta
+              {t("Ver cesta")}
             </Link>
           </>
         ) : null}
         {tab === "Información" ? (
           <div className="info-panel">
-            <h2>Información del productor</h2>
+            <h2>{t("Información del productor")}</h2>
             <p>{farm.description || "Sin descripción añadida."}</p>
             <p>
-              <strong>Ubicación:</strong> {farm.location}
+              <strong>{t("Ubicación:")}</strong> {farm.location}
             </p>
             <p>
-              Recogida en el productor. Las fechas y horas se seleccionan al
-              reservar.
+              {t(
+                "Recogida en el productor. Las fechas y horas se seleccionan al reservar.",
+              )}
             </p>
           </div>
         ) : null}
         {tab === "Horarios" ? (
           <div className="info-panel">
-            <h2>Horarios de recogida</h2>
+            <h2>{t("Horarios de recogida")}</h2>
             {farm.slots.filter((s) => futureSlot(s)).length ? (
               farm.slots
                 .filter((s) => futureSlot(s))
@@ -172,19 +177,20 @@ export function Productor() {
                 ))
             ) : (
               <p>
-                Este productor no ha publicado franjas de recogida. Se pueden
-                configurar en Perfil → Horarios y entregas.
+                {t(
+                  "Este productor no ha publicado franjas de recogida. Se pueden configurar en Perfil → Horarios y entregas.",
+                )}
               </p>
             )}
           </div>
         ) : null}
         {tab === "Opiniones" ? (
           <div className="info-panel">
-            <h2>Opiniones</h2>
+            <h2>{t("Opiniones")}</h2>
             {mode === "demo" ? (
               <>
                 <p className="subtle">
-                  Opiniones ficticias para mostrar el diseño.
+                  {t("Opiniones ficticias para mostrar el diseño.")}
                 </p>
                 {[
                   ["Maite", "Productos frescos y recogida muy cómoda."],
@@ -203,12 +209,14 @@ export function Productor() {
                       <span aria-label="5 estrellas de ejemplo">★★★★★</span>
                     </strong>
                     <p>{text}</p>
-                    <small>Ejemplo · no verificada</small>
+                    <small>{t("Ejemplo · no verificada")}</small>
                   </article>
                 ))}
               </>
             ) : (
-              <p>Aún no hay opiniones verificadas para este productor.</p>
+              <p>
+                {t("Aún no hay opiniones verificadas para este productor.")}
+              </p>
             )}
           </div>
         ) : null}

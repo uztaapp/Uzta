@@ -1,6 +1,8 @@
+import { t, useLanguage } from "../lib/language";
 import { useState, useRef, type FormEvent } from "react";
 import { useUzta } from "../app-context";
 export function CreateStore() {
+  useLanguage();
   const { run, busy } = useUzta();
   const id = useRef(crypto.randomUUID());
   const [error, setError] = useState("");
@@ -27,31 +29,32 @@ export function CreateStore() {
   }
   return (
     <section className="management">
-      <h2>Tu tienda de productor</h2>
+      <h2>{t("Tu tienda de productor")}</h2>
       <p>
-        Aún no tienes una tienda. Añade sus datos para publicar productos y
-        franjas de recogida.
+        {t(
+          "Aún no tienes una tienda. Añade sus datos para publicar productos y franjas de recogida.",
+        )}
       </p>
       <form className="uzta-form" onSubmit={submit}>
         <label>
-          Nombre de la tienda
+          {t("Nombre de la tienda")}
           <input name="name" required maxLength={100} />
         </label>
         <label>
-          Ubicación
+          {t("Ubicación")}
           <input name="location" required maxLength={100} />
         </label>
         <label>
-          Descripción
+          {t("Descripción")}
           <textarea name="description" maxLength={2000} />
         </label>
         <label className="check-label">
           <input type="checkbox" name="ecological" />
-          Producción ecológica
+          {t("Producción ecológica")}
         </label>
         {error ? <p role="alert">{error}</p> : null}
         <button className="primary" disabled={busy}>
-          Crear mi tienda
+          {t("Crear mi tienda")}
         </button>
       </form>
     </section>

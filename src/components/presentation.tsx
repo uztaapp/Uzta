@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../lib/language";
 import {
   useRef,
   useState,
@@ -18,6 +19,7 @@ export function Photo({
   label: string;
   src?: string | null;
 }) {
+  useLanguage();
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
   if (src && !failed)
@@ -76,6 +78,7 @@ export function Modal({
   close: () => void;
   children: ReactNode;
 }) {
+  useLanguage();
   const ref = useRef<HTMLElement>(null);
   const titleId = useId();
   const closeRef = useRef(close);
@@ -119,8 +122,8 @@ export function Modal({
         }}
       >
         <div className="modal-heading">
-          <h2 id={titleId}>{title}</h2>
-          <button aria-label="Cerrar diálogo" onClick={close}>
+          <h2 id={titleId}>{t(title)}</h2>
+          <button aria-label={t("Cerrar diálogo")} onClick={close}>
             ×
           </button>
         </div>

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Share2, Copy } from "lucide-react";
 import { Modal } from "./presentation";
@@ -11,6 +12,7 @@ export function ShareStore({
   name: string;
   demo: boolean;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
@@ -57,7 +59,7 @@ export function ShareStore({
     <>
       <button
         className="hero-share"
-        aria-label="Compartir tienda"
+        aria-label={t("Compartir tienda")}
         aria-haspopup="dialog"
         disabled={pending}
         onClick={() => void share()}
@@ -65,16 +67,18 @@ export function ShareStore({
         <Share2 size={21} />
       </button>
       {open ? (
-        <Modal title="Compartir tienda" close={() => setOpen(false)}>
+        <Modal title={t("Compartir tienda")} close={() => setOpen(false)}>
           <p>
             {demo
-              ? "Esta es una tienda ficticia de la demostración. No tiene un enlace público real."
+              ? t(
+                  "Esta es una tienda ficticia de la demostración. No tiene un enlace público real.",
+                )
               : name}
           </p>
           {!demo ? (
             <div className="uzta-form">
               <label>
-                Enlace público
+                {t("Enlace público")}
                 <input
                   readOnly
                   value={producerPublicUrl(id)}
@@ -82,11 +86,13 @@ export function ShareStore({
                 />
               </label>
               <button className="primary" onClick={() => void copy()}>
-                <Copy size={17} /> Copiar enlace
+                <Copy size={17} />
+                {t("Copiar enlace")}
               </button>
               <p className="subtle">
-                Solo se comparte el enlace de la tienda. No incluye tu sesión ni
-                tus reservas.
+                {t(
+                  "Solo se comparte el enlace de la tienda. No incluye tu sesión ni tus reservas.",
+                )}
               </p>
             </div>
           ) : null}

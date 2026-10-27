@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 export function Inicio() {
+  useLanguage();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
@@ -39,7 +41,7 @@ export function Inicio() {
       <div className="home-heading">
         <div className="logo">
           <Leaf fill="currentColor" size={27} /> UZTA
-          <small>Del productor a tu mesa</small>
+          <small>{t("Del productor a tu mesa")}</small>
         </div>
         <Link to="/cesta" aria-label="Abrir cesta" className="basket-shortcut">
           <ShoppingBasket />
@@ -48,7 +50,7 @@ export function Inicio() {
           </span>
         </Link>
       </div>
-      <h1 className="sr-only">Inicio</h1>
+      <h1 className="sr-only">{t("Inicio")}</h1>
       <p className="location">
         <MapPin size={17} />
         {data.profile.location || "Productos cerca de ti"}
@@ -77,12 +79,12 @@ export function Inicio() {
             onClick={() => setCategory(category === label ? "" : label)}
           >
             <span>{icon}</span>
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
       <div className="section-heading">
-        <h2>Productos cerca de ti</h2>
+        <h2>{t("Productos cerca de ti")}</h2>
         <button
           onClick={() => {
             setShowAll(true);
@@ -91,7 +93,8 @@ export function Inicio() {
             setOnlyFavorites(false);
           }}
         >
-          Ver todos <ChevronRight size={14} />
+          {t("Ver todos")}
+          <ChevronRight size={14} />
         </button>
       </div>
       <button
@@ -99,7 +102,8 @@ export function Inicio() {
         aria-pressed={onlyFavorites}
         onClick={() => setOnlyFavorites(!onlyFavorites)}
       >
-        <Heart size={15} /> Mis favoritos
+        <Heart size={15} />
+        {t("Mis favoritos")}
       </button>
       <div className="product-grid">
         {visible.map((p) => {
@@ -120,7 +124,7 @@ export function Inicio() {
                 </Link>
                 <button
                   className="heart"
-                  aria-label={`${data.favorites.includes(p.id) ? "Quitar" : "Guardar"} ${p.name} en favoritos`}
+                  aria-label={`${data.favorites.includes(p.id) ? t("Quitar") : t("Guardar")} ${p.name} en favoritos`}
                   aria-pressed={data.favorites.includes(p.id)}
                   onClick={() => run({ type: "favorite", id: p.id })}
                 >
@@ -132,7 +136,7 @@ export function Inicio() {
                   />
                 </button>
                 {farm.ecological ? (
-                  <span className="eco">Ecológico</span>
+                  <span className="eco">{t("Ecológico")}</span>
                 ) : null}
               </div>
               <div className="product-copy">
@@ -147,7 +151,7 @@ export function Inicio() {
                   </span>
                   <span>{farm.distance}</span>
                 </small>
-                {!p.stock ? <small>Agotado</small> : null}
+                {!p.stock ? <small>{t("Agotado")}</small> : null}
               </div>
             </article>
           );
@@ -156,12 +160,12 @@ export function Inicio() {
       {!visible.length ? (
         <p className="empty">
           {busy
-            ? "Cargando productos…"
-            : "Todavía no hay productos publicados en esta selección."}
+            ? t("Cargando productos…")
+            : t("Todavía no hay productos publicados en esta selección.")}
         </p>
       ) : null}
       <div className="section-heading">
-        <h2>Directamente del productor</h2>
+        <h2>{t("Directamente del productor")}</h2>
       </div>
       <div className="farm-grid">
         {data.farms.map((f) => (

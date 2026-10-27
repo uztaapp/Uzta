@@ -1,4 +1,13 @@
 /* Shared layout and finish from the approved five-screen UZTA mockup. */
+.language-access {
+  margin: 15px 0;
+  color: #38552a;
+  font-size: 13px;
+}
+.language-access > summary {
+  cursor: pointer;
+  padding: 6px 0;
+}
 .uploaded-photo {
   display: block;
   object-fit: cover;

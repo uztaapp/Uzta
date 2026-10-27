@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../lib/language";
 import { useRef, useState, useEffect } from "react";
 import { optimizeImage } from "../lib/image-optimize";
 import { photoDataUrl } from "../lib/product-photo";
@@ -12,6 +13,7 @@ export function ProductPhotoEditor({
   onChange: (src: string | null) => void;
   onPending: (pending: boolean) => void;
 }) {
+  useLanguage();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const alive = useRef(true);
@@ -49,14 +51,14 @@ export function ProductPhotoEditor({
     }
   }
   return (
-    <section className="photo-editor" aria-label="Fotografía del producto">
+    <section className="photo-editor" aria-label={t("Fotografía del producto")}>
       <Photo
         src={product.photo}
         crop={product.photo === null ? [0, 0, 0, 0] : product.crop}
         label={product.name || "Producto"}
       />
       <label>
-        Fotografía del producto
+        {t("Fotografía del producto")}
         <input
           aria-label="Elegir fotografía"
           type="file"
@@ -65,7 +67,7 @@ export function ProductPhotoEditor({
           onChange={(e) => void choose(e.currentTarget)}
         />
       </label>
-      {pending ? <p role="status">Preparando fotografía…</p> : null}
+      {pending ? <p role="status">{t("Preparando fotografía…")}</p> : null}
       {error ? <p role="alert">{error}</p> : null}
       {product.photo !== null ? (
         <button
@@ -77,12 +79,13 @@ export function ProductPhotoEditor({
             onChange(null);
           }}
         >
-          Retirar fotografía
+          {t("Retirar fotografía")}
         </button>
       ) : null}
       <p className="subtle">
-        JPG, PNG o WebP. Se reduce el tamaño y se eliminan los metadatos de
-        ubicación. La foto se guarda al pulsar Guardar producto.
+        {t(
+          "JPG, PNG o WebP. Se reduce el tamaño y se eliminan los metadatos de ubicación. La foto se guarda al pulsar Guardar producto.",
+        )}
       </p>
     </section>
   );

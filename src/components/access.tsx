@@ -1,6 +1,9 @@
+import { t, useLanguage } from "../lib/language";
 import { useState, type FormEvent } from "react";
 import { useUzta } from "../app-context";
+import { LanguageSelector } from "./language-selector";
 export function Access() {
+  useLanguage();
   const { signIn, signUp, switchMode, busy } = useUzta();
   const [register, setRegister] = useState(false);
   const [pending, setPending] = useState(false);
@@ -33,12 +36,18 @@ export function Access() {
   }
   return (
     <section className="access-panel">
-      <h1>{register ? "Crear cuenta en UZTA" : "Entrar en UZTA"}</h1>
-      <p>Accede a tu perfil, guarda tus reservas y gestiona tu tienda.</p>
+      <h1>{register ? t("Crear cuenta en UZTA") : t("Entrar en UZTA")}</h1>
+      <details className="language-access">
+        <summary>{t("Idioma")}</summary>
+        <LanguageSelector />
+      </details>
+      <p>
+        {t("Accede a tu perfil, guarda tus reservas y gestiona tu tienda.")}
+      </p>
       <form className="uzta-form" onSubmit={submit}>
         {register ? (
           <label>
-            Nombre
+            {t("Nombre")}
             <input
               name="name"
               autoComplete="name"
@@ -49,7 +58,7 @@ export function Access() {
           </label>
         ) : null}
         <label>
-          Correo electrónico
+          {t("Correo electrónico")}
           <input
             name="email"
             type="email"
@@ -59,7 +68,7 @@ export function Access() {
           />
         </label>
         <label>
-          Contraseña
+          {t("Contraseña")}
           <input
             name="password"
             type="password"
@@ -76,7 +85,11 @@ export function Access() {
           </p>
         ) : null}
         <button className="primary" disabled={pending || busy}>
-          {pending ? "Espera…" : register ? "Crear cuenta" : "Iniciar sesión"}
+          {pending
+            ? t("Espera…")
+            : register
+              ? t("Crear cuenta")
+              : t("Iniciar sesión")}
         </button>
       </form>
       <button
@@ -88,7 +101,7 @@ export function Access() {
           setMessage("");
         }}
       >
-        {register ? "Ya tengo cuenta" : "Crear una cuenta"}
+        {register ? t("Ya tengo cuenta") : t("Crear una cuenta")}
       </button>
       <hr />
       <button
@@ -96,10 +109,10 @@ export function Access() {
         disabled={pending}
         onClick={() => switchMode("demo")}
       >
-        Ver demostración
+        {t("Ver demostración")}
       </button>
       <p className="subtle">
-        La demostración utiliza ejemplos y no envía reservas.
+        {t("La demostración utiliza ejemplos y no envía reservas.")}
       </p>
     </section>
   );

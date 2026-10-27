@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../lib/language";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import {
@@ -19,13 +20,17 @@ import { profileSchema } from "../lib/local-model";
 import { Gestion } from "./gestion";
 import { Access } from "../components/access";
 import { UsageGuide } from "../components/usage-guide";
+import { LanguageSelector } from "../components/language-selector";
+import { languages, currentLanguage } from "../lib/language";
 export function Perfil() {
+  useLanguage();
   const { data, run, show, mode, busy, switchMode, signOut } = useDemo();
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { apartado?: string };
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const [guideOpen, setGuideOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const labels: Record<string, string> = {
     tienda: "Mi tienda",
     productos: "Productos",
@@ -55,17 +60,22 @@ export function Perfil() {
   if (!data.sessionActive)
     return (
       <div className="info-panel">
-        <h1>Mi perfil</h1>
+        <h1>{t("Mi perfil")}</h1>
         <p>
-          El perfil local está cerrado. Los datos siguen guardados en este
-          navegador.
+          {t(
+            "El perfil local está cerrado. Los datos siguen guardados en este navegador.",
+          )}
         </p>
-        <p>No hay autenticación ni cuentas compartidas con otros servicios.</p>
+        <p>
+          {t(
+            "No hay autenticación ni cuentas compartidas con otros servicios.",
+          )}
+        </p>
         <button
           className="primary"
           onClick={() => run({ type: "session", active: true })}
         >
-          Abrir perfil local
+          {t("Abrir perfil local")}
         </button>
       </div>
     );
@@ -76,7 +86,7 @@ export function Perfil() {
           <Link to="/perfil" aria-label="Volver al perfil">
             <ArrowLeft />
           </Link>
-          <h1>{labels[search.apartado]}</h1>
+          <h1>{t(labels[search.apartado])}</h1>
         </div>
         <Gestion key={search.apartado} section={search.apartado} />
       </>
@@ -84,10 +94,10 @@ export function Perfil() {
   return (
     <>
       <div className="page-title">
-        <h1>Mi perfil</h1>
+        <h1>{t("Mi perfil")}</h1>
         <button
           className="profile-settings"
-          aria-label="Editar perfil"
+          aria-label={t("Editar perfil")}
           onClick={() => setEditing(true)}
         >
           <Settings />
@@ -103,34 +113,29 @@ export function Perfil() {
           <div>
             <h2>{data.profile.name}</h2>
             <p>{data.profile.email}</p>
-            <button onClick={() => setEditing(true)}>Editar perfil ›</button>
+            <button onClick={() => setEditing(true)}>
+              {t("Editar perfil ›")}
+            </button>
           </div>
         </div>
         <button className="profile-row" onClick={() => setEditing(true)}>
           <MapPin />
           <span>
-            <small>Dirección de entrega / ubicación</small>
+            <small>{t("Dirección de entrega / ubicación")}</small>
             {data.profile.location}
           </span>
           <ChevronRight />
         </button>
-        <button
-          className="profile-row"
-          onClick={() =>
-            show(
-              "Idioma actual: Español. Los demás idiomas necesitan traducciones revisadas antes de activarse.",
-            )
-          }
-        >
+        <button className="profile-row" onClick={() => setLanguageOpen(true)}>
           <Globe />
           <span>
-            <small>Idioma</small>
-            {data.profile.language}
+            <small>{t("Idioma")}</small>
+            {languages.find((l) => l.code === currentLanguage())?.name}
           </span>
           <ChevronRight />
         </button>
       </section>
-      <h2 className="producer-heading">Para productores</h2>
+      <h2 className="producer-heading">{t("Para productores")}</h2>
       <div className="producer-menu">
         {[
           ["Mi tienda", "tienda", Store],
@@ -157,7 +162,7 @@ export function Perfil() {
               }
             >
               <Symbol />
-              <span>{label as string}</span>
+              <span>{t(label as string)}</span>
               <ChevronRight />
             </button>
           );
@@ -165,17 +170,17 @@ export function Perfil() {
       </div>
       {mode === "demo" ? (
         <button className="primary" onClick={() => switchMode("cloud")}>
-          Entrar en mi cuenta de UZTA
+          {t("Entrar en mi cuenta de UZTA")}
         </button>
       ) : (
         <button className="primary" onClick={() => switchMode("demo")}>
-          Ver catálogo de demostración
+          {t("Ver catálogo de demostración")}
         </button>
       )}
       <div className="profile-bottom">
         <button className="profile-row" onClick={() => setGuideOpen(true)}>
           <HelpCircle />
-          <span>Ayuda y soporte</span>
+          <span>{t("Ayuda y soporte")}</span>
           <ChevronRight />
         </button>
         <button
@@ -187,19 +192,24 @@ export function Perfil() {
           }
         >
           <FileText />
-          <span>Condiciones de uso</span>
+          <span>{t("Condiciones de uso")}</span>
           <ChevronRight />
         </button>
         <button className="profile-row" onClick={() => void signOut()}>
           <LogOut />
           <span>
-            {mode === "cloud" ? "Cerrar sesión" : "Cerrar sesión local"}
+            {mode === "cloud" ? t("Cerrar sesión") : t("Cerrar sesión local")}
           </span>
           <ChevronRight />
         </button>
       </div>
+      {languageOpen ? (
+        <Modal title={t("Idioma")} close={() => setLanguageOpen(false)}>
+          <LanguageSelector />
+        </Modal>
+      ) : null}
       {guideOpen ? (
-        <Modal title="Cómo usar UZTA" close={() => setGuideOpen(false)}>
+        <Modal title={t("Cómo usar UZTA")} close={() => setGuideOpen(false)}>
           <UsageGuide
             demo={mode === "demo"}
             close={() => setGuideOpen(false)}
@@ -208,13 +218,15 @@ export function Perfil() {
       ) : null}
       {editing ? (
         <Modal
-          title={mode === "cloud" ? "Editar perfil" : "Editar perfil local"}
+          title={
+            mode === "cloud" ? t("Editar perfil") : t("Editar perfil local")
+          }
           close={() => setEditing(false)}
         >
           <form className="uzta-form" onSubmit={save}>
             <fieldset disabled={busy}>
               <label>
-                Nombre
+                {t("Nombre")}
                 <input
                   name="name"
                   required
@@ -223,7 +235,7 @@ export function Perfil() {
                 />
               </label>
               <label>
-                Correo electrónico
+                {t("Correo electrónico")}
                 <input
                   readOnly={mode === "cloud"}
                   type="email"
@@ -234,7 +246,7 @@ export function Perfil() {
                 />
               </label>
               <label>
-                Ubicación
+                {t("Ubicación")}
                 <input
                   name="location"
                   required
@@ -244,11 +256,13 @@ export function Perfil() {
               </label>
               <p className="subtle">
                 {mode === "cloud"
-                  ? "Tu nombre y ubicación se guardan en tu cuenta de UZTA. El correo se gestiona desde el acceso a tu cuenta."
-                  : "Se guarda solo en este navegador. Usa datos de prueba."}
+                  ? t(
+                      "Tu nombre y ubicación se guardan en tu cuenta de UZTA. El correo se gestiona desde el acceso a tu cuenta.",
+                    )
+                  : t("Se guarda solo en este navegador. Usa datos de prueba.")}
               </p>
               {error ? <p role="alert">{error}</p> : null}
-              <button className="primary">Guardar perfil</button>
+              <button className="primary">{t("Guardar perfil")}</button>
             </fieldset>
           </form>
         </Modal>

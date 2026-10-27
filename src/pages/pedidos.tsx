@@ -1,9 +1,11 @@
+import { t, t as translate, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { Photo, Modal, euro, useDemo } from "../design";
 import { lineTotal } from "../lib/local-model";
 export function Pedidos() {
+  useLanguage();
   const search = useSearch({ strict: false }) as {
     pedido?: string;
     vista?: string;
@@ -25,7 +27,7 @@ export function Pedidos() {
   return (
     <>
       <div className="page-title">
-        <h1>Mis pedidos</h1>
+        <h1>{t("Mis pedidos")}</h1>
       </div>
       <div className="segmented" role="tablist" aria-label="Tipo de pedidos">
         {["Compras", "Como productor"].map((t) => (
@@ -35,14 +37,14 @@ export function Pedidos() {
             aria-selected={tab === t}
             onClick={() => setTab(t)}
           >
-            {t}
+            {translate(t)}
           </button>
         ))}
       </div>
       <p className="subtle">
         {mode === "demo"
-          ? "Reservas de demostración guardadas en este navegador."
-          : "Tus reservas y su estado actual."}
+          ? t("Reservas de demostración guardadas en este navegador.")
+          : t("Tus reservas y su estado actual.")}
       </p>
       {mode === "cloud" ? (
         <button
@@ -50,7 +52,7 @@ export function Pedidos() {
           disabled={busy}
           onClick={() => void refresh()}
         >
-          Actualizar pedidos
+          {t("Actualizar pedidos")}
         </button>
       ) : null}
       <div className="orders" role="tabpanel">
@@ -81,7 +83,7 @@ export function Pedidos() {
               <span
                 className={`status ${o.status === "Pendiente" ? "pending" : ""}`}
               >
-                {o.status}
+                {translate(o.status)}
               </span>
             </div>
             <div className="order-photos">
@@ -91,25 +93,27 @@ export function Pedidos() {
               <ChevronRight />
             </div>
             <p>
-              {o.lines.length} {o.lines.length === 1 ? "producto" : "productos"}{" "}
-              · {euro(lineTotal(o.lines))}
+              {o.lines.length}{" "}
+              {o.lines.length === 1 ? t("producto") : t("productos")} ·{" "}
+              {euro(lineTotal(o.lines))}
             </p>
             <p>
-              Recogida: {o.pickup.start} – {o.pickup.end}
+              {t("Recogida:")}
+              {o.pickup.start} – {o.pickup.end}
             </p>
             <small>
               {o.example
-                ? "Ejemplo de la maqueta"
+                ? t("Ejemplo de la maqueta")
                 : mode === "cloud"
-                  ? "Reserva"
-                  : "Reserva local"}
+                  ? t("Reserva")
+                  : t("Reserva local")}
             </small>
           </button>
         ))}
         {!visible.length ? (
           <div className="empty">
-            <h2>No hay pedidos todavía</h2>
-            <Link to="/">Ver productos</Link>
+            <h2>{t("No hay pedidos todavía")}</h2>
+            <Link to="/">{t("Ver productos")}</Link>
           </div>
         ) : null}
       </div>
@@ -117,10 +121,10 @@ export function Pedidos() {
         <Modal
           title={
             selected.example
-              ? "Pedido de ejemplo"
+              ? t("Pedido de ejemplo")
               : mode === "cloud"
-                ? "Detalle de la reserva"
-                : "Detalle de la reserva local"
+                ? t("Detalle de la reserva")
+                : t("Detalle de la reserva local")
           }
           close={() =>
             void navigate({
@@ -139,7 +143,8 @@ export function Pedidos() {
             {selected.pickup.end}
           </p>
           <p>
-            Estado: <strong>{selected.status}</strong>
+            {t("Estado:")}
+            <strong>{selected.status}</strong>
           </p>
           <ul className="order-lines">
             {selected.lines.map((line) => (
@@ -152,20 +157,20 @@ export function Pedidos() {
             ))}
           </ul>
           <div className="total">
-            <strong>Total</strong>
+            <strong>{t("Total")}</strong>
             <strong>{euro(lineTotal(selected.lines))}</strong>
           </div>
           {selected.message ? (
             <p>
-              <strong>Mensaje:</strong> {selected.message}
+              <strong>{t("Mensaje:")}</strong> {selected.message}
             </p>
           ) : null}
           <p className="subtle">
             {selected.example
-              ? "Ejemplo ilustrativo, sin reserva real."
+              ? t("Ejemplo ilustrativo, sin reserva real.")
               : mode === "cloud"
-                ? "Reserva guardada en tu cuenta de UZTA."
-                : "Conservado en este equipo. No enviado al productor."}
+                ? t("Reserva guardada en tu cuenta de UZTA.")
+                : t("Conservado en este equipo. No enviado al productor.")}
           </p>
           {tab === "Como productor" &&
           !selected.example &&
@@ -175,7 +180,7 @@ export function Pedidos() {
               disabled={busy}
               onClick={() => run({ type: "complete", id: selected.id })}
             >
-              Marcar recogido
+              {t("Marcar recogido")}
             </button>
           ) : null}
         </Modal>

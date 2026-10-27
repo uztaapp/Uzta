@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../lib/language";
 import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { Modal, Photo, euro, useDemo } from "../design";
@@ -11,6 +12,7 @@ import {
 import { CreateStore } from "../components/create-store";
 import { ProductPhotoEditor } from "../components/product-photo-editor";
 export function Gestion({ section }: { section: string }) {
+  useLanguage();
   const { data, run, show, mode, busy, managedFarmId } = useDemo();
   const farm = data.farms.find((f) => f.id === managedFarmId)!;
   const [edit, setEdit] = useState<Product | null>(null);
@@ -116,7 +118,7 @@ export function Gestion({ section }: { section: string }) {
   return (
     <section className="management">
       <p className="subtle">
-        {mode === "demo" ? "Gestión de demostración" : "Tu tienda"} ·{" "}
+        {mode === "demo" ? t("Gestión de demostración") : t("Tu tienda")} ·{" "}
         {farm.name}
       </p>
       {saved ? (
@@ -127,9 +129,9 @@ export function Gestion({ section }: { section: string }) {
       {section === "tienda" ? (
         <form className="uzta-form" onSubmit={saveFarm}>
           <fieldset disabled={busy}>
-            <h2>Mi tienda</h2>
+            <h2>{t("Mi tienda")}</h2>
             <label>
-              Nombre de la tienda
+              {t("Nombre de la tienda")}
               <input
                 name="name"
                 required
@@ -138,7 +140,7 @@ export function Gestion({ section }: { section: string }) {
               />
             </label>
             <label>
-              Ubicación
+              {t("Ubicación")}
               <input
                 name="location"
                 required
@@ -147,7 +149,7 @@ export function Gestion({ section }: { section: string }) {
               />
             </label>
             <label>
-              Descripción
+              {t("Descripción")}
               <textarea
                 name="description"
                 maxLength={2000}
@@ -160,11 +162,11 @@ export function Gestion({ section }: { section: string }) {
                 name="ecological"
                 defaultChecked={farm.ecological}
               />{" "}
-              Producción ecológica
+              {t("Producción ecológica")}
             </label>
-            <button className="primary">Guardar tienda</button>
+            <button className="primary">{t("Guardar tienda")}</button>
             <Link to="/productor" search={{ tienda: farm.id }}>
-              Ver la tienda
+              {t("Ver la tienda")}
             </Link>
           </fieldset>
         </form>
@@ -172,7 +174,7 @@ export function Gestion({ section }: { section: string }) {
       {section === "productos" ? (
         <>
           <div className="section-heading">
-            <h2>Productos</h2>
+            <h2>{t("Productos")}</h2>
             <button
               onClick={() => {
                 setError("");
@@ -190,7 +192,7 @@ export function Gestion({ section }: { section: string }) {
                 });
               }}
             >
-              Añadir producto
+              {t("Añadir producto")}
             </button>
           </div>
           <div className="producer-products">
@@ -206,9 +208,11 @@ export function Gestion({ section }: { section: string }) {
                   <div>
                     <h3>{p.name}</h3>
                     <p>
-                      {euro(p.priceCents)} / {p.unit} · Stock: {p.stock}
+                      {euro(p.priceCents)} / {p.unit}
+                      {t("· Stock:")}
+                      {p.stock}
                     </p>
-                    <small>{p.active ? "Publicado" : "Oculto"}</small>
+                    <small>{p.active ? t("Publicado") : t("Oculto")}</small>
                   </div>
                   <button
                     className="edit-button"
@@ -217,7 +221,7 @@ export function Gestion({ section }: { section: string }) {
                       setEdit(p);
                     }}
                   >
-                    Editar
+                    {t("Editar")}
                   </button>
                 </article>
               ))}
@@ -226,10 +230,11 @@ export function Gestion({ section }: { section: string }) {
       ) : null}
       {section === "horarios" ? (
         <>
-          <h2>Horarios y entregas</h2>
+          <h2>{t("Horarios y entregas")}</h2>
           <p className="subtle">
-            Publica fechas y franjas de recogida. No se presuponen horarios ni
-            reparto a domicilio.
+            {t(
+              "Publica fechas y franjas de recogida. No se presuponen horarios ni reparto a domicilio.",
+            )}
           </p>
           <ul className="slot-list">
             {farm.slots
@@ -258,60 +263,60 @@ export function Gestion({ section }: { section: string }) {
                         );
                     }}
                   >
-                    Retirar
+                    {t("Retirar")}
                   </button>
                 </li>
               ))}
           </ul>
           {!farm.slots.filter((s) => futureSlot(s)).length ? (
-            <p>No hay franjas publicadas.</p>
+            <p>{t("No hay franjas publicadas.")}</p>
           ) : null}
           <form className="uzta-form" onSubmit={addSlot}>
             <fieldset disabled={busy}>
-              <h3>Añadir franja de recogida</h3>
+              <h3>{t("Añadir franja de recogida")}</h3>
               <label>
-                Fecha
+                {t("Fecha")}
                 <input type="date" name="date" min={localDate()} required />
               </label>
               <div className="form-columns">
                 <label>
-                  Desde
+                  {t("Desde")}
                   <input type="time" name="start" required />
                 </label>
                 <label>
-                  Hasta
+                  {t("Hasta")}
                   <input type="time" name="end" required />
                 </label>
               </div>
               {error ? <p role="alert">{error}</p> : null}
-              <button className="primary">Añadir franja</button>
+              <button className="primary">{t("Añadir franja")}</button>
             </fieldset>
           </form>
         </>
       ) : null}
       {section === "estadisticas" ? (
         <>
-          <h2>Estadísticas</h2>
+          <h2>{t("Estadísticas")}</h2>
           <p className="subtle">
             {mode === "demo"
-              ? "Solo reservas locales; los ejemplos no cuentan."
-              : "Reservas de tu tienda guardadas en UZTA."}
+              ? t("Solo reservas locales; los ejemplos no cuentan.")
+              : t("Reservas de tu tienda guardadas en UZTA.")}
           </p>
           <dl className="stats">
             <div>
-              <dt>{mode === "demo" ? "Reservas locales" : "Reservas"}</dt>
+              <dt>{mode === "demo" ? t("Reservas locales") : t("Reservas")}</dt>
               <dd>{ownOrders.length}</dd>
             </div>
             <div>
-              <dt>Pendientes</dt>
+              <dt>{t("Pendientes")}</dt>
               <dd>{ownOrders.length - completed.length}</dd>
             </div>
             <div>
-              <dt>Recogidas</dt>
+              <dt>{t("Recogidas")}</dt>
               <dd>{completed.length}</dd>
             </div>
             <div>
-              <dt>Importe reservado</dt>
+              <dt>{t("Importe reservado")}</dt>
               <dd>
                 {euro(
                   ownOrders.reduce((sum, o) => sum + lineTotal(o.lines), 0),
@@ -319,9 +324,9 @@ export function Gestion({ section }: { section: string }) {
               </dd>
             </div>
           </dl>
-          <p>No representa cobros ni facturación.</p>
+          <p>{t("No representa cobros ni facturación.")}</p>
           <Link to="/pedidos" search={{ vista: "productor" }}>
-            Ver pedidos recibidos
+            {t("Ver pedidos recibidos")}
           </Link>
         </>
       ) : null}
@@ -329,15 +334,15 @@ export function Gestion({ section }: { section: string }) {
         <Modal
           title={
             data.products.some((p) => p.id === edit.id)
-              ? "Editar producto"
-              : "Añadir producto"
+              ? t("Editar producto")
+              : t("Añadir producto")
           }
           close={() => setEdit(null)}
         >
           <form className="uzta-form" onSubmit={saveProduct}>
             <fieldset disabled={busy}>
               <label>
-                Nombre
+                {t("Nombre")}
                 <input
                   name="name"
                   required
@@ -347,7 +352,7 @@ export function Gestion({ section }: { section: string }) {
               </label>
               <div className="form-columns">
                 <label>
-                  Precio (€)
+                  {t("Precio (€)")}
                   <input
                     name="price"
                     type="number"
@@ -359,16 +364,16 @@ export function Gestion({ section }: { section: string }) {
                   />
                 </label>
                 <label>
-                  Unidad
+                  {t("Unidad")}
                   <select name="unit" defaultValue={edit.unit}>
                     <option value="kg">kg</option>
-                    <option value="docena">docena</option>
-                    <option value="unidad">unidad</option>
+                    <option value="docena">{t("docena")}</option>
+                    <option value="unidad">{t("unidad")}</option>
                   </select>
                 </label>
               </div>
               <label>
-                Existencias
+                {t("Existencias")}
                 <input
                   name="stock"
                   type="number"
@@ -380,10 +385,12 @@ export function Gestion({ section }: { section: string }) {
                 />
               </label>
               <label>
-                Categoría
+                {t("Categoría")}
                 <select name="category" defaultValue={edit.category}>
                   {categories.map((c) => (
-                    <option key={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {t(c)}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -393,7 +400,7 @@ export function Gestion({ section }: { section: string }) {
                   name="active"
                   defaultChecked={edit.active}
                 />{" "}
-                Publicado
+                {t("Publicado")}
               </label>
               <label className="check-label">
                 <input
@@ -401,7 +408,7 @@ export function Gestion({ section }: { section: string }) {
                   name="featured"
                   defaultChecked={edit.featured}
                 />{" "}
-                Mostrar en inicio
+                {t("Mostrar en inicio")}
               </label>
               {mode === "demo" ? (
                 <ProductPhotoEditor
@@ -416,14 +423,14 @@ export function Gestion({ section }: { section: string }) {
                 />
               ) : (
                 <p className="subtle">
-                  La carga de fotografías para cuentas reales necesita activar
-                  el almacenamiento de UZTA. Puedes continuar editando el
-                  producto.
+                  {t(
+                    "La carga de fotografías para cuentas reales necesita activar el almacenamiento de UZTA. Puedes continuar editando el producto.",
+                  )}
                 </p>
               )}
               {error ? <p role="alert">{error}</p> : null}
               <button className="primary" disabled={photoPending}>
-                Guardar producto
+                {t("Guardar producto")}
               </button>
             </fieldset>
           </form>
