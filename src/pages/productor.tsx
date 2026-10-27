@@ -1,3 +1,4 @@
+import "./productor.css";
 import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link, useSearch } from "@tanstack/react-router";
@@ -9,6 +10,9 @@ import {
   Info,
   Clock,
   Plus,
+  Heart,
+  Package,
+  Leaf,
 } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 import { futureSlot } from "../lib/local-model";
@@ -16,6 +20,7 @@ import { ShareStore } from "../components/share-store";
 import { publicMapUrl } from "../lib/nearby";
 export function Productor() {
   useLanguage();
+  const [expandedDescription, setExpandedDescription] = useState(false);
   const [tab, setTab] = useState("Productos");
   const { data, run, mode, busy } = useDemo();
   const search = useSearch({ strict: false }) as { tienda?: string };
@@ -43,27 +48,40 @@ export function Productor() {
     ["Opiniones", Star],
   ] as const;
   return (
-    <>
+    <div className="uzta-producer">
       <div className="producer-hero">
         <Photo
-          crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
-          label={`Caserío de ejemplo de ${farm.name}`}
+          crop={mode === "demo" ? [480, 105, 170, 110] : [0, 0, 0, 0]}
+          label={`${mode === "demo" ? "Explotación de ejemplo" : "Explotación"}: ${farm.name}`}
         />
         <Link className="hero-back" to="/" aria-label={t("Volver al inicio")}>
           <ArrowLeft />
         </Link>
+        <button
+          className="producer-favorite"
+          disabled
+          aria-label="Favoritos de productores: integración pendiente"
+          title="Favoritos de productores: integración pendiente"
+        >
+          <Heart size={23} />
+        </button>
         <ShareStore id={farm.id} name={farm.name} demo={mode === "demo"} />
       </div>
       <div className="producer-intro">
         <Photo
           className="avatar farm-avatar"
           crop={mode === "demo" ? [383, 184, 78, 82] : [0, 0, 0, 0]}
-          label="Productor de ejemplo"
+          label={
+            mode === "demo" ? "Productor de ejemplo" : `Avatar de ${farm.name}`
+          }
         />
         <h1>{farm.name}</h1>
         <div className="farm-meta">
           {farm.ecological ? (
-            <span className="eco">{t("♧ Ecológico")}</span>
+            <span className="eco">
+              <Leaf size={13} aria-hidden="true" />
+              {t("Ecológico")}
+            </span>
           ) : null}
           {mode === "demo" && farm.id === "urki" ? (
             <span>
@@ -76,10 +94,21 @@ export function Productor() {
           <MapPin size={17} />
           {farm.location} {farm.distance ? `· ${farm.distance}` : ""}
         </p>
-        <p>
+        <p
+          className={`producer-description${expandedDescription ? " expanded" : ""}`}
+        >
           {farm.description ||
             "El productor aún no ha añadido una descripción."}
         </p>
+        {farm.description.length > 180 ? (
+          <button
+            className="description-toggle"
+            aria-expanded={expandedDescription}
+            onClick={() => setExpandedDescription(!expandedDescription)}
+          >
+            {expandedDescription ? "Ver menos" : "Leer más"}
+          </button>
+        ) : null}
       </div>
       <div
         className="producer-tabs"
@@ -108,7 +137,7 @@ export function Productor() {
         {tab === "Productos" ? (
           <>
             <h2>{t("Productos disponibles")}</h2>
-            <p role="status" className="subtle">
+            <p role="status" className="producer-added">
               {added}
             </p>
             <div className="producer-products">
@@ -127,6 +156,7 @@ export function Productor() {
                         <strong>{euro(p.priceCents)}</strong> / {p.unit}
                       </p>
                       <small>
+                        <Package size={11} aria-hidden="true" />
                         {p.stock
                           ? `Disponible: ${p.stock} ${p.unit}`
                           : t("Agotado")}
@@ -170,6 +200,17 @@ export function Productor() {
                 </a>
               </p>
             ) : null}
+            {farm.ecological ? (
+              <p className="producer-characteristic">
+                <Leaf size={16} />
+                {t("Ecológico")}
+              </p>
+            ) : null}
+            <p className="pending-feature">
+              Los favoritos de productores y la carga de portada y avatar están
+              pendientes de integración. Los favoritos de productos siguen
+              disponibles en Inicio.
+            </p>
             <p>
               {t(
                 "Recogida en el productor. Las fechas y horas se seleccionan al reservar.",
@@ -228,12 +269,14 @@ export function Productor() {
               </>
             ) : (
               <p>
-                {t("Aún no hay opiniones verificadas para este productor.")}
+                {t(
+                  "Las opiniones y la valoración media están pendientes de integración.",
+                )}
               </p>
             )}
           </div>
         ) : null}
       </section>
-    </>
+    </div>
   );
 }
