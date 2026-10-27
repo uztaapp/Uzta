@@ -1,5 +1,5 @@
 import { t, useLanguage } from "../lib/language";
-import { useState, type FormEvent } from "react";
+import { lazy, Suspense, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { Modal, Photo, euro, useDemo } from "../design";
 import {
@@ -13,6 +13,9 @@ import { CreateStore } from "../components/create-store";
 import { ProductPhotoEditor } from "../components/product-photo-editor";
 import cloudConfig from "../../config/uzta-cloud.public.json";
 import { publicPosition, validPosition } from "../lib/nearby";
+const StoreLocationPicker = lazy(
+  () => import("../components/store-location-picker"),
+);
 export function Gestion({ section }: { section: string }) {
   useLanguage();
   const { data, run, show, mode, busy, managedFarmId } = useDemo();
@@ -176,35 +179,29 @@ export function Gestion({ section }: { section: string }) {
             {mode === "demo" || cloudConfig.producerLocationsReady ? (
               <section className="public-location-fields">
                 <h3>{t("Ubicación pública aproximada")}</h3>
-                <div className="form-columns">
-                  <label>
-                    {t("Latitud pública")}
-                    <input
-                      name="publicLatitude"
-                      type="number"
-                      min="-90"
-                      max="90"
-                      step="any"
-                      defaultValue={farm.position?.lat ?? ""}
-                    />
-                  </label>
-                  <label>
-                    {t("Longitud pública")}
-                    <input
-                      name="publicLongitude"
-                      type="number"
-                      min="-180"
-                      max="180"
-                      step="any"
-                      defaultValue={farm.position?.lng ?? ""}
-                    />
-                  </label>
-                </div>
-                <p className="subtle">
-                  {t(
-                    "Estas coordenadas serán públicas y se redondearán a dos decimales. Deja ambos campos vacíos para retirarlas.",
-                  )}
-                </p>
+                <Suspense
+                  fallback={
+                    <>
+                      <p>Cargando mapa de ubicación…</p>
+                      <input
+                        type="hidden"
+                        name="publicLatitude"
+                        value={farm.position?.lat ?? ""}
+                      />
+                      <input
+                        type="hidden"
+                        name="publicLongitude"
+                        value={farm.position?.lng ?? ""}
+                      />
+                    </>
+                  }
+                >
+                  <StoreLocationPicker
+                    key={farm.id}
+                    initialPosition={farm.position}
+                    disabled={busy}
+                  />
+                </Suspense>
               </section>
             ) : null}
             <label className="check-label">
