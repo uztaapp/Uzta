@@ -9,12 +9,14 @@ import {
   type Product,
 } from "../lib/local-model";
 import { CreateStore } from "../components/create-store";
+import { ProductPhotoEditor } from "../components/product-photo-editor";
 export function Gestion({ section }: { section: string }) {
   const { data, run, show, mode, busy, managedFarmId } = useDemo();
   const farm = data.farms.find((f) => f.id === managedFarmId)!;
   const [edit, setEdit] = useState<Product | null>(null);
   const [saved, setSaved] = useState("");
   const [error, setError] = useState("");
+  const [photoPending, setPhotoPending] = useState(false);
   async function saveFarm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formElement = event.currentTarget;
@@ -35,7 +37,7 @@ export function Gestion({ section }: { section: string }) {
   }
   async function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!edit) return;
+    if (!edit || photoPending) return;
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     const price = Number(String(form.get("price")).replace(",", "."));
@@ -196,7 +198,11 @@ export function Gestion({ section }: { section: string }) {
               .filter((p) => p.farmId === farm.id)
               .map((p) => (
                 <article key={p.id}>
-                  <Photo crop={p.crop} label={p.name} />
+                  <Photo
+                    src={p.photo}
+                    crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
+                    label={p.name}
+                  />
                   <div>
                     <h3>{p.name}</h3>
                     <p>
@@ -397,13 +403,28 @@ export function Gestion({ section }: { section: string }) {
                 />{" "}
                 Mostrar en inicio
               </label>
-              <p className="subtle">
-                {mode === "demo"
-                  ? "Imagen de ejemplo de la maqueta."
-                  : "Este producto todavía no tiene fotografía."}
-              </p>
+              {mode === "demo" ? (
+                <ProductPhotoEditor
+                  key={edit.id}
+                  product={edit}
+                  onPending={setPhotoPending}
+                  onChange={(photo) =>
+                    setEdit((current) =>
+                      current ? { ...current, photo } : current,
+                    )
+                  }
+                />
+              ) : (
+                <p className="subtle">
+                  La carga de fotografías para cuentas reales necesita activar
+                  el almacenamiento de UZTA. Puedes continuar editando el
+                  producto.
+                </p>
+              )}
               {error ? <p role="alert">{error}</p> : null}
-              <button className="primary">Guardar producto</button>
+              <button className="primary" disabled={photoPending}>
+                Guardar producto
+              </button>
             </fieldset>
           </form>
         </Modal>

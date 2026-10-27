@@ -53,7 +53,11 @@ export function Cesta() {
         <section className="basket-items">
           {items.map((p) => (
             <article key={p.id} className="basket-item">
-              <Photo crop={p.crop} label={p.name} />
+              <Photo
+                src={p.photo}
+                crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
+                label={p.name}
+              />
               <div>
                 <h2>{p.name}</h2>
                 <p>

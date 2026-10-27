@@ -25,14 +25,16 @@ test("re-encodes pixels into full and thumbnail WebP images and releases decoded
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
     drawImage: draw,
   } as any);
-  vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(
-    function (this: HTMLCanvasElement, callback, type) {
-      expect(type).toBe("image/webp");
-      expect(this.width).toBeLessThanOrEqual(1280);
-      expect(this.height).toBeLessThanOrEqual(720);
-      callback(new Blob(["pixels"], { type: "image/webp" }));
-    },
-  );
+  vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(function (
+    this: HTMLCanvasElement,
+    callback,
+    type,
+  ) {
+    expect(type).toBe("image/webp");
+    expect(this.width).toBeLessThanOrEqual(1280);
+    expect(this.height).toBeLessThanOrEqual(720);
+    callback(new Blob(["pixels"], { type: "image/webp" }));
+  });
   const result = await optimizeImage(
     new Blob(["original EXIF GPS"], { type: "image/jpeg" }),
   );

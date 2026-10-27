@@ -1,5 +1,6 @@
 import {
   useRef,
+  useState,
   useEffect,
   useId,
   type ReactNode,
@@ -10,12 +11,27 @@ export function Photo({
   crop,
   className = "",
   label,
+  src,
 }: {
   crop: number[];
   className?: string;
   label: string;
+  src?: string | null;
 }) {
-  const [x, y, width, height] = crop;
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  if (src && !failed)
+    return (
+      <img
+        className={`photo uploaded-photo ${className}`}
+        src={src}
+        alt={label}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailed(true)}
+      />
+    );
+  const [x, y, width, height] = src && failed ? [0, 0, 0, 0] : crop;
   const Illustration = /manzana/i.test(label)
     ? Apple
     : /miel/i.test(label)

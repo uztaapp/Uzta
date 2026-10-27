@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productPhotoSchema } from "./product-photo";
 
 export const STORAGE_KEY = "uzta.local.v1";
 export const categories = [
@@ -26,6 +27,7 @@ export const farmSchema = z.object({
   slots: z.array(slotSchema),
 });
 export const productSchema = z.object({
+  photo: productPhotoSchema,
   id: z.string(),
   farmId: z.string(),
   name: z.string().trim().min(1).max(100),

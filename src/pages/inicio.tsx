@@ -112,7 +112,11 @@ export function Inicio() {
                   search={{ tienda: p.farmId }}
                   aria-label={`Ver ${p.name} de ${farm.name}`}
                 >
-                  <Photo crop={p.crop} label={p.name} />
+                  <Photo
+                    src={p.photo}
+                    crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
+                    label={p.name}
+                  />
                 </Link>
                 <button
                   className="heart"

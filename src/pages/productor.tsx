@@ -111,7 +111,11 @@ export function Productor() {
                 .filter((p) => p.farmId === farm.id && p.active)
                 .map((p) => (
                   <article key={p.id}>
-                    <Photo crop={p.crop} label={p.name} />
+                    <Photo
+                      src={p.photo}
+                      crop={p.photo === null ? [0, 0, 0, 0] : p.crop}
+                      label={p.name}
+                    />
                     <div>
                       <h3>{p.name}</h3>
                       <p>
