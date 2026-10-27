@@ -64,17 +64,17 @@ test("choose a point visually and remove it without exposing numeric coordinate 
     screen.getByRole("button", { name: "Usar el centro del mapa" }),
   );
   const form = screen.getByRole("form", { name: "Tienda" }) as HTMLFormElement;
-  expect(new FormData(form).get("publicLatitude")).toBe("43.46");
-  expect(new FormData(form).get("publicLongitude")).toBe("-1.46");
+  expect(new FormData(form).get("publicLatitude")).toBe("43.456789");
+  expect(new FormData(form).get("publicLongitude")).toBe("-1.456789");
   fireEvent.click(screen.getByRole("button", { name: "Quitar punto" }));
   expect(new FormData(form).get("publicLatitude")).toBe("");
   expect(screen.getByRole("status")).toHaveTextContent("Sin punto público");
 });
-test("clicking the map selects an approximate point and busy state prevents edits", () => {
+test("clicking the map selects a precise point and busy state prevents edits", () => {
   const view = open();
   act(() => events.get("click")!({ latlng: { lat: 43.457, lng: -1.455 } }));
   const form = screen.getByRole("form", { name: "Tienda" }) as HTMLFormElement;
-  expect(new FormData(form).get("publicLatitude")).toBe("43.46");
+  expect(new FormData(form).get("publicLatitude")).toBe("43.457");
   view.rerender(
     <form aria-label="Tienda">
       <StoreLocationPicker
@@ -84,6 +84,59 @@ test("clicking the map selects an approximate point and busy state prevents edit
     </form>,
   );
   act(() => events.get("click")!({ latlng: { lat: 40, lng: 0 } }));
-  expect(new FormData(form).get("publicLatitude")).toBe("43.46");
+  expect(new FormData(form).get("publicLatitude")).toBe("43.457");
   expect(screen.getByRole("button", { name: "Quitar punto" })).toBeDisabled();
+});
+test("GPS is requested only on click, preserves precision and reports accuracy", () => {
+  const locate = vi.fn((ok) =>
+    ok({
+      coords: { latitude: 43.4567891, longitude: -1.4567891, accuracy: 8 },
+    }),
+  );
+  vi.stubGlobal("navigator", { geolocation: { getCurrentPosition: locate } });
+  open();
+  expect(locate).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Usar mi ubicación" }));
+  expect(locate).toHaveBeenCalledWith(
+    expect.any(Function),
+    expect.any(Function),
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+  );
+  const form = screen.getByRole("form", { name: "Tienda" }) as HTMLFormElement;
+  expect(new FormData(form).get("publicLatitude")).toBe("43.456789");
+  expect(screen.getByText(/precisión estimada: 8 m/)).toBeInTheDocument();
+});
+test("GPS denial keeps the selected point and permits manual selection", () => {
+  vi.stubGlobal("navigator", {
+    geolocation: {
+      getCurrentPosition: (_ok: unknown, fail: Function) => fail({ code: 1 }),
+    },
+  });
+  open();
+  fireEvent.click(screen.getByRole("button", { name: "Usar mi ubicación" }));
+  expect(screen.getByText(/Permiso de ubicación denegado/)).toBeInTheDocument();
+  const form = screen.getByRole("form", { name: "Tienda" }) as HTMLFormElement;
+  expect(new FormData(form).get("publicLatitude")).toBe("43.45");
+  act(() =>
+    events.get("click")!({ latlng: { lat: 43.456123, lng: -1.456123 } }),
+  );
+  expect(new FormData(form).get("publicLatitude")).toBe("43.456123");
+});
+test("manual selection cancels a pending GPS result", () => {
+  let found: Function = () => {};
+  vi.stubGlobal("navigator", {
+    geolocation: {
+      getCurrentPosition: (ok: Function) => {
+        found = ok;
+      },
+    },
+  });
+  open();
+  fireEvent.click(screen.getByRole("button", { name: "Usar mi ubicación" }));
+  act(() =>
+    events.get("click")!({ latlng: { lat: 43.456123, lng: -1.456123 } }),
+  );
+  act(() => found({ coords: { latitude: 1, longitude: 2, accuracy: 4 } }));
+  const form = screen.getByRole("form", { name: "Tienda" }) as HTMLFormElement;
+  expect(new FormData(form).get("publicLatitude")).toBe("43.456123");
 });

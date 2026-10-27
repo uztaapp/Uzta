@@ -12,8 +12,8 @@ export function validPosition(value: unknown): value is Position {
 export function publicPosition(value: unknown): Position | null {
   if (!validPosition(value)) return null;
   return {
-    lat: Math.round(value.lat * 100) / 100,
-    lng: Math.round(value.lng * 100) / 100,
+    lat: Math.round(value.lat * 1e6) / 1e6,
+    lng: Math.round(value.lng * 1e6) / 1e6,
   };
 }
 // Adapted from the reviewed TRUKA distance helper; no account or network dependency.
@@ -53,8 +53,8 @@ export function publicMapUrl(value: unknown) {
   const p = publicPosition(value);
   if (!p) return null;
   const url = new URL("https://www.openstreetmap.org/");
-  url.searchParams.set("mlat", p.lat.toFixed(2));
-  url.searchParams.set("mlon", p.lng.toFixed(2));
-  url.hash = `map=13/${p.lat.toFixed(2)}/${p.lng.toFixed(2)}`;
+  url.searchParams.set("mlat", p.lat.toFixed(6));
+  url.searchParams.set("mlon", p.lng.toFixed(6));
+  url.hash = `map=18/${p.lat.toFixed(6)}/${p.lng.toFixed(6)}`;
   return url.href;
 }

@@ -178,7 +178,7 @@ export function Gestion({ section }: { section: string }) {
             </label>
             {mode === "demo" || cloudConfig.producerLocationsReady ? (
               <section className="public-location-fields">
-                <h3>{t("Ubicación pública aproximada")}</h3>
+                <h3>{t("Ubicación de la tienda")}</h3>
                 <Suspense
                   fallback={
                     <>

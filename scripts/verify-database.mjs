@@ -362,9 +362,9 @@ try {
       "select public_latitude,public_longitude from public.uzta_producers",
     )
   ).rows[0];
-  assert.equal(Number(point.public_latitude), 43.46);
-  assert.equal(Number(point.public_longitude), -1.46);
-  pass("public producer coordinates are stored with only two decimal places");
+  assert.equal(Number(point.public_latitude), 43.456789);
+  assert.equal(Number(point.public_longitude), -1.456789);
+  pass("public producer coordinates are stored with six decimal places");
   await denied(
     () =>
       asUser(

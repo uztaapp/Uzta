@@ -32,15 +32,15 @@ test("position validation rejects missing, nonfinite and out-of-range coordinate
     expect(validPosition(p)).toBe(false);
   expect(validPosition({ lat: 0, lng: 0 })).toBe(true);
 });
-test("public coordinates and map links never expose more than two decimal places", () => {
+test("public coordinates and map links preserve six decimal places", () => {
   expect(publicPosition({ lat: 43.456789, lng: -1.456789 })).toEqual({
-    lat: 43.46,
-    lng: -1.46,
+    lat: 43.456789,
+    lng: -1.456789,
   });
   const url = publicMapUrl({ lat: 43.456789, lng: -1.456789 })!;
-  expect(url).not.toContain("456789");
+  expect(url).toContain("456789");
   expect(new URL(url).hostname).toBe("www.openstreetmap.org");
-  expect(new URL(url).searchParams.get("mlat")).toBe("43.46");
+  expect(new URL(url).searchParams.get("mlat")).toBe("43.456789");
 });
 test("radius filter excludes unknown locations only when a center is selected", () => {
   expect(withinRadius(null, null, 5)).toBe(true);

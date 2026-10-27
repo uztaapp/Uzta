@@ -135,7 +135,7 @@ export function Explorar() {
             {center
               ? distanceLabel(center, entry.farm.position)
               : publicPosition(entry.farm.position)
-                ? "Ubicación aproximada"
+                ? "Ubicación de la tienda"
                 : "Sin ubicación pública en el mapa"}
           </small>
           <p>

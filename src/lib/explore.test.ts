@@ -48,7 +48,7 @@ test("missing coordinates remain listable but are never fabricated as pins", () 
     ),
   ).toEqual([]);
 });
-test("public markers round coordinates and cluster across cell boundaries", () => {
+test("public markers preserve precise coordinates and cluster across cell boundaries", () => {
   const data = seedStore();
   const a = {
     farm: { ...data.farms[0], position: { lat: 43.456789, lng: -1.456789 } },
@@ -57,7 +57,7 @@ test("public markers round coordinates and cluster across cell boundaries", () =
   const b = { farm: { ...a.farm, id: "second" }, products: a.products };
   let calls = 0;
   const groups = clusterEntries([a, b], (p) => {
-    expect(p).toEqual({ lat: 43.46, lng: -1.46 });
+    expect(p).toEqual({ lat: 43.456789, lng: -1.456789 });
     return { x: ++calls === 1 ? 51 : 53, y: 10 };
   });
   expect(groups).toHaveLength(1);
