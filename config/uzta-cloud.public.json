@@ -7,9 +7,9 @@
   "producerLocationsReady": true,
   "sellerTypesReady": true,
   "notificationsReady": true,
-  "sellerFavoritesReady": false,
-  "availabilityReady": false,
-  "commissionsReady": false,
-  "euskoReady": false,
-  "reviewsReady": false
+  "sellerFavoritesReady": true,
+  "availabilityReady": true,
+  "commissionsReady": true,
+  "euskoReady": true,
+  "reviewsReady": true
 }

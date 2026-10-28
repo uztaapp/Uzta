@@ -1,4 +1,8 @@
-import {SellerReviews,RatingSummary,useReviewSummaries} from "../components/seller-reviews";
+import {
+  SellerReviews,
+  RatingSummary,
+  useReviewSummaries,
+} from "../components/seller-reviews";
 import { EuskoBadge } from "../components/eusko";
 import { AvailabilityLabel } from "../components/product-availability";
 import { canReserve } from "../lib/availability";
@@ -35,7 +39,7 @@ export function Productor() {
       (search.tienda ?? (mode === "demo" ? "urki" : data.farms[0]?.id)),
   );
   const [added, setAdded] = useState("");
-  const reviews=useReviewSummaries(farm?[farm.id]:[]);
+  const reviews = useReviewSummaries(farm ? [farm.id] : []);
   if (!farm && busy) return <p role="status">{t("Cargando productor…")}</p>;
   if (!farm && storageError) return null;
   if (!farm)
@@ -90,7 +94,7 @@ export function Productor() {
               {t("Ecológico")}
             </span>
           ) : null}
-          <RatingSummary value={reviews.rows[0]}/>
+          <RatingSummary value={reviews.rows[0]} />
         </div>
         <p className="location">
           <MapPin size={17} />
@@ -247,7 +251,7 @@ export function Productor() {
         {tab === "Opiniones" ? (
           <div className="info-panel">
             <h2>{t("Opiniones")}</h2>
-            <SellerReviews producerId={farm.id} summaries={reviews}/>
+            <SellerReviews producerId={farm.id} summaries={reviews} />
           </div>
         ) : null}
       </section>

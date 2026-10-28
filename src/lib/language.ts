@@ -1,4 +1,4 @@
-import {reviewLabels} from "./review-labels";
+import { reviewLabels } from "./review-labels";
 import { euskoLabels } from "./eusko-labels";
 import { commissionLabels } from "./commission-labels";
 import { availabilityLabels } from "./availability-labels";
