@@ -25,6 +25,7 @@ function ExploreRoute() {
     </Suspense>
   );
 }
+import { NotificationBell } from "./components/notification-bell";
 import { Inicio } from "./pages/inicio";
 import { Productor } from "./pages/productor";
 import { Cesta } from "./pages/cesta";
@@ -50,6 +51,7 @@ export function Shell() {
         <a className="skip" href="#contenido">
           Saltar al contenido
         </a>
+        <NotificationBell />
         <main id="contenido">
           <AppRecovery key={pathname}>
             <Outlet />

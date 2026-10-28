@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { notificationLabels } from "./notification-labels";
 import { sellerLabels } from "./seller-labels";
 import { extraLabels } from "./language-extra";
 export const languages = [
@@ -89,6 +90,7 @@ export function useLanguagePreference() {
 const dictionary: Record<string, readonly [string, string, string]> = {
   ...extraLabels,
   ...sellerLabels,
+  ...notificationLabels,
   Inicio: ["Accueil", "Home", "Hasiera"],
   Productor: ["Producteur", "Producer", "Ekoizlea"],
   Cesta: ["Panier", "Basket", "Saskia"],

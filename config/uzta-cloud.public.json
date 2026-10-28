@@ -5,5 +5,6 @@
   "siteUrl": "https://uzta-nu.vercel.app",
   "productPhotosReady": true,
   "producerLocationsReady": true,
-  "sellerTypesReady": true
+  "sellerTypesReady": true,
+  "notificationsReady": false
 }
