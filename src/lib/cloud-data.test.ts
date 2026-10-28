@@ -241,6 +241,8 @@ describe("cloud data boundary", () => {
       owner_id: USER,
       name: "Mi tienda",
       seller_type: null,
+      eusko_notes: false,
+      eusko_digital: false,
       location: "Localidad de prueba",
       description: "Prueba",
       ecological: false,
@@ -747,4 +749,20 @@ it("sends only an informational payment preference with unchanged reservation qu
   } finally {
     config.euskoReady = prior;
   }
+});
+
+it("uses a Google display name only for a new profile, never for privileges", async () => {
+  const f = fixture();
+  f.rows.uzta_profiles = [];
+  await loadCloudData(
+    { ...user, user_metadata: { full_name: "Persona Google", role: "admin" } },
+    f.api,
+  );
+  expect(
+    f.log.find((e) => e.table === "uzta_profiles" && e.operation === "upsert"),
+  ).toMatchObject({ value: { display_name: "Persona Google" } });
+  expect(
+    f.log.find((e) => e.table === "uzta_profiles" && e.operation === "upsert")
+      ?.value,
+  ).not.toHaveProperty("role");
 });

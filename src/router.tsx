@@ -1,3 +1,4 @@
+import { Privacidad, PrivacyLink } from "./pages/privacidad";
 import {
   createRootRoute,
   createRoute,
@@ -56,6 +57,9 @@ export function Shell() {
           <AppRecovery key={pathname}>
             <Outlet />
           </AppRecovery>
+          <footer className="legal-footer">
+            <PrivacyLink />
+          </footer>
         </main>
         <BottomNavigation />
       </div>
@@ -140,7 +144,13 @@ const profile = createRoute({
   }),
   component: Perfil,
 });
+const privacy = createRoute({
+  getParentRoute: () => root,
+  path: "/privacidad",
+  component: Privacidad,
+});
 export const routeTree = root.addChildren([
+  privacy,
   home,
   explore,
   producer,

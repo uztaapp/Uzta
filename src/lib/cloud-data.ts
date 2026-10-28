@@ -214,9 +214,17 @@ export async function loadCloudData(
     profile = profileRead;
     if (!profile) {
       const name =
-        typeof user.user_metadata?.display_name === "string"
-          ? user.user_metadata.display_name.trim().slice(0, 100)
-          : "";
+        [
+          user.user_metadata?.display_name,
+          user.user_metadata?.full_name,
+          user.user_metadata?.name,
+        ]
+          .find(
+            (value): value is string =>
+              typeof value === "string" && !!value.trim(),
+          )
+          ?.trim()
+          .slice(0, 100) ?? "";
       check(
         await api.from("uzta_profiles").upsert(
           {

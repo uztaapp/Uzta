@@ -11,5 +11,6 @@
   "availabilityReady": true,
   "commissionsReady": true,
   "euskoReady": true,
-  "reviewsReady": true
+  "reviewsReady": true,
+  "googleReady": false
 }

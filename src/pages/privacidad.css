@@ -1,0 +1,28 @@
+.uzta-privacy {
+  padding: 20px;
+  max-width: 760px;
+  margin: auto;
+  overflow-wrap: anywhere;
+}
+.uzta-privacy h1 {
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+}
+.uzta-privacy h2 {
+  font-size: 1.1rem;
+  margin-top: 22px;
+  margin-bottom: 8px;
+}
+.uzta-privacy p {
+  line-height: 1.6;
+  margin: 8px 0;
+}
+.uzta-privacy a {
+  color: #31552b;
+  text-decoration: underline;
+}
+.legal-footer {
+  text-align: center;
+  padding: 12px 16px;
+  font-size: 12px;
+}

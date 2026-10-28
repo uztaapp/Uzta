@@ -1,3 +1,5 @@
+import { PrivacyLink } from "../pages/privacidad";
+import { GoogleAccess } from "./google-access";
 import { t, useLanguage } from "../lib/language";
 import { useState, type FormEvent } from "react";
 import { useUzta } from "../app-context";
@@ -44,6 +46,8 @@ export function Access() {
       <p>
         {t("Accede a tu perfil, guarda tus reservas y gestiona tu tienda.")}
       </p>
+      <PrivacyLink />
+      <GoogleAccess disabled={busy || pending} />
       <form className="uzta-form" onSubmit={submit}>
         {register ? (
           <label>
