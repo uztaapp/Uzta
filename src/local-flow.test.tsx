@@ -53,7 +53,9 @@ test("nearby catalogue excludes other areas without storing the search coordinat
   fireEvent.click(
     screen.getByRole("button", { name: "Quitar filtro de zona" }),
   );
-  expect(screen.getByRole("heading", { name: "Miel de flores · 500 g" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "Miel de flores · 500 g" }),
+  ).toBeInTheDocument();
 });
 test("profile help explains the existing buyer and producer flows without promising payments", async () => {
   await open("/perfil");
@@ -94,11 +96,11 @@ test("an unavailable basket item must be removed or reduced before checkout", as
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   await open("/cesta");
   expect(
-    screen.getByRole("button", { name: "Confirmar reserva" }),
+    screen.getByRole("button", { name: "Elegir recogida" }),
   ).toBeDisabled();
   fireEvent.click(screen.getByRole("button", { name: "Reducir Tomates" }));
   expect(
-    screen.getByRole("button", { name: "Confirmar reserva" }),
+    screen.getByRole("button", { name: "Elegir recogida" }),
   ).not.toBeDisabled();
 });
 test("producer product edits affect the catalogue and survive navigation", async () => {
@@ -137,9 +139,12 @@ test("pickup configuration appears in checkout without inventing availability", 
   );
   cleanup();
   await open("/cesta");
-  fireEvent.click(screen.getByRole("button", { name: "Confirmar reserva" }));
+  fireEvent.click(screen.getByRole("button", { name: "Elegir recogida" }));
+  fireEvent.change(screen.getByLabelText("Fecha de recogida"), {
+    target: { value: "2040-01-02" },
+  });
   expect(
-    screen.getByRole("option", { name: "2040-01-02 · 17:00 – 18:00" }),
+    screen.getByRole("option", { name: "17:00 – 18:00" }),
   ).toBeInTheDocument();
 });
 test("a reservation survives a reload and can be marked collected in the producer view", async () => {
@@ -149,16 +154,23 @@ test("a reservation survives a reload and can be marked collected in the produce
   ];
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   await open("/cesta");
+  fireEvent.click(screen.getByRole("button", { name: "Elegir recogida" }));
   fireEvent.change(screen.getByRole("textbox"), {
     target: { value: "Recogeré la cesta por la tarde." },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Confirmar reserva" }));
-  fireEvent.change(screen.getByLabelText("Fecha y hora de recogida"), {
+
+  fireEvent.change(screen.getByLabelText("Fecha de recogida"), {
+    target: { value: "2040-01-02" },
+  });
+  fireEvent.change(screen.getByLabelText("Franja horaria"), {
     target: { value: "pickup" },
   });
-  fireEvent.click(
-    screen.getByRole("button", { name: "Guardar reserva local" }),
-  );
+  fireEvent.click(screen.getByRole("button", { name: "Revisar reserva" }));
+  fireEvent.click(screen.getByRole("button", { name: "Confirmar reserva" }));
+  expect(
+    await screen.findByRole("heading", { name: "Reserva registrada" }),
+  ).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("link", { name: "Ver mi reserva" }));
   expect(
     await screen.findByRole("heading", { name: "Mis pedidos" }),
   ).toBeInTheDocument();
@@ -206,16 +218,18 @@ test("failed local storage writes do not show a successful reservation or decrem
   ];
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   await open("/cesta");
-  fireEvent.click(screen.getByRole("button", { name: "Confirmar reserva" }));
-  fireEvent.change(screen.getByLabelText("Fecha y hora de recogida"), {
+  fireEvent.click(screen.getByRole("button", { name: "Elegir recogida" }));
+  fireEvent.change(screen.getByLabelText("Fecha de recogida"), {
+    target: { value: "2040-01-02" },
+  });
+  fireEvent.change(screen.getByLabelText("Franja horaria"), {
     target: { value: "pickup" },
   });
   vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
     throw Error("Almacenamiento local lleno");
   });
-  fireEvent.click(
-    screen.getByRole("button", { name: "Guardar reserva local" }),
-  );
+  fireEvent.click(screen.getByRole("button", { name: "Revisar reserva" }));
+  fireEvent.click(screen.getByRole("button", { name: "Confirmar reserva" }));
   expect(await screen.findByRole("dialog")).toHaveTextContent(
     "Almacenamiento local lleno",
   );
@@ -224,4 +238,3 @@ test("failed local storage writes do not show a successful reservation or decrem
     20,
   );
 });
-

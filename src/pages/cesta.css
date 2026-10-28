@@ -242,3 +242,73 @@
     font-size: 13px;
   }
 }
+
+.checkout-steps {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+}
+.checkout-steps li {
+  flex: 1;
+  font-size: 12px;
+  color: #6b7267;
+  border-bottom: 2px solid #e5e6df;
+  padding: 8px 0;
+}
+.checkout-steps li span {
+  display: block;
+  font-weight: 700;
+}
+.checkout-steps li[aria-current] {
+  border-color: #31552b;
+  color: #31552b;
+  font-weight: 700;
+}
+.payment-note,
+.pickup-notice {
+  padding: 12px;
+  background: #eaf1e4;
+  color: #31552b;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+.reservation-number {
+  display: block;
+  overflow-wrap: anywhere;
+  margin: 6px 0 16px;
+  font-size: 14px;
+}
+.pickup-location {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid #e5e3dc;
+  border-radius: 10px;
+  background: #fff;
+}
+.pickup-location h3 {
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+.pickup-location p {
+  overflow-wrap: anywhere;
+}
+.checkout-receipt .primary {
+  display: block;
+  padding: 14px;
+  text-align: center;
+  border-radius: 10px;
+}
+.uzta-basket .checkout .message {
+  margin-top: 18px;
+}
+.uzta-basket .checkout select {
+  min-height: 44px;
+}
+@media (min-width: 900px) {
+  .uzta-basket .basket-layout {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}

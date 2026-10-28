@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { Photo, Modal, euro, useDemo } from "../design";
+import { PickupLocation } from "../components/pickup-location";
+import { pickupDate } from "../lib/pickup-date";
+import { currentLanguage } from "../lib/language";
 import { lineTotal } from "../lib/local-model";
 export function Pedidos() {
   useLanguage();
@@ -14,17 +17,26 @@ export function Pedidos() {
   const [tab, setTab] = useState(
     search.vista === "productor" ? "Como productor" : "Compras",
   );
-  const { data, run, mode, managedFarmId, userId, busy, refresh } = useDemo();
+  const {
+    data,
+    run,
+    mode,
+    managedFarmId,
+    userId,
+    busy,
+    refresh,
+    storageError,
+  } = useDemo();
   const navigate = useNavigate();
   const selected = data.orders.find((o) => o.id === search.pedido);
   const visible =
     tab === "Compras"
       ? data.orders.filter((o) => mode === "demo" || o.customerId === userId)
       : data.orders.filter((o) => o.farmId === managedFarmId);
-  const date = (value: string) =>
-    new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(
-      new Date(value + "T12:00:00"),
-    );
+  const selectedFarm = data.farms.find((f) => f.id === selected?.farmId);
+  const pendingReceived = data.orders.filter(
+    (o) => o.farmId === managedFarmId && o.status === "Pendiente",
+  ).length;
   return (
     <div className="uzta-orders">
       <div className="page-title">
@@ -56,6 +68,19 @@ export function Pedidos() {
           {t("Actualizar pedidos")}
         </button>
       ) : null}
+      {tab === "Como productor" && pendingReceived > 0 && (
+        <p className="pickup-notice" role="status">
+          {t("Reservas pendientes de recogida:")}{" "}
+          <strong>{pendingReceived}</strong>
+        </p>
+      )}
+      {search.pedido && !selected && !busy && !storageError && (
+        <p role="alert">
+          {t(
+            "Esta reserva no está disponible para tu cuenta. Actualiza los pedidos si acabas de reservar.",
+          )}
+        </p>
+      )}
       <div className="orders" role="tabpanel">
         {visible.map((o) => (
           <button
@@ -84,10 +109,13 @@ export function Pedidos() {
               <div>
                 <h2>{o.farmName}</h2>
                 <small>
-                  {new Intl.DateTimeFormat("es-ES", {
-                    dateStyle: "medium",
-                    timeZone: "Europe/Madrid",
-                  }).format(new Date(o.createdAt))}
+                  {new Intl.DateTimeFormat(
+                    currentLanguage() === "en" ? "en-GB" : currentLanguage(),
+                    {
+                      dateStyle: "medium",
+                      timeZone: "Europe/Madrid",
+                    },
+                  ).format(new Date(o.createdAt))}
                 </small>
               </div>
               <span
@@ -126,7 +154,8 @@ export function Pedidos() {
               {euro(lineTotal(o.lines))}
             </p>
             <p>
-              {t("Recogida:")} {o.pickup.start} – {o.pickup.end}
+              {t("Recogida:")} {pickupDate(o.pickup.date)} · {o.pickup.start} –{" "}
+              {o.pickup.end}
             </p>
             {tab === "Como productor" ? (
               <p className="received-order-reference">
@@ -143,7 +172,7 @@ export function Pedidos() {
             </small>
           </button>
         ))}
-        {!visible.length ? (
+        {!visible.length && !busy && !storageError ? (
           <div className="empty">
             <h2>{t("No hay pedidos todavía")}</h2>
             <Link to="/">{t("Ver productos")}</Link>
@@ -169,16 +198,33 @@ export function Pedidos() {
           }
         >
           <p>
+            {t("Número de reserva")}
+            <strong className="reservation-number">{selected.id}</strong>
+          </p>
+          <p>
             <strong>{selected.farmName}</strong>
           </p>
           <p>
-            {date(selected.pickup.date)} · {selected.pickup.start} –{" "}
+            {pickupDate(selected.pickup.date)} · {selected.pickup.start} –{" "}
             {selected.pickup.end}
           </p>
           <p>
             {t("Estado:")}
-            <strong>{selected.status}</strong>
+            <strong>{t(selected.status)}</strong>
           </p>
+          <PickupLocation farm={selectedFarm} />
+          <p className="payment-note">
+            {t(
+              "Paga directamente al vendedor durante la recogida. UZTA no cobra online.",
+            )}
+          </p>
+          {selected.status === "Pendiente" && (
+            <p className="subtle">
+              {t(
+                "Reserva registrada, pendiente de recogida. No necesita otra confirmación del vendedor.",
+              )}
+            </p>
+          )}
           <ul className="order-lines">
             {selected.lines.map((line) => (
               <li key={line.productId}>
@@ -207,7 +253,8 @@ export function Pedidos() {
           </p>
           {tab === "Como productor" &&
           !selected.example &&
-          selected.status === "Pendiente" ? (
+          selected.status === "Pendiente" &&
+          selected.farmId === managedFarmId ? (
             <button
               className="primary"
               disabled={busy}

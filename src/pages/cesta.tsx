@@ -1,18 +1,25 @@
 import "./cesta.css";
 import { t, useLanguage } from "../lib/language";
 import { useRef, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Trash2, Minus, Plus, CalendarDays } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
+import { pickupDate } from "../lib/pickup-date";
+import { PickupLocation } from "../components/pickup-location";
+import { pendingReservationId } from "../lib/checkout-receipt";
 import { futureSlot } from "../lib/local-model";
 export function Cesta() {
   useLanguage();
-  const { data, run, mode, busy } = useDemo();
-  const navigate = useNavigate();
-  const [checkout, setCheckout] = useState(false);
+  const { data, run, mode, busy, userId, storageError } = useDemo();
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [date, setDate] = useState("");
+  const [reviewed, setReviewed] = useState("");
+  const [receipt, setReceipt] = useState("");
+  const [error, setError] = useState("");
+  const finished = useRef(false);
   const [slot, setSlot] = useState("");
   const submitting = useRef(false);
-  const requestId = useRef(crypto.randomUUID());
+  const requestId = useRef<string>(crypto.randomUUID());
   const items = data.products.filter((p) => (data.quantities[p.id] ?? 0) > 0);
   const farm = data.farms.find((f) => f.id === items[0]?.farmId);
   const slots = farm?.slots.filter((s) => futureSlot(s)) ?? [];
@@ -23,26 +30,82 @@ export function Cesta() {
   const unavailable = items.some(
     (p) => !p.active || data.quantities[p.id] > p.stock,
   );
-  const validSlot = slots.some((s) => s.id === slot);
+  const dates = [...new Set(slots.map((s) => s.date))].sort();
+  const chosenSlot = slots.find((s) => s.id === slot && s.date === date);
+  const validSlot = !!chosenSlot;
+  const multipleSellers = new Set(items.map((p) => p.farmId)).size > 1;
+  const reviewKey = JSON.stringify({
+    items: items.map((p) => [
+      p.id,
+      data.quantities[p.id],
+      p.priceCents,
+      p.active,
+      p.stock,
+    ]),
+    pickup: chosenSlot,
+    message: data.message,
+  });
+  const changed = step === 3 && reviewed !== reviewKey;
+  const canReserve =
+    !busy &&
+    !unavailable &&
+    !multipleSellers &&
+    validSlot &&
+    items.length > 0 &&
+    data.sessionActive &&
+    !changed;
+
   async function reserve() {
-    if (submitting.current) return;
+    if (submitting.current || finished.current || !canReserve) return;
     submitting.current = true;
+    setError("");
     try {
+      const reservationId =
+        mode === "cloud" && userId
+          ? (pendingReservationId(userId) ?? requestId.current)
+          : requestId.current;
       const ok = await run({
         type: "reserve",
-        id: requestId.current,
+        id: reservationId,
         slotId: slot,
         now: new Date().toISOString(),
       });
-      if (ok)
-        void navigate({
-          to: "/pedidos",
-          search: mode === "cloud" ? {} : { pedido: requestId.current },
-        });
+      if (ok) {
+        finished.current = true;
+        setReceipt(reservationId);
+      }
+    } catch {
+      setError(
+        "No se pudo comprobar la reserva pendiente. Actualiza tus pedidos antes de repetir.",
+      );
     } finally {
       submitting.current = false;
     }
   }
+  if (receipt)
+    return (
+      <div className="uzta-basket checkout-receipt">
+        <h1>{t("Reserva registrada")}</h1>
+        <p role="status">
+          {t("Tu reserva se ha guardado. No vuelvas a confirmarla.")}
+        </p>
+        <p>
+          {t("Número de reserva")}
+          <strong className="reservation-number">{receipt}</strong>
+        </p>
+        <p className="payment-note">
+          {t(
+            "Paga directamente al vendedor durante la recogida. UZTA no cobra online.",
+          )}
+        </p>
+        <Link className="primary" to="/pedidos" search={{ pedido: receipt }}>
+          {t("Ver mi reserva")}
+        </Link>
+        <Link className="text-button" to="/">
+          {t("Seguir explorando")}
+        </Link>
+      </div>
+    );
   return (
     <div className="uzta-basket">
       <div className="page-title">
@@ -51,6 +114,16 @@ export function Cesta() {
         </Link>
         <h1>{t("Cesta de compra")}</h1>
       </div>
+      <ol className="checkout-steps" aria-label={t("Pasos de la reserva")}>
+        {["Revisar cesta", "Elegir recogida", "Confirmar reserva"].map(
+          (label, i) => (
+            <li key={label} aria-current={step === i + 1 ? "step" : undefined}>
+              <span aria-hidden="true">{i + 1}</span>
+              {t(label)}
+            </li>
+          ),
+        )}
+      </ol>
       {farm ? (
         <p className="subtle basket-producer">
           {t("Productos de")} {farm.name}
@@ -72,22 +145,25 @@ export function Cesta() {
                 </p>
                 <div className="quantity">
                   <button
-                    disabled={busy}
-                    aria-label={`Reducir ${p.name}`}
+                    disabled={busy || step !== 1}
+                    aria-label={`${t("Reducir")} ${p.name}`}
                     onClick={() =>
                       run({ type: "quantity", id: p.id, delta: -1 })
                     }
                   >
                     <Minus size={15} />
                   </button>
-                  <output aria-label={`Cantidad de ${p.name}`}>
+                  <output aria-label={`${t("Cantidad de")} ${p.name}`}>
                     {data.quantities[p.id]}
                   </output>
                   <button
                     disabled={
-                      busy || !p.active || data.quantities[p.id] >= p.stock
+                      busy ||
+                      step !== 1 ||
+                      !p.active ||
+                      data.quantities[p.id] >= p.stock
                     }
-                    aria-label={`Aumentar ${p.name}`}
+                    aria-label={`${t("Aumentar")} ${p.name}`}
                     onClick={() =>
                       run({ type: "quantity", id: p.id, delta: 1 })
                     }
@@ -104,8 +180,8 @@ export function Cesta() {
               </div>
               <div className="item-end">
                 <button
-                  disabled={busy}
-                  aria-label={`Eliminar ${p.name}`}
+                  disabled={busy || step !== 1}
+                  aria-label={`${t("Eliminar")} ${p.name}`}
                   onClick={() => run({ type: "remove", id: p.id })}
                 >
                   <Trash2 size={18} />
@@ -126,24 +202,26 @@ export function Cesta() {
             <strong>{t("Total de productos")}</strong>
             <strong aria-label={t("Total de productos")}>{euro(total)}</strong>
           </div>
-          <label className="message">
-            {t("Añadir un mensaje al productor (opcional)")}
-            <textarea
-              disabled={busy}
-              maxLength={1000}
-              value={data.message}
-              onChange={(e) => run({ type: "message", value: e.target.value })}
-              placeholder="Por ejemplo, si prefieres productos más grandes o más pequeños, etc."
-            />
-          </label>
-          {!checkout ? (
+          {multipleSellers && (
+            <p role="alert">
+              {t("Cada reserva debe contener productos de un solo vendedor.")}
+            </p>
+          )}
+          {error && <p role="alert">{t(error)}</p>}
+          {step === 1 ? (
             <>
               <button
                 className="primary"
-                disabled={busy || unavailable || !items.length}
-                onClick={() => setCheckout(true)}
+                disabled={
+                  busy ||
+                  unavailable ||
+                  multipleSellers ||
+                  !items.length ||
+                  !!storageError
+                }
+                onClick={() => setStep(2)}
               >
-                {t("Confirmar reserva")}
+                {t("Elegir recogida")}
               </button>
               <p className="pickup-note">
                 <CalendarDays size={23} />
@@ -154,61 +232,135 @@ export function Cesta() {
             </>
           ) : (
             <section className="checkout">
-              <h2>{t("Fecha y hora de recogida")}</h2>
-              {slots.length ? (
-                <label>
-                  {t("Franjas ofrecidas por")}
-                  {farm?.name}
-                  <select
-                    aria-label={t("Fecha y hora de recogida")}
-                    value={slot}
-                    onChange={(e) => setSlot(e.target.value)}
-                  >
-                    <option value="">{t("Selecciona una franja")}</option>
-                    {slots.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.date} · {s.start} – {s.end}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+              <h2>{t(step === 2 ? "Elegir recogida" : "Revisar reserva")}</h2>
+              {step === 2 ? (
+                <>
+                  {slots.length ? (
+                    <>
+                      <label>
+                        {t("Fecha de recogida")}
+                        <select
+                          value={date}
+                          onChange={(e) => {
+                            setDate(e.target.value);
+                            setSlot("");
+                          }}
+                          disabled={busy}
+                        >
+                          <option value="">{t("Selecciona una fecha")}</option>
+                          {dates.map((d) => (
+                            <option key={d} value={d}>
+                              {pickupDate(d)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        {t("Franja horaria")}
+                        <select
+                          value={slot}
+                          onChange={(e) => setSlot(e.target.value)}
+                          disabled={busy || !date}
+                        >
+                          <option value="">{t("Selecciona una franja")}</option>
+                          {slots
+                            .filter((s) => s.date === date)
+                            .map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.start} – {s.end}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                    </>
+                  ) : (
+                    <p>
+                      {t(
+                        "El vendedor todavía no ha publicado horarios de recogida. Vuelve a consultar más tarde.",
+                      )}
+                    </p>
+                  )}
+                  <label className="message">
+                    {t("Añadir un mensaje al vendedor (opcional)")}
+                    <textarea
+                      disabled={busy}
+                      maxLength={1000}
+                      value={data.message}
+                      onChange={(e) =>
+                        run({ type: "message", value: e.target.value })
+                      }
+                      placeholder={t(
+                        "Por ejemplo, una indicación para tu recogida.",
+                      )}
+                    />
+                  </label>
+                </>
               ) : (
+                <>
+                  {chosenSlot && (
+                    <p>
+                      {pickupDate(chosenSlot.date)} · {chosenSlot.start} –{" "}
+                      {chosenSlot.end}
+                    </p>
+                  )}
+                  {data.message && (
+                    <p>
+                      <strong>{t("Mensaje:")}</strong> {data.message}
+                    </p>
+                  )}
+                  {changed && (
+                    <p role="alert">
+                      {t(
+                        "La cesta o la recogida han cambiado. Revisa la reserva de nuevo.",
+                      )}
+                    </p>
+                  )}
+                </>
+              )}
+              <PickupLocation farm={farm} />
+              <p className="payment-note">
+                {t(
+                  "Paga directamente al vendedor durante la recogida. UZTA no cobra online.",
+                )}
+              </p>
+              {!data.sessionActive && (
                 <p>
-                  {t("No hay franjas de recogida configuradas. Añádelas en")}{" "}
-                  <Link to="/perfil" search={{ apartado: "horarios" }}>
-                    {t("Perfil → Horarios y entregas")}
-                  </Link>
-                  .
+                  {t("Inicia sesión para reservar:")}{" "}
+                  <Link to="/perfil">{t("Mi perfil")}</Link>
                 </p>
               )}
-              {!data.sessionActive ? (
-                <p>
-                  {mode === "cloud"
-                    ? t("Inicia sesión para reservar:")
-                    : t("Abre tu perfil local para continuar:")}{" "}
-                  <Link to="/perfil">{t("Mi perfil")}</Link>.
-                </p>
-              ) : null}
-              <button
-                className="primary"
-                disabled={
-                  busy ||
-                  unavailable ||
-                  !validSlot ||
-                  !items.length ||
-                  !data.sessionActive
-                }
-                onClick={reserve}
-              >
-                {mode === "cloud"
-                  ? t("Confirmar reserva")
-                  : t("Guardar reserva local")}
-              </button>
+              {step === 2 ? (
+                <button
+                  className="primary"
+                  disabled={
+                    busy ||
+                    unavailable ||
+                    multipleSellers ||
+                    !validSlot ||
+                    !items.length
+                  }
+                  onClick={() => {
+                    setReviewed(reviewKey);
+                    setStep(3);
+                  }}
+                >
+                  {t("Revisar reserva")}
+                </button>
+              ) : (
+                <button
+                  className="primary"
+                  disabled={!canReserve}
+                  onClick={reserve}
+                >
+                  {t("Confirmar reserva")}
+                </button>
+              )}
               <button
                 className="text-button"
-                onClick={() => setCheckout(false)}
+                disabled={busy}
+                onClick={() => setStep(step === 3 ? 2 : 1)}
               >
-                {t("Volver a la cesta")}
+                {t(step === 3 ? "Cambiar recogida" : "Volver a la cesta")}
               </button>
             </section>
           )}
