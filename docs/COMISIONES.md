@@ -1,0 +1,11 @@
+# Comisiones — preparación local
+Rama `feature/sales-commissions`, sobre favoritos y disponibilidad. No publicado. Migración pendiente `20261028182722_sales_commissions.sql`; `commissionsReady=false`.
+- Tarifa inicial 0 %. Importes enteros en céntimos, tarifa en puntos básicos (100 = 1 %), redondeo al céntimo más próximo, mitades hacia arriba. EUR es la moneda actual de UZTA y queda registrada sin conversiones.
+- Una nueva transición a Completado registra la tarifa y los importes de esa operación. No hay backfill ni cambios sobre pedidos antiguos, precios o stock. Repetir la finalización es idempotente.
+- Reserva completada, declaración del vendedor y cobro manual de comisión son estados distintos. No se verifica el pago presencial ni se cobran importes al comprador.
+- Paneles Perfil → Mis ventas y, solo para administradores autorizados, Comisiones. Filtros de fecha de finalización en UTC y vendedor; totales de todo el filtro y detalle paginado. Las referencias de cobro son anotaciones, no transferencias ni facturas.
+- Cobros parciales, correcciones con motivo obligatorio y anulaciones quedan en un historial inmutable. Una anulación cancela el pendiente pero conserva los cobros anotados: no implica devolución de dinero.
+- No existe rol administrador previo. Preparada lista privada `uzta_private.commission_admins`, inicialmente vacía. Un responsable con acceso de administración de Supabase deberá autorizar y aprovisionar los UUID de administrador; nunca se usa metadata editable del usuario. No se ha concedido acceso a nadie.
+- Subir la tarifa por encima del 0 % está bloqueado en servidor mientras `commercial_reviewed=false`. Cambiarlo requiere revisión real y autorización del marco comercial y fiscal en Francia/España; el panel no permite saltarse este bloqueo. Los cambios de tarifa se auditan.
+- Activación tras autorización: aplicar solo esta migración y sus dependencias autorizadas, configurar administradores, verificar con cuentas distintas y habilitar el indicador en una vista previa antes de publicar.
+- Reversión en `supabase/rollback-sales-commissions.sql`, bloqueada si hay operaciones o cambios de tarifa sin exportar. Las pruebas usan PostgreSQL desechable, sin datos de producción. Compilación final se realizará junto con la siguiente tarea de Eusko para ahorrar recursos.

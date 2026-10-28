@@ -1,0 +1,17 @@
+begin;
+do $$begin if exists(select 1 from public.uzta_sales) or exists(select 1 from uzta_private.commission_rates) then raise exception 'Export financial history before rollback'; end if; end;$$;
+drop trigger uzta_completed_sale on public.uzta_orders;
+drop function public.uzta_commission_summary(timestamptz,timestamptz,uuid);
+drop function public.uzta_commission_action(uuid,uuid,text,bigint,text);
+drop function public.uzta_declare_sale(uuid);
+drop function public.uzta_commission_settings(integer);
+drop function public.uzta_commission_access();
+drop policy uzta_commission_events_read on public.uzta_commission_events;
+drop policy uzta_sales_read on public.uzta_sales;
+drop function uzta_private.record_completed_sale();
+drop function uzta_private.commission_action(uuid,uuid,text,bigint,text);
+drop function uzta_private.declare_sale(uuid);
+drop function uzta_private.commission_settings(integer);
+drop function uzta_private.commission_is_admin();
+drop table public.uzta_commission_events,public.uzta_sales,uzta_private.commission_rates,uzta_private.commission_config,uzta_private.commission_admins;
+commit;

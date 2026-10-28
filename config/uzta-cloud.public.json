@@ -8,5 +8,6 @@
   "sellerTypesReady": true,
   "notificationsReady": true,
   "sellerFavoritesReady": false,
-  "availabilityReady": false
+  "availabilityReady": false,
+  "commissionsReady": false
 }

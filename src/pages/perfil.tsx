@@ -1,3 +1,4 @@
+import { SalesLinks, SalesPanel } from "../components/sales-panel";
 import { MyFavorites } from "../components/favorites";
 import "./perfil.css";
 import { t, useLanguage } from "../lib/language";
@@ -82,6 +83,20 @@ export function Perfil() {
         </button>
       </div>
     );
+  if (search.apartado === "ventas" || search.apartado === "comisiones")
+    return (
+      <div className="uzta-profile">
+        <div className="page-title">
+          <Link to="/perfil" aria-label={t("Volver al perfil")}>
+            <ArrowLeft />
+          </Link>
+          <h1>
+            {t(search.apartado === "ventas" ? "Mis ventas" : "Comisiones")}
+          </h1>
+        </div>
+        <SalesPanel adminMode={search.apartado === "comisiones"} />
+      </div>
+    );
   if (search.apartado === "favoritos")
     return (
       <div className="uzta-profile">
@@ -163,6 +178,7 @@ export function Perfil() {
         <span>{t("Mis favoritos")}</span>
         <ChevronRight />
       </Link>
+      <SalesLinks />
       <h2 className="producer-heading">{t("Para productores")}</h2>
       <div className="producer-menu">
         {[

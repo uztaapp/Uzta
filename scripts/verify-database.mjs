@@ -477,9 +477,9 @@ try {
   const rls = await db.query(
     "select relname,relrowsecurity from pg_class where relname like 'uzta_%' and relkind='r'",
   );
-  assert.equal(rls.rows.length, 9);
+  assert.equal(rls.rows.length, 11);
   assert.ok(rls.rows.every((r) => r.relrowsecurity));
-  pass("RLS enabled on all nine application tables");
+  pass("RLS enabled on all eleven application tables");
   assert.equal(
     (
       await db.query(

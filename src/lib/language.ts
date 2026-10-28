@@ -1,3 +1,4 @@
+import { commissionLabels } from "./commission-labels";
 import { availabilityLabels } from "./availability-labels";
 import { favoriteLabels } from "./favorite-labels";
 import { useSyncExternalStore } from "react";
@@ -94,6 +95,7 @@ const dictionary: Record<string, readonly [string, string, string]> = {
   ...extraLabels,
   ...sellerLabels,
   ...notificationLabels,
+  ...commissionLabels,
   ...availabilityLabels,
   ...favoriteLabels,
   ...bookingLabels,
