@@ -1,3 +1,4 @@
+import { EuskoBadge } from "../components/eusko";
 import {
   AvailabilitySelect,
   AvailabilityLabel,
@@ -39,6 +40,7 @@ import { sellerLabel, type SellerType } from "../lib/sellers";
 const ProducerMap = lazy(() => import("../components/producer-map"));
 export function Explorar() {
   useLanguage();
+  const [euskoOnly, setEuskoOnly] = useState(false);
   const [sellerType, setSellerType] = useState<SellerType | "">("");
   const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const { data, mode, busy, storageError } = useDemo();
@@ -73,6 +75,7 @@ export function Explorar() {
         sellerType,
         false,
         availability,
+        euskoOnly,
       ),
     [
       data.farms,
@@ -83,6 +86,7 @@ export function Explorar() {
       radius,
       sellerType,
       availability,
+      euskoOnly,
     ],
   );
   const onSelect = useCallback((entry: ExploreEntry) => {
@@ -159,6 +163,7 @@ export function Explorar() {
           />
           <div>
             <h2>{entry.farm.name}</h2>
+            <EuskoBadge farm={entry.farm} />
             <p>{entry.farm.location}</p>
             <small>{t(sellerLabel(entry.farm.sellerType))}</small>
             <small>
@@ -356,6 +361,14 @@ export function Explorar() {
             <label className="explore-verified">
               <input type="checkbox" disabled />
               {t("Solo ecológicos verificados (pendiente)")}
+            </label>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={euskoOnly}
+                onChange={(e) => setEuskoOnly(e.target.checked)}
+              />
+              {t("Acepta Eusko")}
             </label>
             <AvailabilitySelect
               value={availability}

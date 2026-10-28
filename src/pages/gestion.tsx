@@ -1,3 +1,4 @@
+import { EuskoFields } from "../components/eusko";
 import {
   AvailabilityFields,
   AvailabilityLabel,
@@ -52,6 +53,18 @@ export function Gestion({ section }: { section: string }) {
         position = publicPosition(p);
       }
     }
+    const euskoEnabled = mode === "demo" || cloudConfig.euskoReady;
+    const notes = form.get("euskoNotes") === "on",
+      digital = form.get("euskoDigital") === "on";
+    if (
+      euskoEnabled &&
+      form.get("acceptsEusko") === "on" &&
+      !notes &&
+      !digital
+    ) {
+      setError(t("Selecciona al menos un medio de pago Eusko."));
+      return;
+    }
     if (
       await run({
         type: "farm",
@@ -63,6 +76,7 @@ export function Gestion({ section }: { section: string }) {
           location: String(form.get("location")).trim(),
           description: String(form.get("description")).trim(),
           ecological: form.get("ecological") === "on",
+          ...(euskoEnabled ? { euskoNotes: notes, euskoDigital: digital } : {}),
         },
       })
     )
@@ -225,6 +239,9 @@ export function Gestion({ section }: { section: string }) {
                 defaultValue={farm.description}
               />
             </label>
+            {(mode === "demo" || cloudConfig.euskoReady) && (
+              <EuskoFields farm={farm} />
+            )}
             {mode === "demo" || cloudConfig.producerLocationsReady ? (
               <section className="public-location-fields">
                 <h3>{t("Ubicación de la tienda")}</h3>

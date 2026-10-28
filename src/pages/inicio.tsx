@@ -1,3 +1,4 @@
+import { EuskoBadge } from "../components/eusko";
 import {
   AvailabilityLabel,
   AvailabilitySelect,
@@ -182,6 +183,7 @@ export function Inicio() {
                   </span>
                 </small>
                 <AvailabilityLabel product={p} />
+                <EuskoBadge farm={farm} />
               </div>
             </article>
           );

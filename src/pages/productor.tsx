@@ -1,3 +1,4 @@
+import { EuskoBadge } from "../components/eusko";
 import { AvailabilityLabel } from "../components/product-availability";
 import { canReserve } from "../lib/availability";
 import { FavoriteButton } from "../components/favorites";
@@ -80,6 +81,7 @@ export function Productor() {
         />
         <h1>{farm.name}</h1>
         <div className="farm-meta">
+          <EuskoBadge farm={farm} />
           {farm.ecological ? (
             <span className="eco">
               <Leaf size={13} aria-hidden="true" />

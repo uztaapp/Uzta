@@ -1,3 +1,4 @@
+import { acceptsEusko } from "./eusko";
 import {
   canReserve,
   matchesAvailability,
@@ -17,6 +18,7 @@ export function exploreEntries(
   sellerType: SellerType | "" = "",
   availableOnly = true,
   availability?: AvailabilityFilter,
+  euskoOnly = false,
 ) {
   const normalize = (s: string) =>
     s
@@ -40,6 +42,7 @@ export function exploreEntries(
     }
   return farms.flatMap((original) => {
     if (sellerType && original.sellerType !== sellerType) return [];
+    if (euskoOnly && !acceptsEusko(original)) return [];
     const farm = {
       ...original,
       position: sellerPosition(original.position, original.sellerType),

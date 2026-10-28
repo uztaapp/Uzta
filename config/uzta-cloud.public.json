@@ -9,5 +9,6 @@
   "notificationsReady": true,
   "sellerFavoritesReady": false,
   "availabilityReady": false,
-  "commissionsReady": false
+  "commissionsReady": false,
+  "euskoReady": false
 }

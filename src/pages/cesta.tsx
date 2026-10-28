@@ -1,3 +1,6 @@
+import { PaymentChoice } from "../components/eusko";
+import { paymentAllowed, type PaymentPreference } from "../lib/eusko";
+import cloudConfig from "../../config/uzta-cloud.public.json";
 import { AvailabilityLabel } from "../components/product-availability";
 import { canReserve as productReservable } from "../lib/availability";
 import "./cesta.css";
@@ -14,6 +17,10 @@ export function Cesta() {
   useLanguage();
   const { data, run, mode, busy, userId, storageError } = useDemo();
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [payment, setPayment] = useState<{
+    farm: string;
+    value: PaymentPreference;
+  }>({ farm: "", value: "EUR" });
   const [date, setDate] = useState("");
   const [reviewed, setReviewed] = useState("");
   const [receipt, setReceipt] = useState("");
@@ -24,6 +31,8 @@ export function Cesta() {
   const requestId = useRef<string>(crypto.randomUUID());
   const items = data.products.filter((p) => (data.quantities[p.id] ?? 0) > 0);
   const farm = data.farms.find((f) => f.id === items[0]?.farmId);
+  const preference = payment.farm === farm?.id ? payment.value : "EUR";
+  const paymentEnabled = mode === "demo" || cloudConfig.euskoReady;
   const slots = farm?.slots.filter((s) => futureSlot(s)) ?? [];
   const total = items.reduce(
     (sum, p) => sum + p.priceCents * data.quantities[p.id],
@@ -46,6 +55,8 @@ export function Cesta() {
       p.availability,
       p.expectedAvailableOn,
     ]),
+    preference,
+    paymentMethods: [farm?.euskoNotes, farm?.euskoDigital],
     pickup: chosenSlot,
     message: data.message,
   });
@@ -53,6 +64,7 @@ export function Cesta() {
   const canReserve =
     !busy &&
     !unavailable &&
+    (!paymentEnabled || paymentAllowed(farm, preference)) &&
     !multipleSellers &&
     validSlot &&
     items.length > 0 &&
@@ -73,6 +85,7 @@ export function Cesta() {
         id: reservationId,
         slotId: slot,
         now: new Date().toISOString(),
+        ...(paymentEnabled ? { paymentPreference: preference } : {}),
       });
       if (ok) {
         finished.current = true;
@@ -321,6 +334,16 @@ export function Cesta() {
                     </p>
                   )}
                 </>
+              )}
+              {paymentEnabled && (
+                <PaymentChoice
+                  farm={farm}
+                  value={preference}
+                  onChange={(value) =>
+                    setPayment({ farm: farm?.id ?? "", value })
+                  }
+                  disabled={step !== 2 || busy}
+                />
               )}
               <PickupLocation farm={farm} />
               <p className="payment-note">

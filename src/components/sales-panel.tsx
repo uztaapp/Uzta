@@ -1,3 +1,4 @@
+import { EuskoAdminSummary } from "./eusko";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { useUzta } from "../app-context";
@@ -134,6 +135,7 @@ function SalesContent({ adminMode }: { adminMode: boolean }) {
         )}
       </p>
       <p>{t("Anular no registra una devolución del dinero cobrado.")}</p>
+      {adminMode && settings && <EuskoAdminSummary key={revision} />}
       {adminMode && settings && (
         <RateForm settings={settings} saved={refresh} />
       )}

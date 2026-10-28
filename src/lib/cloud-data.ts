@@ -1,3 +1,4 @@
+import { paymentAllowed } from "./eusko";
 import { canReserve } from "./availability";
 import { z } from "zod";
 import type { User, SupabaseClient } from "@supabase/supabase-js";
@@ -144,6 +145,8 @@ function check<T>(result: { data: T; error: unknown }): T {
   return result.data;
 }
 const producerRow = z.object({
+  eusko_notes: z.boolean().optional(),
+  eusko_digital: z.boolean().optional(),
   seller_type: z.enum(["professional", "private"]).nullable().optional(),
   public_latitude: z.coerce.number().min(-90).max(90).nullable().optional(),
   public_longitude: z.coerce.number().min(-180).max(180).nullable().optional(),
@@ -262,6 +265,8 @@ export async function loadCloudData(
   data.sessionActive = !!user;
   data.farms = farms.map((f) => ({
     sellerType: f.seller_type,
+    euskoNotes: f.eusko_notes ?? false,
+    euskoDigital: f.eusko_digital ?? false,
     position:
       f.public_latitude != null && f.public_longitude != null
         ? sellerPosition(
@@ -319,6 +324,9 @@ export async function loadCloudData(
       end: madridParts(o.pickup_ends_at).time,
     },
     message: o.message,
+    paymentPreference: o.payment_preference ?? null,
+    euskoNotesAccepted: o.eusko_notes_accepted ?? false,
+    euskoDigitalAccepted: o.eusko_digital_accepted ?? false,
     status: o.status,
     example: false,
     lines: o.items.map((l: any) => ({
@@ -564,6 +572,9 @@ export async function persistCloudCommand(
     });
     const changed =
       !previous ||
+      (cloudConfig.euskoReady &&
+        (previous.euskoNotes !== f.euskoNotes ||
+          previous.euskoDigital !== f.euskoDigital)) ||
       JSON.stringify(previous.position) !== JSON.stringify(f.position) ||
       ["name", "location", "description", "ecological", "sellerType"].some(
         (k) => (previous as any)[k] !== (f as any)[k],
@@ -587,6 +598,12 @@ export async function persistCloudCommand(
                     sellerPosition(f.position, f.sellerType)?.lat ?? null,
                   public_longitude:
                     sellerPosition(f.position, f.sellerType)?.lng ?? null,
+                }
+              : {}),
+            ...(cloudConfig.euskoReady
+              ? {
+                  eusko_notes: f.euskoNotes ?? false,
+                  eusko_digital: f.euskoDigital ?? false,
                 }
               : {}),
             active: true,
@@ -616,6 +633,12 @@ export async function persistCloudCommand(
       throw Error("Revisa la disponibilidad de los productos de la cesta.");
     if (new Set(items.map((p) => p.farmId)).size !== 1)
       throw Error("La cesta debe pertenecer a un productor.");
+    const seller = data.farms.find((f) => f.id === items[0].farmId);
+    if (
+      command.paymentPreference === "EUSKO" &&
+      (!cloudConfig.euskoReady || !paymentAllowed(seller, "EUSKO"))
+    )
+      throw Error("Eusko no aceptado por este vendedor.");
     const raw = localStorage.getItem(pendingCheckoutKey(user.id));
     const previous = raw ? pendingSchema.parse(JSON.parse(raw)) : null;
     const slot = data.farms
@@ -626,15 +649,23 @@ export async function persistCloudCommand(
       fingerprint: cartFingerprint(data, slot),
     };
     localStorage.setItem(pendingCheckoutKey(user.id), JSON.stringify(pending));
-    const response = await api.rpc("uzta_reserve_order", {
-      p_id: pending.id,
-      p_slot: command.slotId,
-      p_items: items.map((p) => ({
-        product_id: p.id,
-        quantity: data.quantities[p.id],
-      })),
-      p_message: data.message,
-    });
+    const response = await api.rpc(
+      cloudConfig.euskoReady
+        ? "uzta_reserve_order_payment"
+        : "uzta_reserve_order",
+      {
+        p_id: pending.id,
+        p_slot: command.slotId,
+        p_items: items.map((p) => ({
+          product_id: p.id,
+          quantity: data.quantities[p.id],
+        })),
+        p_message: data.message,
+        ...(cloudConfig.euskoReady
+          ? { p_preference: command.paymentPreference ?? "EUR" }
+          : {}),
+      },
+    );
     if (response.error) {
       const code = String(response.error.code ?? "");
       if (["P0001", "42501", "23503", "22023", "22P02"].includes(code))

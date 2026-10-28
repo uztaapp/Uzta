@@ -680,3 +680,71 @@ it("real reservation rejects upcoming products even if they still have stock", a
   ).rejects.toThrow();
   expect(f.rpc).not.toHaveBeenCalled();
 });
+
+it("saves the seller's declared Eusko methods through existing ownership writes", async () => {
+  const config = (await import("../../config/uzta-cloud.public.json")).default;
+  const prior = config.euskoReady;
+  config.euskoReady = true;
+  try {
+    const f = fixture();
+    f.rows.uzta_producers[0].eusko_notes = true;
+    const loaded = await loadCloudData(user, f.api);
+    expect(loaded.data.farms[0].euskoNotes).toBe(true);
+    await persistCloudCommand(
+      loaded.data,
+      {
+        type: "farm",
+        value: {
+          ...loaded.data.farms[0],
+          euskoNotes: false,
+          euskoDigital: true,
+        },
+      },
+      user,
+      FARM,
+      f.api,
+    );
+    expect(
+      f.log
+        .filter((e) => e.table === "uzta_producers" && e.operation === "upsert")
+        .at(-1),
+    ).toMatchObject({
+      value: { eusko_notes: false, eusko_digital: true, owner_id: USER },
+    });
+  } finally {
+    config.euskoReady = prior;
+  }
+});
+it("sends only an informational payment preference with unchanged reservation quantities", async () => {
+  const config = (await import("../../config/uzta-cloud.public.json")).default;
+  const prior = config.euskoReady;
+  config.euskoReady = true;
+  try {
+    const f = fixture();
+    f.rows.uzta_producers[0].eusko_digital = true;
+    const loaded = await loadCloudData(user, f.api);
+    loaded.data.quantities = { [PRODUCT]: 1 };
+    await persistCloudCommand(
+      loaded.data,
+      {
+        type: "reserve",
+        id: ORDER,
+        slotId: SLOT,
+        now: "2040-01-01T10:00:00Z",
+        paymentPreference: "EUSKO",
+      },
+      user,
+      null,
+      f.api,
+    );
+    expect(f.rpc).toHaveBeenCalledWith(
+      "uzta_reserve_order_payment",
+      expect.objectContaining({
+        p_preference: "EUSKO",
+        p_items: [{ product_id: PRODUCT, quantity: 1 }],
+      }),
+    );
+  } finally {
+    config.euskoReady = prior;
+  }
+});

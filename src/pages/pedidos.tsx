@@ -1,3 +1,4 @@
+import { PaymentMethods } from "../components/eusko";
 import "./pedidos.css";
 import { t, t as translate, useLanguage } from "../lib/language";
 import { useState } from "react";
@@ -213,6 +214,25 @@ export function Pedidos() {
             <strong>{t(selected.status)}</strong>
           </p>
           <PickupLocation farm={selectedFarm} />
+          {selected.paymentPreference && (
+            <>
+              <PaymentMethods
+                farm={{
+                  euskoNotes: selected.euskoNotesAccepted,
+                  euskoDigital: selected.euskoDigitalAccepted,
+                }}
+              />
+              <p>
+                {t("Preferencia de pago")}:{" "}
+                {selected.paymentPreference === "EUSKO" ? "Eusko" : t("Euros")}
+              </p>
+              <p>
+                {t(
+                  "Preferencia informativa: no constituye un pago. El total permanece en euros.",
+                )}
+              </p>
+            </>
+          )}
           <p className="payment-note">
             {t(
               "Paga directamente al vendedor durante la recogida. UZTA no cobra online.",

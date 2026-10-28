@@ -1,3 +1,4 @@
+import { paymentAllowed } from "./eusko";
 import { canReserve } from "./availability";
 import { z } from "zod";
 import { productPhotoSchema } from "./product-photo";
@@ -20,6 +21,8 @@ const slotSchema = z.object({
   end: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
 });
 export const farmSchema = z.object({
+  euskoNotes: z.boolean().optional(),
+  euskoDigital: z.boolean().optional(),
   sellerType: z.enum(["professional", "private"]).nullable().optional(),
   id: z.string(),
   name: z.string().trim().min(1).max(100),
@@ -84,6 +87,9 @@ const lineSchema = z.object({
   crop,
 });
 const orderSchema = z.object({
+  paymentPreference: z.enum(["EUR", "EUSKO"]).nullable().optional(),
+  euskoNotesAccepted: z.boolean().optional(),
+  euskoDigitalAccepted: z.boolean().optional(),
   id: z.string(),
   customerId: z.string().optional(),
   farmId: z.string(),
@@ -491,7 +497,13 @@ export type Command =
   | { type: "session"; active: boolean }
   | { type: "farm"; value: Farm }
   | { type: "product"; value: Product }
-  | { type: "reserve"; slotId: string; id: string; now: string }
+  | {
+      type: "reserve";
+      slotId: string;
+      id: string;
+      now: string;
+      paymentPreference?: "EUR" | "EUSKO";
+    }
   | { type: "complete"; id: string };
 export function transition(previous: LocalStore, command: Command): LocalStore {
   const s = structuredClone(previous);
@@ -599,6 +611,8 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
         crop: p.crop,
       };
     });
+    if (!paymentAllowed(farm, command.paymentPreference ?? "EUR"))
+      throw Error("Eusko no aceptado por este vendedor.");
     for (const line of lines) {
       const product = s.products.find((p) => p.id === line.productId)!;
       product.stock -= line.quantity;
@@ -610,6 +624,9 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
       farmId: farm.id,
       farmName: farm.name,
       createdAt: command.now,
+      paymentPreference: command.paymentPreference ?? null,
+      euskoNotesAccepted: !!farm.euskoNotes,
+      euskoDigitalAccepted: !!farm.euskoDigital,
       pickup: slot,
       message: s.message,
       status: "Pendiente",
