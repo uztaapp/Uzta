@@ -9,3 +9,5 @@ El SVG de celdas pesa 21.196.563 bytes y reproduce píxeles, no curvas suaves ed
 Integración: Inicio, bienvenida de carga, acceso/registro, perfil y pie compacto. Un solo componente de marca; textos y eslóganes continúan en la interfaz traducible. Manifiesto con iconos normales y maskable, sin añadir servicio offline. No se cambian autenticación, productos, reservas, pagos, mapa ni base de datos.
 
 Publicación únicamente en vista previa de la rama feature/official-uzta-brand; producción requiere autorización.
+
+Iconos: 14 recortes independientes de la lámina aportada (sin rótulos), conservando sus dibujos y colores. Sustituyen navegación, seis categorías, cesta y accesos equivalentes del perfil. Se conservan los controles técnicos sin equivalente (ajustes, volver, idioma, etc.). Estado activo de navegación indicado mediante contorno y etiqueta, sin recolorear los dibujos; contador de cesta intacto.

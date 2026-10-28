@@ -1,3 +1,4 @@
+import { SheetIcon } from "./components/sheet-icon";
 import { Brand } from "./components/brand";
 import { Privacidad, PrivacyLink } from "./pages/privacidad";
 import {
@@ -8,13 +9,6 @@ import {
   Link,
   useRouterState,
 } from "@tanstack/react-router";
-import {
-  Home,
-  Search,
-  ShoppingBasket,
-  ClipboardList,
-  UserRound,
-} from "lucide-react";
 import { DemoProvider, ModeBanner, useDemo } from "./design";
 import { lazy, Suspense } from "react";
 const Explorar = lazy(() =>
@@ -36,11 +30,11 @@ import { Perfil } from "./pages/perfil";
 import { AppRecovery, RootRecovery } from "./components/app-recovery";
 import { t, useLanguage } from "./lib/language";
 const destinations = [
-  ["/", "Inicio", Home],
-  ["/explorar", "Explorar", Search],
-  ["/cesta", "Cesta", ShoppingBasket],
-  ["/pedidos", "Pedidos", ClipboardList],
-  ["/perfil", "Perfil", UserRound],
+  ["/", "Inicio", "home"],
+  ["/explorar", "Explorar", "location"],
+  ["/cesta", "Cesta", "basket"],
+  ["/pedidos", "Pedidos", "calendar"],
+  ["/perfil", "Perfil", "profile"],
 ] as const;
 export function Shell() {
   const pathname = useRouterState({
@@ -76,7 +70,7 @@ function BottomNavigation() {
   const count = Object.values(data.quantities).filter((q) => q > 0).length;
   return (
     <nav aria-label="Navegación principal">
-      {destinations.map(([to, label, Icon]) => (
+      {destinations.map(([to, label, icon]) => (
         <Link
           key={to}
           to={to}
@@ -85,7 +79,7 @@ function BottomNavigation() {
           activeProps={{ className: "active", "aria-current": "page" }}
         >
           <span className="nav-icon">
-            <Icon size={22} />
+            <SheetIcon name={icon} />
             {to === "/cesta" && count > 0 ? (
               <span className="nav-count">{count}</span>
             ) : null}

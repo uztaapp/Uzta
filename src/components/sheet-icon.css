@@ -1,0 +1,29 @@
+.sheet-icon {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.nav-icon > .sheet-icon {
+  width: 32px;
+  height: 32px;
+}
+nav a.active .nav-icon {
+  outline: 2px solid #31552b;
+  outline-offset: 1px;
+  border-radius: 50%;
+}
+.uzta-home .categories button > span > .sheet-icon {
+  width: 43px;
+  height: 43px;
+}
+.basket-shortcut > .sheet-icon {
+  width: 32px;
+  height: 32px;
+}
+.uzta-profile .profile-row > .sheet-icon {
+  width: 28px;
+  height: 28px;
+}

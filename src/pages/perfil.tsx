@@ -1,3 +1,4 @@
+import { SheetIcon } from "../components/sheet-icon";
 import { Brand } from "../components/brand";
 import { SalesLinks, SalesPanel } from "../components/sales-panel";
 import { MyFavorites } from "../components/favorites";
@@ -7,13 +8,9 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import {
   Settings,
-  Heart,
-  MapPin,
   Globe,
   Store,
-  Package,
   FileText,
-  Truck,
   ChartNoAxesColumn,
   HelpCircle,
   LogOut,
@@ -155,7 +152,7 @@ export function Perfil() {
           </div>
         </div>
         <button className="profile-row" onClick={() => setEditing(true)}>
-          <MapPin />
+          <SheetIcon name="location" />
           <span>
             <small>{t("Dirección de entrega / ubicación")}</small>
             {data.profile.location}
@@ -176,7 +173,7 @@ export function Perfil() {
         to="/perfil"
         search={{ apartado: "favoritos" }}
       >
-        <Heart />
+        <SheetIcon name="heart" />
         <span>{t("Mis favoritos")}</span>
         <ChevronRight />
       </Link>
@@ -185,9 +182,9 @@ export function Perfil() {
       <div className="producer-menu">
         {[
           ["Mi tienda", "tienda", Store],
-          ["Productos", "productos", Package],
+          ["Productos", "productos", Store],
           ["Pedidos recibidos", "pedidos", FileText],
-          ["Horarios y entregas", "horarios", Truck],
+          ["Horarios y entregas", "horarios", Store],
           ["Estadísticas", "estadisticas", ChartNoAxesColumn],
         ]
           .filter(
@@ -212,7 +209,15 @@ export function Perfil() {
                       })
                 }
               >
-                <Symbol />
+                {section === "tienda" ? (
+                  <SheetIcon name="store" />
+                ) : section === "productos" ? (
+                  <SheetIcon name="basket" />
+                ) : section === "pedidos" || section === "horarios" ? (
+                  <SheetIcon name="calendar" />
+                ) : (
+                  <Symbol />
+                )}
                 <span>{t(label as string)}</span>
                 <ChevronRight />
               </button>

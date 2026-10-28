@@ -1,3 +1,4 @@
+import { SheetIcon, type SheetIconName } from "../components/sheet-icon";
 import { EuskoBadge } from "../components/eusko";
 import {
   AvailabilityLabel,
@@ -13,14 +14,7 @@ import { Brand } from "../components/brand";
 import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Search,
-  MapPin,
-  Heart,
-  ChevronRight,
-  ChevronDown,
-  ShoppingCart,
-} from "lucide-react";
+import { Search, MapPin, Heart, ChevronRight, ChevronDown } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 import { NearbyControls } from "../components/nearby-controls";
 import { withinRadius, distanceLabel, type Position } from "../lib/nearby";
@@ -64,7 +58,7 @@ export function Inicio() {
           <small>{t("Del productor a tu mesa")}</small>
         </div>
         <Link to="/cesta" aria-label="Abrir cesta" className="basket-shortcut">
-          <ShoppingCart aria-hidden="true" />
+          <SheetIcon name="basket" />
           <span>
             {Object.values(data.quantities).filter((q) => q > 0).length}
           </span>
@@ -100,19 +94,21 @@ export function Inicio() {
       </label>
       <div className="categories" aria-label="Categorías">
         {[
-          ["🥬", "Verduras"],
-          ["🍎", "Frutas"],
-          ["🥚", "Huevos"],
-          ["🧀", "Lácteos"],
-          ["🍯", "Miel"],
-          ["🌿", "Otros"],
+          ["vegetables", "Verduras"],
+          ["fruit", "Frutas"],
+          ["eggs", "Huevos"],
+          ["dairy", "Lácteos"],
+          ["honey", "Miel"],
+          ["other", "Otros"],
         ].map(([icon, label]) => (
           <button
             key={label}
             aria-pressed={category === label}
             onClick={() => setCategory(category === label ? "" : label)}
           >
-            <span>{icon}</span>
+            <span>
+              <SheetIcon name={icon as SheetIconName} />
+            </span>
             {t(label)}
           </button>
         ))}
