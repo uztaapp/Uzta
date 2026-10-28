@@ -1,5 +1,5 @@
 import React from "react";
-import { test, expect, afterEach, vi } from "vitest";
+import { test, expect, afterEach, beforeEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { Privacidad } from "./privacidad";
 import { setLanguage, type Language } from "../lib/language";
@@ -7,7 +7,12 @@ import legal from "../../config/uzta-legal.public.json";
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
 }));
+const approved = legal.privacyApproved;
+beforeEach(() => {
+  legal.privacyApproved = false;
+});
 afterEach(() => {
+  legal.privacyApproved = approved;
   cleanup();
   setLanguage("es");
 });
@@ -34,4 +39,13 @@ test("review draft includes controller, actual providers and rights in four lang
     ).toHaveAttribute("href", "mailto:" + legal.contactEmail);
     view.unmount();
   }
+});
+
+test("approved policy is publicly readable without a draft notice", () => {
+  legal.privacyApproved = true;
+  render(<Privacidad />);
+  expect(
+    screen.getByRole("heading", { name: "Datos utilizados" }),
+  ).toBeInTheDocument();
+  expect(screen.queryByRole("status")).toBeNull();
 });
