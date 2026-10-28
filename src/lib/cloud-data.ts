@@ -272,6 +272,14 @@ export async function loadCloudData(
   };
   data.sessionActive = !!user;
   data.farms = farms.map((f) => ({
+    catalogVisible:
+      !cloudConfig.knownExampleProducerIds.includes(f.id) ||
+      products.some(
+        (p) =>
+          p.producer_id === f.id &&
+          p.active &&
+          !cloudConfig.knownExampleProductIds.includes(p.id),
+      ),
     sellerType: f.seller_type,
     euskoNotes: f.eusko_notes ?? false,
     euskoDigital: f.eusko_digital ?? false,
@@ -302,6 +310,7 @@ export async function loadCloudData(
     products.flatMap((p) => (p.photo_path ? [p.photo_path] : [])),
   );
   data.products = products.map((p) => ({
+    catalogVisible: !cloudConfig.knownExampleProductIds.includes(p.id),
     description: p.description,
     photoPath: p.photo_path,
     photoUrl: p.photo_path ? photoUrls.get(p.photo_path) : undefined,
@@ -684,6 +693,11 @@ export async function persistCloudCommand(
       throw Error(
         "No se pudo confirmar la reserva. Actualiza tus pedidos antes de repetir.",
       );
+  } else if (command.type === "cancel") {
+    if (!cloudConfig.cancellationsReady)
+      throw Error("Cancelaciones pendientes de activación.");
+    uuid.parse(command.id);
+    check(await api.rpc("uzta_cancel_order", { p_id: command.id }));
   } else if (command.type === "complete") {
     const order = data.orders.find((o) => o.id === command.id);
     if (!order || order.farmId !== managedFarmId)

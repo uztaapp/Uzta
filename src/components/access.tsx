@@ -1,3 +1,4 @@
+import { PasswordReset } from "./password-recovery";
 import { PrivacyLink } from "../pages/privacidad";
 import { GoogleAccess } from "./google-access";
 import { t, useLanguage } from "../lib/language";
@@ -6,7 +7,8 @@ import { useUzta } from "../app-context";
 import { LanguageSelector } from "./language-selector";
 export function Access() {
   useLanguage();
-  const { signIn, signUp, busy } = useUzta();
+  const { signIn, signUp, busy, requestPasswordReset } = useUzta();
+  const [reset, setReset] = useState(false);
   const [register, setRegister] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -36,6 +38,7 @@ export function Access() {
       setPending(false);
     }
   }
+  if (reset) return <PasswordReset close={() => setReset(false)} />;
   return (
     <section className="access-panel">
       <h1>{register ? t("Crear cuenta en UZTA") : t("Entrar en UZTA")}</h1>
@@ -48,6 +51,15 @@ export function Access() {
       </p>
       <PrivacyLink />
       <GoogleAccess disabled={busy || pending} />
+      {requestPasswordReset && (
+        <button
+          className="text-button"
+          disabled={busy || pending}
+          onClick={() => setReset(true)}
+        >
+          {t("¿Has olvidado tu contraseña?")}
+        </button>
+      )}
       <form className="uzta-form" onSubmit={submit}>
         {register ? (
           <label>

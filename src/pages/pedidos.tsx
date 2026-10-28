@@ -1,3 +1,5 @@
+import { madridToUtc } from "../lib/cloud-data";
+import cloudConfig from "../../config/uzta-cloud.public.json";
 import { ReservationReview } from "../components/seller-reviews";
 import { PaymentMethods } from "../components/eusko";
 import "./pedidos.css";
@@ -16,6 +18,7 @@ export function Pedidos() {
     pedido?: string;
     vista?: string;
   };
+  const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
   const [tab, setTab] = useState(
     search.vista === "productor" ? "Como productor" : "Compras",
   );
@@ -121,7 +124,7 @@ export function Pedidos() {
                 </small>
               </div>
               <span
-                className={`status ${o.status === "Pendiente" ? "pending" : o.status === "Completado" ? "completed" : "other"}`}
+                className={`status ${o.status === "Pendiente" ? "pending" : o.status === "Completado" ? "completed" : o.status === "Cancelado" ? "cancelled" : "other"}`}
               >
                 {translate(o.status)}
               </span>
@@ -272,6 +275,54 @@ export function Pedidos() {
                 ? t("Reserva guardada en tu cuenta de UZTA.")
                 : t("Conservado en este equipo. No enviado al productor.")}
           </p>
+          {(mode === "demo" || cloudConfig.cancellationsReady) &&
+            selected.status === "Pendiente" &&
+            !selected.example &&
+            (selected.farmId === managedFarmId ||
+              selected.customerId === userId) && (
+              <div>
+                {cancelConfirm === selected.id ? (
+                  <>
+                    <p>
+                      {t(
+                        "La cancelación devolverá las existencias al vendedor. No realiza ningún pago ni devolución de dinero.",
+                      )}
+                    </p>
+                    <button
+                      disabled={busy}
+                      onClick={async () => {
+                        if (await run({ type: "cancel", id: selected.id }))
+                          setCancelConfirm(null);
+                      }}
+                    >
+                      {t("Confirmar cancelación")}
+                    </button>
+                    <button
+                      disabled={busy}
+                      onClick={() => setCancelConfirm(null)}
+                    >
+                      {t("Volver")}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    disabled={
+                      busy ||
+                      (selected.farmId !== managedFarmId &&
+                        Date.parse(
+                          madridToUtc(
+                            selected.pickup.date,
+                            selected.pickup.start,
+                          ),
+                        ) <= Date.now())
+                    }
+                    onClick={() => setCancelConfirm(selected.id)}
+                  >
+                    {t("Cancelar reserva")}
+                  </button>
+                )}
+              </div>
+            )}
           {mode === "cloud" &&
           selected.status === "Completado" &&
           !selected.example &&

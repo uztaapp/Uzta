@@ -35,8 +35,12 @@ export function Productor() {
   const search = useSearch({ strict: false }) as { tienda?: string };
   const farm = data.farms.find(
     (f) =>
+      f.catalogVisible !== false &&
       f.id ===
-      (search.tienda ?? (mode === "demo" ? "urki" : data.farms[0]?.id)),
+        (search.tienda ??
+          (mode === "demo"
+            ? "urki"
+            : data.farms.find((f) => f.catalogVisible !== false)?.id)),
   );
   const [added, setAdded] = useState("");
   const reviews = useReviewSummaries(farm ? [farm.id] : []);
@@ -148,7 +152,12 @@ export function Productor() {
             </p>
             <div className="producer-products">
               {data.products
-                .filter((p) => p.farmId === farm.id && p.active)
+                .filter(
+                  (p) =>
+                    p.farmId === farm.id &&
+                    p.active &&
+                    p.catalogVisible !== false,
+                )
                 .map((p) => (
                   <article key={p.id}>
                     <Photo

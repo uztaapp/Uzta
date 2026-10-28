@@ -31,6 +31,7 @@ export function exploreEntries(
   for (const p of products)
     if (
       p.active &&
+      p.catalogVisible !== false &&
       (availability
         ? matchesAvailability(p, availability)
         : !availableOnly || canReserve(p)) &&
@@ -41,6 +42,7 @@ export function exploreEntries(
       grouped.set(p.farmId, list);
     }
   return farms.flatMap((original) => {
+    if (original.catalogVisible === false) return [];
     if (sellerType && original.sellerType !== sellerType) return [];
     if (euskoOnly && !acceptsEusko(original)) return [];
     const farm = {

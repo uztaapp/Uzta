@@ -45,6 +45,7 @@ export function Inicio() {
   const visible = data.products.filter(
     (p) =>
       p.active &&
+      p.catalogVisible !== false &&
       matchesAvailability(p, availability) &&
       withinRadius(
         data.farms.find((f) => f.id === p.farmId)?.position,
@@ -194,7 +195,9 @@ export function Inicio() {
           <p>
             {busy
               ? t("Cargando productos…")
-              : data.products.some((p) => p.active)
+              : data.products.some(
+                    (p) => p.active && p.catalogVisible !== false,
+                  )
                 ? t("No hay productos que coincidan con tu búsqueda.")
                 : t("Todavía no hay productos publicados.")}
           </p>
@@ -227,7 +230,11 @@ export function Inicio() {
       </div>
       <div className="farm-grid">
         {data.farms
-          .filter((f) => withinRadius(f.position, center, radius))
+          .filter(
+            (f) =>
+              f.catalogVisible !== false &&
+              withinRadius(f.position, center, radius),
+          )
           .slice(0, allFarms ? undefined : 1)
           .map((f) => (
             <div className="favorite-card-wrap" key={f.id}>

@@ -12,12 +12,13 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 afterEach(cleanup);
-function home(error = "", withProduct = false) {
+function home(error = "", withProduct = false, sample = false) {
   const data = emptyCloudData();
   if (withProduct) {
     data.farms = [
       {
         id: "farm",
+        catalogVisible: !sample,
         name: "Tienda registrada",
         location: "Bayona",
         description: "",
@@ -35,6 +36,7 @@ function home(error = "", withProduct = false) {
         unit: "kg",
         stock: 9,
         active: true,
+        catalogVisible: !sample,
         featured: false,
         category: "Verduras",
         crop: [0, 0, 0, 0],
@@ -76,4 +78,13 @@ test("catalogue error is never presented as an empty result", () => {
   expect(
     screen.queryByText("Todavía no hay productos publicados."),
   ).not.toBeInTheDocument();
+});
+
+test("a known inherited sample is not mistaken for a real catalogue or a connection error", () => {
+  home("", true, true);
+  expect(screen.queryByText("Producto registrado")).toBeNull();
+  expect(screen.queryByText("Tienda registrada")).toBeNull();
+  expect(
+    screen.getByText("Todavía no hay productos publicados."),
+  ).toBeInTheDocument();
 });

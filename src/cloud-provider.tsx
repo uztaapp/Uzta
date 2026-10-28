@@ -1,3 +1,6 @@
+import { PasswordRecovery } from "./components/password-recovery";
+import { t } from "./lib/language";
+import { z } from "zod";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { AppContext, type AppContextValue } from "./app-context";
@@ -20,6 +23,7 @@ export function CloudProvider({
   switchMode: AppContextValue["switchMode"];
 }) {
   const [session, setSession] = useState<Session | null>(null);
+  const [recoveryUser, setRecoveryUser] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [sessionAttempt, setSessionAttempt] = useState(0);
   const [data, setData] = useState(emptyCloudData);
@@ -58,8 +62,15 @@ export function CloudProvider({
         setBusy(false);
       });
     const { data: subscription } = client.auth.onAuthStateChange(
-      (_event, next) => {
+      (event, next) => {
         if (active) {
+          setRecoveryUser((previous) =>
+            event === "PASSWORD_RECOVERY"
+              ? (next?.user.id ?? null)
+              : !next || (previous && previous !== next.user.id)
+                ? null
+                : previous,
+          );
           receivedAuthEvent = true;
           setSession(next);
           setInitialized(true);
@@ -236,6 +247,28 @@ export function CloudProvider({
       ? "Cuenta creada."
       : "Revisa tu correo para confirmar la cuenta antes de iniciar sesión.";
   }
+  async function requestPasswordReset(email: string) {
+    const checked = z.email().max(200).parse(email.trim());
+    const result = await cloudClient().auth.resetPasswordForEmail(checked, {
+      redirectTo: authReturnUrl(),
+    });
+    if (result.error) throw Error("Password reset unavailable");
+  }
+  async function updateRecoveredPassword(password: string) {
+    if (password.length < 8 || password.length > 128)
+      throw Error("Invalid password");
+    const verified = await cloudClient().auth.getUser();
+    if (
+      verified.error ||
+      !verified.data.user ||
+      verified.data.user.id !== recoveryUser
+    )
+      throw Error("Invalid recovery session");
+    const result = await cloudClient().auth.updateUser({ password });
+    if (result.error) throw Error("Password change unavailable");
+    setRecoveryUser(null);
+    show(t("Contraseña actualizada."));
+  }
   async function signOut() {
     setBusy(true);
     try {
@@ -274,6 +307,7 @@ export function CloudProvider({
         signIn,
         signUp,
         signOut,
+        requestPasswordReset,
       }}
     >
       {error ? (
@@ -299,6 +333,13 @@ export function CloudProvider({
           Actualizando UZTA…
         </p>
       ) : null}
+      {recoveryUser && session?.user.id === recoveryUser && (
+        <PasswordRecovery
+          key={recoveryUser}
+          close={() => setRecoveryUser(null)}
+          save={updateRecoveredPassword}
+        />
+      )}
       {children}
       {notice ? (
         <Modal title="UZTA" close={() => show("")}>

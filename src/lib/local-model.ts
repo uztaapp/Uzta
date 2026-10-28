@@ -21,6 +21,7 @@ const slotSchema = z.object({
   end: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
 });
 export const farmSchema = z.object({
+  catalogVisible: z.boolean().optional(),
   euskoNotes: z.boolean().optional(),
   euskoDigital: z.boolean().optional(),
   sellerType: z.enum(["professional", "private"]).nullable().optional(),
@@ -40,6 +41,7 @@ export const farmSchema = z.object({
     .optional(),
 });
 export const productSchema = z.object({
+  catalogVisible: z.boolean().optional(),
   description: z.string().max(2000).optional(),
   photo: productPhotoSchema,
   photoPath: z
@@ -97,7 +99,7 @@ const orderSchema = z.object({
   createdAt: z.string(),
   pickup: slotSchema,
   message: z.string().max(1000),
-  status: z.enum(["Pendiente", "Completado"]),
+  status: z.enum(["Pendiente", "Completado", "Cancelado"]),
   lines: z.array(lineSchema).min(1),
   example: z.boolean(),
 });
@@ -504,7 +506,8 @@ export type Command =
       now: string;
       paymentPreference?: "EUR" | "EUSKO";
     }
-  | { type: "complete"; id: string };
+  | { type: "complete"; id: string }
+  | { type: "cancel"; id: string };
 export function transition(previous: LocalStore, command: Command): LocalStore {
   const s = structuredClone(previous);
   if (
@@ -635,12 +638,27 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
     });
     s.quantities = {};
     s.message = "";
+  } else if (command.type === "cancel") {
+    const order = s.orders.find((o) => o.id === command.id);
+    if (!s.sessionActive || !order || order.example)
+      throw Error("Reserva no disponible.");
+    if (order.status === "Cancelado") return previous;
+    if (order.status !== "Pendiente")
+      throw Error("No se puede cancelar una reserva completada.");
+    for (const line of order.lines) {
+      const product = s.products.find((p) => p.id === line.productId);
+      if (!product) throw Error("Producto no disponible.");
+      product.stock += line.quantity;
+    }
+    order.status = "Cancelado";
   } else if (command.type === "complete") {
     const order = s.orders.find((o) => o.id === command.id);
     if (!order) throw Error("Pedido desconocido.");
     if (order.farmId !== "urki")
       throw Error("Esta reserva no pertenece a tu tienda local.");
     if (order.example) throw Error("El pedido ilustrativo no se modifica.");
+    if (order.status === "Cancelado")
+      throw Error("No se puede completar una reserva cancelada.");
     order.status = "Completado";
   }
   s.revision++;

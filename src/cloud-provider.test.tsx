@@ -15,6 +15,8 @@ import { emptyCloudData } from "./lib/cloud-data";
 const mocks = vi.hoisted(() => ({
   getSession: vi.fn(),
   getUser: vi.fn(),
+  resetPasswordForEmail: vi.fn(),
+  updateUser: vi.fn(),
   signInWithPassword: vi.fn(),
   signUp: vi.fn(),
   signOut: vi.fn(),
@@ -28,6 +30,8 @@ vi.mock("./lib/cloud-client", () => ({
     auth: {
       getSession: mocks.getSession,
       getUser: mocks.getUser,
+      resetPasswordForEmail: mocks.resetPasswordForEmail,
+      updateUser: mocks.updateUser,
       signInWithPassword: mocks.signInWithPassword,
       signUp: mocks.signUp,
       signOut: mocks.signOut,
@@ -84,6 +88,8 @@ function Probe() {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.callback = null;
+  mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
+  mocks.updateUser.mockResolvedValue({ error: null });
   mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
   mocks.getUser.mockResolvedValue({ data: { user: account }, error: null });
   mocks.load.mockImplementation(async (user) => ({
@@ -354,4 +360,60 @@ test("favorites update immediately, rollback errors and avoid a catalogue reload
   await act(async () => reject(Error("offline")));
   expect(screen.getByText("Sin guardar")).toBeInTheDocument();
   expect(mocks.load.mock.calls.length).toBe(reads);
+});
+
+test("password reset uses the approved UZTA return URL and a neutral response", async () => {
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "¿Has olvidado tu contraseña?" }),
+    ).toBeEnabled(),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "¿Has olvidado tu contraseña?" }),
+  );
+  fireEvent.change(screen.getByLabelText("Correo electrónico"), {
+    target: { value: "unknown@example.test" },
+  });
+  fireEvent.click(
+    screen.getByRole("button", { name: "Enviar enlace de recuperación" }),
+  );
+  expect(await screen.findByRole("status")).toHaveTextContent(
+    "Si existe una cuenta",
+  );
+  expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(
+    "unknown@example.test",
+    { redirectTo: "https://uzta-nu.vercel.app/" },
+  );
+});
+test("a recovery event allows a password change only for the verified recovery account", async () => {
+  const session = { user: account, access_token: "recovery" };
+  mocks.getSession.mockResolvedValue({ data: { session }, error: null });
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await screen.findByText("Persona real");
+  act(() => mocks.callback?.("PASSWORD_RECOVERY", session));
+  await screen.findByRole("heading", { name: "Cambiar contraseña" });
+  fireEvent.change(screen.getByLabelText("Nueva contraseña"), {
+    target: { value: "isolated-new-password" },
+  });
+  fireEvent.change(screen.getByLabelText("Repetir contraseña"), {
+    target: { value: "isolated-new-password" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Guardar contraseña" }));
+  await waitFor(() =>
+    expect(mocks.updateUser).toHaveBeenCalledWith({
+      password: "isolated-new-password",
+    }),
+  );
+  expect(
+    await screen.findByText("Contraseña actualizada."),
+  ).toBeInTheDocument();
 });

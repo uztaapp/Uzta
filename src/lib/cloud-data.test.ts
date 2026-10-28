@@ -766,3 +766,23 @@ it("uses a Google display name only for a new profile, never for privileges", as
       ?.value,
   ).not.toHaveProperty("role");
 });
+
+it("legacy examples remain available to owner history but are not public offers", async () => {
+  const config = (await import("../../config/uzta-cloud.public.json")).default;
+  const f = fixture(),
+    farm = config.knownExampleProducerIds[0],
+    product = config.knownExampleProductIds[0];
+  f.rows.uzta_producers[0].id = farm;
+  f.rows.uzta_products[0].producer_id = farm;
+  f.rows.uzta_products[0].id = product;
+  f.rows.uzta_pickup_slots[0].producer_id = farm;
+  const data = (await loadCloudData(user, f.api)).data;
+  expect(data.products).toHaveLength(1);
+  expect(data.products[0].catalogVisible).toBe(false);
+  expect(data.farms[0].catalogVisible).toBe(false);
+  const { canReserve } = await import("./availability");
+  expect(canReserve(data.products[0])).toBe(false);
+  expect(
+    f.log.filter((e) => e.table !== "uzta_profiles" && e.operation !== "read"),
+  ).toEqual([]);
+});

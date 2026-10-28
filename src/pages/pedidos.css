@@ -183,3 +183,8 @@
     font-size: 13px;
   }
 }
+
+.uzta-orders .status.cancelled {
+  background: #fae9e6;
+  color: #883c32;
+}

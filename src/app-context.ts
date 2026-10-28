@@ -14,6 +14,7 @@ export type AppContextValue = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<string>;
   signOut: () => Promise<void>;
+  requestPasswordReset?: (email: string) => Promise<void>;
 };
 export const AppContext = createContext<AppContextValue | null>(null);
 export function useUzta() {

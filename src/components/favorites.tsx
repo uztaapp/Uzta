@@ -103,11 +103,15 @@ export function MyFavorites() {
         {ids.map((id) => {
           const product =
             tab === "products"
-              ? data.products.find((p) => p.id === id && p.active)
+              ? data.products.find(
+                  (p) => p.id === id && p.active && p.catalogVisible !== false,
+                )
               : undefined;
           const farm =
             tab === "sellers"
-              ? data.farms.find((f) => f.id === id)
+              ? data.farms.find(
+                  (f) => f.id === id && f.catalogVisible !== false,
+                )
               : data.farms.find((f) => f.id === product?.farmId);
           const available = !!farm && (tab === "sellers" || !!product);
           const name = available

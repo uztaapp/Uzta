@@ -4,7 +4,7 @@ import {
   AvailabilityLabel,
 } from "../components/product-availability";
 import { t, useLanguage } from "../lib/language";
-import { lazy, Suspense, useState, type FormEvent } from "react";
+import { lazy, Suspense, useState, useEffect, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { Modal, Photo, euro, useDemo } from "../design";
 import {
@@ -29,7 +29,11 @@ export function Gestion({ section }: { section: string }) {
   const farm = data.farms.find((f) => f.id === managedFarmId)!;
   const sellerTypesEnabled = mode === "demo" || cloudConfig.sellerTypesReady;
   const [sellerType, setSellerType] = useState<SellerType | "">(
-    farm.sellerType ?? "",
+    farm?.sellerType ?? "",
+  );
+  useEffect(
+    () => setSellerType(farm?.sellerType ?? ""),
+    [farm?.id, farm?.sellerType],
   );
   const [edit, setEdit] = useState<Product | null>(null);
   const [saved, setSaved] = useState("");
@@ -195,9 +199,18 @@ export function Gestion({ section }: { section: string }) {
         {mode === "demo" ? t("Gestión de demostración") : t("Tu tienda")} ·{" "}
         {farm.name}
       </p>
+      {data.products.some(
+        (p) => p.farmId === farm.id && p.catalogVisible === false,
+      ) && (
+        <p role="status">
+          {t(
+            "El producto de prueba heredado está oculto del catálogo. Crea un producto real nuevo.",
+          )}
+        </p>
+      )}
       {saved ? (
         <p role="status" className="success">
-          {saved}
+          {t(saved)}
         </p>
       ) : null}
       {section === "tienda" ? (
@@ -413,7 +426,7 @@ export function Gestion({ section }: { section: string }) {
                   <input type="time" name="end" required />
                 </label>
               </div>
-              {error ? <p role="alert">{error}</p> : null}
+              {error ? <p role="alert">{t(error)}</p> : null}
               <button className="primary">{t("Añadir franja")}</button>
             </fieldset>
           </form>
@@ -573,7 +586,7 @@ export function Gestion({ section }: { section: string }) {
                   )}
                 </p>
               )}
-              {error ? <p role="alert">{error}</p> : null}
+              {error ? <p role="alert">{t(error)}</p> : null}
               <button className="primary" disabled={photoPending}>
                 {t("Guardar producto")}
               </button>

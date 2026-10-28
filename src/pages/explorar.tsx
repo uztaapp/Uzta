@@ -366,10 +366,7 @@ export function Explorar() {
                 "Tu zona no se guarda. Los particulares muestran solo una ubicación aproximada.",
               )}
             </p>
-            <label className="explore-verified">
-              <input type="checkbox" disabled />
-              {t("Solo ecológicos verificados (pendiente)")}
-            </label>
+
             <label className="check-label">
               <input
                 type="checkbox"

@@ -14,7 +14,7 @@ for (const file of files) {
     .replaceAll("uzta-nu.vercel.app", "AUTHORIZED_UZTA")
     .replaceAll("${UZTA_PROJECT}.supabase.co", "AUTHORIZED_UZTA");
   assert(
-    !/supabase\.co|vercel\.app|lovable\.app|sb_secret_|eyJ[A-Za-z0-9_-]+\./.test(
+    !/supabase\.co\b|vercel\.app\b|lovable\.app\b|sb_secret_|eyJ[A-Za-z0-9_-]+\./.test(
       s,
     ),
     `Remote reference: ${file}`,

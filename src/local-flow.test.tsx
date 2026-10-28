@@ -112,6 +112,9 @@ test("producer product edits affect the catalogue and survive navigation", async
   fireEvent.change(screen.getByLabelText("Existencias"), {
     target: { value: "0" },
   });
+  fireEvent.change(screen.getByLabelText("Disponibilidad"), {
+    target: { value: "sold_out" },
+  });
   fireEvent.click(screen.getByRole("button", { name: "Guardar producto" }));
   expect(
     JSON.parse(localStorage.getItem(STORAGE_KEY)!).products[0].priceCents,
@@ -203,12 +206,12 @@ test("profile edits and favorites persist independently of navigation", async ()
   await open("/");
   expect(screen.getByText("Ustaritz")).toBeInTheDocument();
   fireEvent.click(
-    screen.getByRole("button", { name: "Guardar Tomates en favoritos" }),
+    screen.getByRole("button", { name: "Guardar en favoritos: Tomates" }),
   );
   cleanup();
   await open("/");
   expect(
-    screen.getByRole("button", { name: "Quitar Tomates en favoritos" }),
+    screen.getByRole("button", { name: "Quitar de favoritos: Tomates" }),
   ).toHaveAttribute("aria-pressed", "true");
 });
 test("failed local storage writes do not show a successful reservation or decrement stock", async () => {

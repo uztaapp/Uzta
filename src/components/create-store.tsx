@@ -67,7 +67,7 @@ export function CreateStore() {
           <input type="checkbox" name="ecological" />
           {t("Producción ecológica")}
         </label>
-        {error ? <p role="alert">{error}</p> : null}
+        {error ? <p role="alert">{t(error)}</p> : null}
         <button className="primary" disabled={busy}>
           {t("Crear mi tienda")}
         </button>
