@@ -291,3 +291,21 @@ test("registration waits for confirmation and passes only the approved return UR
   );
   expect(screen.getByTestId("identity")).toHaveTextContent("Visitante");
 });
+
+test("catalogue failure remains a Supabase error and never offers a demo fallback", async () => {
+  mocks.load.mockRejectedValueOnce(new Error("No se pudo cargar el catálogo."));
+  const switchMode = vi.fn();
+  render(
+    <CloudProvider switchMode={switchMode}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+  expect(
+    screen.getByRole("button", { name: "Reintentar" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /demostración/i }),
+  ).not.toBeInTheDocument();
+  expect(switchMode).not.toHaveBeenCalled();
+});

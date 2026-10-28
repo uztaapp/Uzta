@@ -21,7 +21,7 @@ export function Inicio() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
-  const [showAll, setShowAll] = useState(false);
+
   const [center, setCenter] = useState<Position | null>(null);
   const [radius, setRadius] = useState(10);
   const normalize = (text: string) =>
@@ -30,7 +30,7 @@ export function Inicio() {
       .replace(/[\u0300-\u036f]/g, "")
       .toLocaleLowerCase("es")
       .trim();
-  const { data, run, mode, busy } = useDemo();
+  const { data, run, mode, busy, storageError } = useDemo();
   const visible = data.products.filter(
     (p) =>
       p.active &&
@@ -39,12 +39,6 @@ export function Inicio() {
         center,
         radius,
       ) &&
-      (showAll ||
-        !!query.trim() ||
-        !!category ||
-        onlyFavorites ||
-        p.featured ||
-        data.favorites.includes(p.id)) &&
       (!category || p.category === category) &&
       (!onlyFavorites || data.favorites.includes(p.id)) &&
       normalize(p.name).includes(normalize(query)),
@@ -114,7 +108,6 @@ export function Inicio() {
         <h2>{t("Productos cerca de ti")}</h2>
         <button
           onClick={() => {
-            setShowAll(true);
             setCategory("");
             setQuery("");
             setOnlyFavorites(false);
@@ -194,12 +187,30 @@ export function Inicio() {
           );
         })}
       </div>
-      {!visible.length ? (
-        <p className="empty">
-          {busy
-            ? t("Cargando productos…")
-            : t("Todavía no hay productos publicados en esta selección.")}
-        </p>
+      {!visible.length && !storageError ? (
+        <div className="empty">
+          <p>
+            {busy
+              ? t("Cargando productos…")
+              : data.products.some((p) => p.active)
+                ? t("No hay productos que coincidan con tu búsqueda.")
+                : t("Todavía no hay productos publicados.")}
+          </p>
+          {!busy && (
+            <>
+              <Link className="text-button" to="/explorar">
+                {t("Explorar productores")}
+              </Link>
+              <Link
+                className="text-button"
+                to="/perfil"
+                search={{ apartado: "productos" }}
+              >
+                {t("Publicar productos")}
+              </Link>
+            </>
+          )}
+        </div>
       ) : null}
       <div className="section-heading">
         <h2>{t("Directamente del productor")}</h2>

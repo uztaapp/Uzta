@@ -30,7 +30,7 @@ import {
 import "./explorar.css";
 const ProducerMap = lazy(() => import("../components/producer-map"));
 export function Explorar() {
-  const { data, mode, busy } = useDemo();
+  const { data, mode, busy, storageError } = useDemo();
   const [query, setQuery] = useState(""),
     [category, setCategory] = useState(""),
     [radius, setRadius] = useState(0);
@@ -351,14 +351,14 @@ export function Explorar() {
       {list ? (
         <section className="explore-list" aria-label="Lista de productores">
           {entries.map(card)}
-          {!entries.length ? (
+          {!entries.length && !busy && !storageError ? (
             <p>
               No hay productores con productos disponibles en esta selección.
             </p>
           ) : null}
         </section>
       ) : null}
-      {!list && !filters && !busy && !onMap.length ? (
+      {!list && !filters && !busy && !storageError && !onMap.length ? (
         <p className="explore-empty">
           {entries.length
             ? "Estos productores todavía no tienen coordenadas públicas disponibles. Puedes ver sus productos en la lista."

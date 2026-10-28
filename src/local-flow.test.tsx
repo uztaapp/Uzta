@@ -47,13 +47,13 @@ test("nearby catalogue excludes other areas without storing the search coordinat
   fireEvent.click(screen.getByRole("button", { name: "Aplicar zona" }));
   expect(screen.getByRole("heading", { name: "Tomates" })).toBeInTheDocument();
   expect(
-    screen.queryByRole("heading", { name: "Lechuga" }),
+    screen.queryByRole("heading", { name: "Miel de flores · 500 g" }),
   ).not.toBeInTheDocument();
   expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   fireEvent.click(
     screen.getByRole("button", { name: "Quitar filtro de zona" }),
   );
-  expect(screen.getByRole("heading", { name: "Lechuga" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Miel de flores · 500 g" })).toBeInTheDocument();
 });
 test("profile help explains the existing buyer and producer flows without promising payments", async () => {
   await open("/perfil");
@@ -72,7 +72,7 @@ test("search and all-products expose published products that are not featured", 
   await open("/");
   expect(
     screen.queryByRole("heading", { name: "Hierbas aromáticas" }),
-  ).not.toBeInTheDocument();
+  ).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("Buscar productos"), {
     target: { value: "AROMATICAS" },
   });
@@ -224,3 +224,4 @@ test("failed local storage writes do not show a successful reservation or decrem
     20,
   );
 });
+

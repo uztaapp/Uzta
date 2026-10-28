@@ -25,8 +25,7 @@ import { LanguageSelector } from "../components/language-selector";
 import { languages, currentLanguage } from "../lib/language";
 export function Perfil() {
   useLanguage();
-  const { data, run, show, mode, busy, switchMode, signOut, managedFarmId } =
-    useDemo();
+  const { data, run, show, mode, busy, signOut, managedFarmId } = useDemo();
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { apartado?: string };
   const [editing, setEditing] = useState(false);
@@ -205,21 +204,6 @@ export function Perfil() {
           <ChevronRight />
         </button>
       </div>
-      {mode === "demo" ? (
-        <button
-          className="profile-mode-switch"
-          onClick={() => switchMode("cloud")}
-        >
-          {t("Entrar en mi cuenta de UZTA")}
-        </button>
-      ) : (
-        <button
-          className="profile-mode-switch"
-          onClick={() => switchMode("demo")}
-        >
-          {t("Ver catálogo de demostración")}
-        </button>
-      )}
       {languageOpen ? (
         <Modal title={t("Idioma")} close={() => setLanguageOpen(false)}>
           <LanguageSelector />

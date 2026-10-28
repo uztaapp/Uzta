@@ -36,20 +36,9 @@ function loadBrowserStore() {
   }
 }
 export function DemoProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<"demo" | "cloud">(() => {
-    if (import.meta.env.MODE === "test") return "demo";
-    try {
-      return localStorage.getItem("uzta.view.v1") === "demo" ? "demo" : "cloud";
-    } catch {
-      return "cloud";
-    }
-  });
-  function switchMode(next: "demo" | "cloud") {
-    try {
-      localStorage.setItem("uzta.view.v1", next);
-    } catch {}
-    setMode(next);
-  }
+  // The public and local app always use Supabase. Fixtures exist only in tests.
+  const mode = import.meta.env.MODE === "test" ? "demo" : "cloud";
+  const switchMode: AppContextValue["switchMode"] = () => {};
   return mode === "demo" ? (
     <LocalDemoProvider switchMode={switchMode}>{children}</LocalDemoProvider>
   ) : (

@@ -4,7 +4,7 @@ import { useUzta } from "../app-context";
 import { LanguageSelector } from "./language-selector";
 export function Access() {
   useLanguage();
-  const { signIn, signUp, switchMode, busy } = useUzta();
+  const { signIn, signUp, busy } = useUzta();
   const [register, setRegister] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -103,17 +103,6 @@ export function Access() {
       >
         {register ? t("Ya tengo cuenta") : t("Crear una cuenta")}
       </button>
-      <hr />
-      <button
-        className="text-button"
-        disabled={pending}
-        onClick={() => switchMode("demo")}
-      >
-        {t("Ver demostración")}
-      </button>
-      <p className="subtle">
-        {t("La demostración utiliza ejemplos y no envía reservas.")}
-      </p>
     </section>
   );
 }
