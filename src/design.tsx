@@ -19,6 +19,8 @@ const CloudProvider = lazy(() =>
     default: module.CloudProvider,
   })),
 );
+import "./components/brand.css";
+import { t } from "./lib/language";
 import { Modal } from "./components/presentation";
 export { Photo, Modal } from "./components/presentation";
 export { euro } from "./lib/local-model";
@@ -44,9 +46,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   ) : (
     <Suspense
       fallback={
-        <p role="status" className="loading-status">
-          Abriendo UZTA…
-        </p>
+        <div className="uzta-welcome">
+          <img src="/brand/welcome.webp" width="458" height="488" alt="UZTA" />
+          <p role="status" className="loading-status">
+            {t("Abriendo UZTA…")}
+          </p>
+        </div>
       }
     >
       <CloudProvider switchMode={switchMode}>{children}</CloudProvider>

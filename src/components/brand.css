@@ -1,0 +1,39 @@
+.uzta-brand {
+  display: block;
+  object-fit: contain;
+  max-width: 100%;
+  height: auto;
+  flex-shrink: 0;
+}
+.uzta-brand--header {
+  width: 150px;
+}
+.uzta-brand--main {
+  width: 150px;
+  margin: 0 auto 18px;
+}
+.uzta-brand--footer {
+  width: 68px;
+  margin: 0 auto 8px;
+}
+.uzta-home .logo .uzta-brand {
+  width: 150px;
+}
+.uzta-home .logo {
+  gap: 4px;
+}
+.uzta-welcome {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 32px 20px;
+}
+.uzta-welcome img {
+  width: 180px;
+  max-width: 100%;
+  height: auto;
+}
+.uzta-welcome .loading-status {
+  background: transparent;
+  font-size: 14px;
+}

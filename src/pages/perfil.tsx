@@ -1,3 +1,4 @@
+import { Brand } from "../components/brand";
 import { SalesLinks, SalesPanel } from "../components/sales-panel";
 import { MyFavorites } from "../components/favorites";
 import "./perfil.css";
@@ -123,6 +124,7 @@ export function Perfil() {
     );
   return (
     <div className="uzta-profile">
+      <Brand variant="footer" decorative />
       <div className="page-title">
         <h1>{t("Mi perfil")}</h1>
         <button

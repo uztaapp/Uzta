@@ -1,3 +1,4 @@
+import { Brand } from "./components/brand";
 import { Privacidad, PrivacyLink } from "./pages/privacidad";
 import {
   createRootRoute,
@@ -58,6 +59,9 @@ export function Shell() {
             <Outlet />
           </AppRecovery>
           <footer className="legal-footer">
+            {pathname !== "/" && pathname !== "/perfil" && (
+              <Brand variant="footer" decorative />
+            )}
             <PrivacyLink />
           </footer>
         </main>

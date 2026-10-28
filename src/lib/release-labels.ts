@@ -1,5 +1,6 @@
 export const releaseLabels: Record<string, readonly [string, string, string]> =
   {
+    "Abriendo UZTA…": ["Ouverture d’UZTA…", "Opening UZTA…", "UZTA irekitzen…"],
     "El producto de prueba heredado está oculto del catálogo. Crea un producto real nuevo.":
       [
         "L’ancien produit de test est masqué du catalogue. Créez un nouveau produit réel.",

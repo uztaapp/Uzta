@@ -9,6 +9,7 @@ import {
 } from "../lib/availability";
 import { FavoriteButton } from "../components/favorites";
 import "./inicio.css";
+import { Brand } from "../components/brand";
 import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -17,7 +18,6 @@ import {
   MapPin,
   Heart,
   ChevronRight,
-  Sprout,
   ChevronDown,
   ShoppingCart,
 } from "lucide-react";
@@ -60,7 +60,7 @@ export function Inicio() {
     <div className="uzta-home">
       <div className="home-heading">
         <div className="logo">
-          <Sprout aria-hidden="true" size={30} /> UZTA
+          <Brand />
           <small>{t("Del productor a tu mesa")}</small>
         </div>
         <Link to="/cesta" aria-label="Abrir cesta" className="basket-shortcut">

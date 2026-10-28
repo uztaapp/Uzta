@@ -20,10 +20,6 @@
   letter-spacing: -1.5px;
   gap: 3px;
 }
-.uzta-home .logo > svg {
-  fill: #87a749;
-  stroke-width: 1.4;
-}
 .uzta-home .logo small {
   margin-top: 0;
   font-size: 11px;
