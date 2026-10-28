@@ -1,5 +1,5 @@
 -- Pending authorization. No backfill, no payments and no invoices.
-create table uzta_private.commission_admins(user_id uuid primary key references auth.users(id));
+create table if not exists uzta_private.commission_admins(user_id uuid primary key references auth.users(id));
 create table uzta_private.commission_config(singleton boolean primary key default true check(singleton),rate_bps integer not null default 0 check(rate_bps between 0 and 10000),commercial_reviewed boolean not null default false);
 insert into uzta_private.commission_config values(true,0,false);
 create table uzta_private.commission_rates(id uuid primary key default gen_random_uuid(),rate_bps integer not null,actor_id uuid not null references auth.users(id),created_at timestamptz not null default now());
@@ -7,10 +7,10 @@ revoke all on uzta_private.commission_admins,uzta_private.commission_config,uzta
 alter table uzta_private.commission_admins enable row level security;
 alter table uzta_private.commission_config enable row level security;
 alter table uzta_private.commission_rates enable row level security;
-create function uzta_private.commission_is_admin() returns boolean language sql stable security definer set search_path='' as $$select auth.uid() is not null and exists(select 1 from uzta_private.commission_admins where user_id=auth.uid());$$;
+create or replace function uzta_private.commission_is_admin() returns boolean language sql stable security definer set search_path='' as $$select auth.uid() is not null and exists(select 1 from uzta_private.commission_admins where user_id=auth.uid());$$;
 revoke all on function uzta_private.commission_is_admin() from public,anon;
 grant execute on function uzta_private.commission_is_admin() to authenticated;
-create function public.uzta_commission_access() returns boolean language sql stable security invoker set search_path='' as $$select uzta_private.commission_is_admin();$$;
+create or replace function public.uzta_commission_access() returns boolean language sql stable security invoker set search_path='' as $$select uzta_private.commission_is_admin();$$;
 revoke all on function public.uzta_commission_access() from public,anon;
 grant execute on function public.uzta_commission_access() to authenticated;
 
