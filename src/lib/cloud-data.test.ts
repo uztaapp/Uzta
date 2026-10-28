@@ -487,3 +487,15 @@ describe("cloud data boundary", () => {
     expect(loaded.data.quantities[ORDER2]).toBe(1);
   });
 });
+
+it("private locations are normalized at the cloud boundary even if an old API returns precision", async () => {
+  const f = fixture();
+  Object.assign(f.rows.uzta_producers[0], {
+    seller_type: "private",
+    public_latitude: 43.456123,
+    public_longitude: -1.456123,
+  });
+  const { data } = await loadCloudData(null, f.api);
+  expect(data.farms[0].sellerType).toBe("private");
+  expect(data.farms[0].position).toEqual({ lat: 43.46, lng: -1.46 });
+});

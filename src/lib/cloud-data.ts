@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { User, SupabaseClient } from "@supabase/supabase-js";
 import { cloudClient } from "./cloud-client";
-import { publicPosition } from "./nearby";
+import { sellerPosition } from "./sellers";
+import cloudConfig from "../../config/uzta-cloud.public.json";
 import {
   loadProductPhotos,
   uploadProductPhoto,
@@ -142,6 +143,7 @@ function check<T>(result: { data: T; error: unknown }): T {
   return result.data;
 }
 const producerRow = z.object({
+  seller_type: z.enum(["professional", "private"]).nullable().optional(),
   public_latitude: z.coerce.number().min(-90).max(90).nullable().optional(),
   public_longitude: z.coerce.number().min(-180).max(180).nullable().optional(),
   id: uuid,
@@ -153,6 +155,7 @@ const producerRow = z.object({
   active: z.boolean(),
 });
 const productRow = z.object({
+  description: z.string().optional(),
   id: uuid,
   producer_id: uuid,
   name: z.string(),
@@ -245,9 +248,13 @@ export async function loadCloudData(
   };
   data.sessionActive = !!user;
   data.farms = farms.map((f) => ({
+    sellerType: f.seller_type,
     position:
       f.public_latitude != null && f.public_longitude != null
-        ? publicPosition({ lat: f.public_latitude, lng: f.public_longitude })
+        ? sellerPosition(
+            { lat: f.public_latitude, lng: f.public_longitude },
+            f.seller_type,
+          )
         : undefined,
     id: f.id,
     name: f.name,
@@ -269,6 +276,7 @@ export async function loadCloudData(
     products.flatMap((p) => (p.photo_path ? [p.photo_path] : [])),
   );
   data.products = products.map((p) => ({
+    description: p.description,
     photoPath: p.photo_path,
     photoUrl: p.photo_path ? photoUrls.get(p.photo_path) : undefined,
     id: p.id,
@@ -430,6 +438,10 @@ export async function persistCloudCommand(
     if (command.value.farmId !== managedFarmId)
       throw Error("Este producto no pertenece a tu tienda.");
     const p = productSchema.parse(command.value);
+    if (!cloudConfig.sellerTypesReady && p.description)
+      throw Error(
+        "Descripciones de producto pendientes de activar en Supabase.",
+      );
     uuid.parse(p.id);
     uuid.parse(p.farmId);
     const previousPhoto = data.products.find(
@@ -454,6 +466,9 @@ export async function persistCloudCommand(
           id: p.id,
           producer_id: p.farmId,
           name: p.name.trim(),
+          ...(cloudConfig.sellerTypesReady
+            ? { description: p.description ?? "" }
+            : {}),
           price_cents: p.priceCents,
           unit: p.unit,
           category: p.category,
@@ -473,6 +488,12 @@ export async function persistCloudCommand(
     if (!f.name.trim() || !f.location.trim())
       throw Error("Completa el nombre y la ubicación de tu tienda.");
     const previous = data.farms.find((x) => x.id === f.id);
+    if (
+      !cloudConfig.sellerTypesReady &&
+      f.sellerType &&
+      f.sellerType !== previous?.sellerType
+    )
+      throw Error("Tipos de vendedor pendientes de activar en Supabase.");
     if (new Set(f.slots.map((s) => s.id)).size !== f.slots.length)
       throw Error("Hay franjas de recogida duplicadas.");
     const added = f.slots.filter(
@@ -504,7 +525,7 @@ export async function persistCloudCommand(
     const changed =
       !previous ||
       JSON.stringify(previous.position) !== JSON.stringify(f.position) ||
-      ["name", "location", "description", "ecological"].some(
+      ["name", "location", "description", "ecological", "sellerType"].some(
         (k) => (previous as any)[k] !== (f as any)[k],
       );
     if (changed)
@@ -514,13 +535,18 @@ export async function persistCloudCommand(
             id: f.id,
             owner_id: user.id,
             name: f.name.trim(),
+            ...(cloudConfig.sellerTypesReady
+              ? { seller_type: f.sellerType ?? null }
+              : {}),
             location: f.location.trim(),
             description: f.description,
             ecological: f.ecological,
             ...(f.position !== undefined
               ? {
-                  public_latitude: publicPosition(f.position)?.lat ?? null,
-                  public_longitude: publicPosition(f.position)?.lng ?? null,
+                  public_latitude:
+                    sellerPosition(f.position, f.sellerType)?.lat ?? null,
+                  public_longitude:
+                    sellerPosition(f.position, f.sellerType)?.lng ?? null,
                 }
               : {}),
             active: true,

@@ -13,6 +13,8 @@ import { CreateStore } from "../components/create-store";
 import { ProductPhotoEditor } from "../components/product-photo-editor";
 import cloudConfig from "../../config/uzta-cloud.public.json";
 import { publicPosition, validPosition } from "../lib/nearby";
+import { SellerFields } from "../components/seller-fields";
+import { sellerPosition, type SellerType } from "../lib/sellers";
 const StoreLocationPicker = lazy(
   () => import("../components/store-location-picker"),
 );
@@ -20,6 +22,10 @@ export function Gestion({ section }: { section: string }) {
   useLanguage();
   const { data, run, show, mode, busy, managedFarmId } = useDemo();
   const farm = data.farms.find((f) => f.id === managedFarmId)!;
+  const sellerTypesEnabled = mode === "demo" || cloudConfig.sellerTypesReady;
+  const [sellerType, setSellerType] = useState<SellerType | "">(
+    farm.sellerType ?? "",
+  );
   const [edit, setEdit] = useState<Product | null>(null);
   const [saved, setSaved] = useState("");
   const [error, setError] = useState("");
@@ -47,7 +53,8 @@ export function Gestion({ section }: { section: string }) {
         type: "farm",
         value: {
           ...farm,
-          position,
+          ...(sellerTypesEnabled ? { sellerType: sellerType || null } : {}),
+          position: sellerPosition(position, sellerType || farm.sellerType),
           name: String(form.get("name")).trim(),
           location: String(form.get("location")).trim(),
           description: String(form.get("description")).trim(),
@@ -78,6 +85,13 @@ export function Gestion({ section }: { section: string }) {
         type: "product",
         value: {
           ...edit,
+          ...(sellerTypesEnabled
+            ? {
+                description: String(
+                  form.get("productDescription") ?? "",
+                ).trim(),
+              }
+            : {}),
           name: String(form.get("name")).trim(),
           priceCents: Math.round(price * 100),
           unit: String(form.get("unit")) as Product["unit"],
@@ -150,8 +164,17 @@ export function Gestion({ section }: { section: string }) {
         <form className="uzta-form" onSubmit={saveFarm}>
           <fieldset disabled={busy}>
             <h2>{t("Mi tienda")}</h2>
+            <SellerFields
+              value={sellerType}
+              onChange={setSellerType}
+              enabled={sellerTypesEnabled}
+            />
             <label>
-              {t("Nombre de la tienda")}
+              {t(
+                sellerType === "private"
+                  ? "Nombre público"
+                  : "Nombre de la explotación",
+              )}
               <input
                 name="name"
                 required
@@ -186,12 +209,22 @@ export function Gestion({ section }: { section: string }) {
                       <input
                         type="hidden"
                         name="publicLatitude"
-                        value={farm.position?.lat ?? ""}
+                        value={
+                          sellerPosition(
+                            farm.position,
+                            sellerType || farm.sellerType,
+                          )?.lat ?? ""
+                        }
                       />
                       <input
                         type="hidden"
                         name="publicLongitude"
-                        value={farm.position?.lng ?? ""}
+                        value={
+                          sellerPosition(
+                            farm.position,
+                            sellerType || farm.sellerType,
+                          )?.lng ?? ""
+                        }
                       />
                     </>
                   }
@@ -199,6 +232,7 @@ export function Gestion({ section }: { section: string }) {
                   <StoreLocationPicker
                     key={farm.id}
                     initialPosition={farm.position}
+                    approximate={sellerType === "private"}
                     disabled={busy}
                   />
                 </Suspense>
@@ -396,6 +430,23 @@ export function Gestion({ section }: { section: string }) {
                   required
                   maxLength={100}
                   defaultValue={edit.name}
+                />
+              </label>
+              <p>
+                {t(
+                  "La recogida usa la ubicación pública y los horarios de tu tienda.",
+                )}
+              </p>
+              <Link to="/perfil" search={{ apartado: "horarios" }}>
+                {t("Horarios y entregas")}
+              </Link>
+              <label>
+                {t("Descripción del producto")}
+                <textarea
+                  name="productDescription"
+                  maxLength={2000}
+                  defaultValue={edit.description ?? ""}
+                  disabled={!sellerTypesEnabled}
                 />
               </label>
               <div className="form-columns">

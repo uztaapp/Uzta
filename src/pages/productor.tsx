@@ -154,6 +154,7 @@ export function Productor() {
                     />
                     <div>
                       <h3>{p.name}</h3>
+                      {p.description && <p>{p.description}</p>}
                       <p>
                         <strong>{euro(p.priceCents)}</strong> / {p.unit}
                       </p>

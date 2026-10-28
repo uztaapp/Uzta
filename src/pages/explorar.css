@@ -376,3 +376,11 @@ body:has(.uzta-explore) .local-strip + .app .uzta-explore {
   outline: 3px solid #31552b;
   outline-offset: 2px;
 }
+
+.uzta-map-pin.uzta-map-private {
+  border-color: #754c90;
+  background: #f4edf8;
+  color: #593570;
+}
+
+.uzta-map-pin.uzta-map-unclassified { border-color: #66716c; background: #f0f1ee; }

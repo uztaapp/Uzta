@@ -85,3 +85,45 @@ test("ten thousand entries cluster with one projection per point", () => {
   expect(calls).toBe(10000);
   expect(performance.now() - start).toBeLessThan(2000);
 });
+
+test("seller privacy, category, locality, distance and stock filters compose", () => {
+  const data = seedStore();
+  data.farms[0].sellerType = "private";
+  data.farms[0].position = { lat: 43.456123, lng: -1.456123 };
+  data.farms[1].sellerType = "professional";
+  const entries = exploreEntries(
+    data.farms,
+    data.products,
+    "",
+    "Verduras",
+    null,
+    0,
+    "private",
+  );
+  expect(entries).toHaveLength(1);
+  expect(entries[0].farm.position).toEqual({ lat: 43.46, lng: -1.46 });
+  expect(
+    entries[0].products.every(
+      (p) => p.farmId === data.farms[0].id && p.category === "Verduras",
+    ),
+  ).toBe(true);
+  expect(data.farms[0].position.lat).toBe(43.456123);
+  expect(
+    exploreEntries(
+      data.farms,
+      data.products,
+      "",
+      "",
+      { lat: 0, lng: 0 },
+      1,
+      "private",
+    ),
+  ).toEqual([]);
+  const sold = data.products.map((p) => ({ ...p, stock: 0 }));
+  expect(exploreEntries(data.farms, sold, "", "", null, 0, "private")).toEqual(
+    [],
+  );
+  expect(
+    exploreEntries(data.farms, sold, "", "", null, 0, "private", false),
+  ).toHaveLength(1);
+});

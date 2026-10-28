@@ -140,3 +140,33 @@ test("manual selection cancels a pending GPS result", () => {
   const form = screen.getByRole("form", { name: "Tienda" }) as HTMLFormElement;
   expect(new FormData(form).get("publicLatitude")).toBe("43.456123");
 });
+
+test("private picker never submits the exact point obtained from GPS or map", () => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+  const locate = vi.fn((ok) =>
+    ok({ coords: { latitude: 43.456123, longitude: -1.456123, accuracy: 4 } }),
+  );
+  vi.stubGlobal("navigator", { geolocation: { getCurrentPosition: locate } });
+  render(
+    <form aria-label="Tienda">
+      <StoreLocationPicker
+        approximate
+        initialPosition={{ lat: 43.456123, lng: -1.456123 }}
+      />
+    </form>,
+  );
+  const form = screen.getByRole("form", { name: "Tienda" }) as HTMLFormElement;
+  expect(new FormData(form).get("publicLatitude")).toBe("43.46");
+  fireEvent.click(screen.getByRole("button", { name: "Usar mi ubicación" }));
+  expect(new FormData(form).get("publicLatitude")).toBe("43.46");
+  act(() =>
+    events.get("click")!({ latlng: { lat: 43.451123, lng: -1.451123 } }),
+  );
+  expect(new FormData(form).get("publicLatitude")).toBe("43.45");
+});

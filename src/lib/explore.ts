@@ -1,5 +1,6 @@
 import type { Farm, Product } from "./local-model";
 import { publicPosition, withinRadius, type Position } from "./nearby";
+import { sellerPosition, type SellerType } from "./sellers";
 export type ExploreEntry = { farm: Farm; products: Product[] };
 export function exploreEntries(
   farms: Farm[],
@@ -8,6 +9,8 @@ export function exploreEntries(
   category: string,
   center: Position | null,
   radius: number,
+  sellerType: SellerType | "" = "",
+  availableOnly = true,
 ) {
   const normalize = (s: string) =>
     s
@@ -18,12 +21,21 @@ export function exploreEntries(
   const q = normalize(query);
   const grouped = new Map<string, Product[]>();
   for (const p of products)
-    if (p.active && p.stock > 0 && (!category || p.category === category)) {
+    if (
+      p.active &&
+      (!availableOnly || p.stock > 0) &&
+      (!category || p.category === category)
+    ) {
       const list = grouped.get(p.farmId) ?? [];
       list.push(p);
       grouped.set(p.farmId, list);
     }
-  return farms.flatMap((farm) => {
+  return farms.flatMap((original) => {
+    if (sellerType && original.sellerType !== sellerType) return [];
+    const farm = {
+      ...original,
+      position: sellerPosition(original.position, original.sellerType),
+    };
     let available = grouped.get(farm.id) ?? [];
     if (q && !normalize(`${farm.name} ${farm.location}`).includes(q))
       available = available.filter((p) =>
@@ -49,7 +61,7 @@ export function clusterEntries(
   }[] = [];
   const cells = new Map<string, typeof groups>();
   for (const entry of entries) {
-    const position = publicPosition(entry.farm.position);
+    const position = sellerPosition(entry.farm.position, entry.farm.sellerType);
     if (!position) continue;
     const pixel = project(position),
       cx = Math.floor(pixel.x / size),

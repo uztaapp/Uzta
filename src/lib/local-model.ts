@@ -19,6 +19,7 @@ const slotSchema = z.object({
   end: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
 });
 export const farmSchema = z.object({
+  sellerType: z.enum(["professional", "private"]).nullable().optional(),
   id: z.string(),
   name: z.string().trim().min(1).max(100),
   location: z.string().trim().min(1).max(100),
@@ -35,6 +36,7 @@ export const farmSchema = z.object({
     .optional(),
 });
 export const productSchema = z.object({
+  description: z.string().max(2000).optional(),
   photo: productPhotoSchema,
   photoPath: z
     .string()

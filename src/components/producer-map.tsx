@@ -3,6 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { clusterEntries, type ExploreEntry } from "../lib/explore";
 import { publicPosition, type Position } from "../lib/nearby";
+import { sellerMarkerClass, sellerPosition } from "../lib/sellers";
 export default function ProducerMap({
   entries,
   center,
@@ -57,7 +58,7 @@ export default function ProducerMap({
     if (!m || center || fitted.current) return;
     {
       const points = entries
-        .map((e) => publicPosition(e.farm.position))
+        .map((e) => sellerPosition(e.farm.position, e.farm.sellerType))
         .filter((p): p is Position => p !== null);
       if (points.length) {
         m.fitBounds(L.latLngBounds(points.map((p) => [p.lat, p.lng])), {
@@ -92,7 +93,7 @@ export default function ProducerMap({
           }).addTo(layer);
       }
       const visible = entries.filter((e) => {
-        const p = publicPosition(e.farm.position);
+        const p = sellerPosition(e.farm.position, e.farm.sellerType);
         return p && m.getBounds().pad(0.2).contains([p.lat, p.lng]);
       });
       for (const group of clusterEntries(visible, (p) =>
@@ -114,7 +115,7 @@ export default function ProducerMap({
           L.marker(point, {
             icon: L.divIcon({
               className: "uzta-map-marker",
-              html: `<div class="uzta-map-pin${count > 1 ? " uzta-map-group" : ""}"><span aria-hidden="true">${count > 1 ? count : "🌱"}</span></div>`,
+              html: `<div class="uzta-map-pin${count > 1 ? " uzta-map-group" : sellerMarkerClass(list[0].farm.sellerType)}"><span aria-hidden="true">${count > 1 ? count : list[0].farm.sellerType === "private" ? "👤" : list[0].farm.sellerType === "professional" ? "🌱" : "📍"}</span></div>`,
               iconSize: [48, 48],
               iconAnchor: [24, 24],
             }),

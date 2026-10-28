@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { routeTree } from "./router";
 import { seedStore, STORAGE_KEY } from "./lib/local-model";
+import { setLanguage, t, type Language } from "./lib/language";
 import type { ExploreEntry } from "./lib/explore";
 vi.mock("./components/producer-map", () => ({
   default: ({
@@ -28,9 +29,13 @@ vi.mock("./components/producer-map", () => ({
     </div>
   ),
 }));
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  localStorage.clear();
+  setLanguage("es");
+});
 afterEach(() => {
   cleanup();
+  setLanguage("es");
   vi.unstubAllGlobals();
 });
 async function open() {
@@ -40,7 +45,7 @@ async function open() {
   });
   await router.load();
   render(<RouterProvider router={router} />);
-  await screen.findByRole("heading", { name: "Explorar", level: 1 });
+  await screen.findByRole("heading", { name: t("Explorar"), level: 1 });
   await screen.findByLabelText("Mapa de prueba");
 }
 test("map selection opens a closable store card; list shares the search", async () => {
@@ -66,11 +71,32 @@ test("map selection opens a closable store card; list shares the search", async 
     screen.queryByRole("link", { name: /Ferme de l’Urki.*Ver productos/ }),
   ).not.toBeInTheDocument();
 });
-test("unsupported classifications are disabled, without assigning fake roles", async () => {
+test("seller types filter the same map and list without guessing legacy types", async () => {
+  const data = seedStore();
+  data.farms[0].sellerType = "professional";
+  data.farms[1].sellerType = "private";
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   await open();
-  expect(screen.getByRole("button", { name: "Agricultores" })).toBeDisabled();
-  expect(screen.getByRole("button", { name: "Particulares" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Particulares" }));
+  expect(
+    screen.getByRole("button", { name: "Marcador Les Poules Heureuses" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Marcador Ferme de l’Urki" }),
+  ).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "LISTA" }));
+  expect(
+    screen.getByRole("region", { name: "Lista de productores" }),
+  ).toHaveTextContent("Les Poules Heureuses");
+  fireEvent.click(screen.getByRole("button", { name: "Agricultores" }));
+  expect(
+    screen.getByRole("region", { name: "Lista de productores" }),
+  ).toHaveTextContent("Ferme de l’Urki");
+  expect(
+    screen.getByRole("region", { name: "Lista de productores" }),
+  ).not.toHaveTextContent("Les Poules Heureuses");
 });
+
 test("missing public coordinates show a truthful map notice and preserve list access", async () => {
   const data = seedStore();
   data.farms.forEach((f) => (f.position = null));
@@ -109,3 +135,25 @@ test("location is requested only on click and denied permission leaves filters u
     else Reflect.deleteProperty(navigator, "geolocation");
   }
 });
+
+test.each([
+  ["fr", "Particuliers"],
+  ["en", "Private sellers"],
+  ["eu", "Partikularrak"],
+])(
+  "seller controls use %s translations without translating stored identifiers",
+  async (language, label) => {
+    setLanguage(language as Language);
+    const data = seedStore();
+    data.farms[0].sellerType = "private";
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    await open();
+    fireEvent.click(screen.getByRole("button", { name: label }));
+    expect(
+      screen.getByRole("button", { name: "Marcador Ferme de l’Urki" }),
+    ).toBeInTheDocument();
+    expect(
+      JSON.parse(localStorage.getItem(STORAGE_KEY)!).farms[0].sellerType,
+    ).toBe("private");
+  },
+);

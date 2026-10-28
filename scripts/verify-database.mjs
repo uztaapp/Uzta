@@ -21,10 +21,10 @@ async function asUser(user, sql, params = []) {
     return tx.query(sql, params);
   });
 }
-async function asAnon(sql) {
+async function asAnon(sql, params = []) {
   return db.transaction(async (tx) => {
     await tx.exec("set local role anon");
-    return tx.query(sql);
+    return tx.query(sql, params);
   });
 }
 async function denied(action, label) {
@@ -365,6 +365,97 @@ try {
   assert.equal(Number(point.public_latitude), 43.456789);
   assert.equal(Number(point.public_longitude), -1.456789);
   pass("public producer coordinates are stored with six decimal places");
+  await asUser(
+    owner,
+    "update public.uzta_producers set seller_type='private' where id=$1",
+    [farm],
+  );
+  const privatePoint = (
+    await asAnon(
+      "select public_latitude,public_longitude from public.uzta_producers",
+    )
+  ).rows[0];
+  assert.equal(Number(privatePoint.public_latitude), 43.46);
+  assert.equal(Number(privatePoint.public_longitude), -1.46);
+  await asUser(
+    owner,
+    "update public.uzta_producers set public_latitude=43.456123,public_longitude=-1.456123 where id=$1",
+    [farm],
+  );
+  assert.equal(
+    Number(
+      (await asAnon("select public_latitude from public.uzta_producers"))
+        .rows[0].public_latitude,
+    ),
+    43.46,
+  );
+  pass(
+    "private seller conversion and direct coordinate writes never expose precise home points",
+  );
+  assert.equal(
+    (
+      await asUser(
+        stranger,
+        "update public.uzta_producers set seller_type='professional' where id=$1 returning id",
+        [farm],
+      )
+    ).rows.length,
+    0,
+  );
+  pass("another account cannot reclassify a seller");
+  await asUser(
+    owner,
+    "update public.uzta_products set active=true, description='Cosecha del día' where id=$1",
+    [product],
+  );
+  assert.equal(
+    (
+      await asAnon("select description from public.uzta_products where id=$1", [
+        product,
+      ])
+    ).rows[0].description,
+    "Cosecha del día",
+  );
+  pass("product descriptions use the existing product and ownership policies");
+  await asUser(
+    owner,
+    "update public.uzta_products set stock_units=2 where id=$1",
+    [product],
+  );
+  await asUser(buyer, "select public.uzta_reserve_order($1,$2,$3::jsonb,$4)", [
+    "00000000-0000-4000-8000-000000000099",
+    slot,
+    JSON.stringify([{ product_id: product, quantity: 1 }]),
+    "Private seller reservation",
+  ]);
+  assert.equal(
+    Number(
+      (
+        await db.query(
+          "select stock_units from public.uzta_products where id=$1",
+          [product],
+        )
+      ).rows[0].stock_units,
+    ),
+    1,
+  );
+  pass("private sellers use the same atomic stock and reservation flow");
+
+  await denied(
+    () =>
+      asUser(
+        owner,
+        "update public.uzta_producers set seller_type='admin' where id=$1",
+        [farm],
+      ),
+    "seller type cannot become an administrator role",
+  );
+  await asUser(
+    owner,
+    "update public.uzta_producers set seller_type='professional' where id=$1",
+    [farm],
+  );
+
   await denied(
     () =>
       asUser(
@@ -400,6 +491,30 @@ try {
   pass(
     "no privileged definer implementation is placed in the exposed public schema",
   );
+
+  const rollback = await readFile(
+    new URL(
+      "../supabase/rollback/seller_types_and_product_details.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  await assert.rejects(() => db.exec(rollback));
+  await db.exec("rollback");
+  pass("schema rollback refuses to discard populated seller fields");
+  await db.exec(
+    "update public.uzta_producers set seller_type=null; update public.uzta_products set description='';",
+  );
+  await db.exec(rollback);
+  assert.equal(
+    (
+      await db.query(
+        "select count(*)::int as n from information_schema.columns where table_schema='public' and column_name='seller_type'",
+      )
+    ).rows[0].n,
+    0,
+  );
+  pass("schema rollback succeeds when the added fields are empty");
   console.log(
     `${checks} database checks passed. PostgreSQL memory only; Supabase stack remains untested.`,
   );

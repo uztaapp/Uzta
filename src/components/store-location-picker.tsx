@@ -1,16 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { publicPosition, type Position } from "../lib/nearby";
+import { type Position } from "../lib/nearby";
+import { sellerPosition } from "../lib/sellers";
 import "./store-location-picker.css";
+import { t, useLanguage } from "../lib/language";
 export default function StoreLocationPicker({
   initialPosition,
+  approximate = false,
   disabled = false,
 }: {
   initialPosition?: Position | null;
+  approximate?: boolean;
   disabled?: boolean;
 }) {
-  const [point, setPoint] = useState(() => publicPosition(initialPosition));
+  useLanguage();
+  const normalize = (value: unknown) =>
+    sellerPosition(value, approximation.current ? "private" : "professional");
+  const [point, setPoint] = useState(() =>
+    sellerPosition(initialPosition, approximate ? "private" : "professional"),
+  );
   const [locating, setLocating] = useState(false);
   const [locationMessage, setLocationMessage] = useState("");
   const locationRequest = useRef(0);
@@ -34,7 +43,7 @@ export default function StoreLocationPicker({
         if (request !== locationRequest.current) return;
         setLocating(false);
         if (locked.current) return;
-        const next = publicPosition({
+        const next = normalize({
           lat: coords.latitude,
           lng: coords.longitude,
         });
@@ -56,8 +65,12 @@ export default function StoreLocationPicker({
         if (locked.current) return;
         setLocationMessage(
           error.code === 1
-            ? "Permiso de ubicación denegado. Puedes permitirlo en el navegador o colocar el punto en el mapa."
-            : "No se pudo obtener tu ubicación. Comprueba el GPS y vuelve a intentarlo, o coloca el punto en el mapa.",
+            ? t(
+                "Permiso de ubicación denegado. Puedes permitirlo en el navegador o colocar el punto en el mapa.",
+              )
+            : t(
+                "No se pudo obtener tu ubicación. Comprueba el GPS y vuelve a intentarlo, o coloca el punto en el mapa.",
+              ),
         );
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
@@ -66,6 +79,13 @@ export default function StoreLocationPicker({
   const canvas = useRef<HTMLDivElement>(null),
     map = useRef<L.Map | null>(null),
     marker = useRef<L.Marker | null>(null);
+  useEffect(() => {
+    setPoint((p) =>
+      sellerPosition(p, approximate ? "private" : "professional"),
+    );
+  }, [approximate]);
+  const approximation = useRef(approximate);
+  approximation.current = approximate;
   const locked = useRef(disabled);
   locked.current = disabled;
   useEffect(() => {
@@ -73,7 +93,7 @@ export default function StoreLocationPicker({
   }, [disabled]);
   useEffect(() => {
     if (!canvas.current) return;
-    const start = publicPosition(initialPosition);
+    const start = normalize(initialPosition);
     const m = L.map(canvas.current, { scrollWheelZoom: false }).setView(
       start ? [start.lat, start.lng] : [43.49, -1.47],
       start ? 18 : 11,
@@ -87,9 +107,7 @@ export default function StoreLocationPicker({
     m.on("click", (event: L.LeafletMouseEvent) => {
       if (!locked.current) {
         cancelLocation();
-        setPoint(
-          publicPosition({ lat: event.latlng.lat, lng: event.latlng.lng }),
-        );
+        setPoint(normalize({ lat: event.latlng.lat, lng: event.latlng.lng }));
       }
     });
     const observer = new ResizeObserver(() => m.invalidateSize());
@@ -128,7 +146,7 @@ export default function StoreLocationPicker({
           if (locked.current) return;
           cancelLocation();
           const pos = marker.current?.getLatLng();
-          if (pos) setPoint(publicPosition({ lat: pos.lat, lng: pos.lng }));
+          if (pos) setPoint(normalize({ lat: pos.lat, lng: pos.lng }));
         })
         .addTo(m);
     } else marker.current.setLatLng([point.lat, point.lng]);
@@ -138,8 +156,9 @@ export default function StoreLocationPicker({
   return (
     <div className="store-location-picker">
       <p>
-        Pulsa en el mapa para colocar el punto de tu tienda. Después puedes
-        arrastrarlo o desplazar el mapa y usar el centro.
+        {t(
+          "Pulsa en el mapa para colocar el punto de tu tienda. Después puedes arrastrarlo o desplazar el mapa y usar el centro.",
+        )}
       </p>
       <div
         ref={canvas}
@@ -151,7 +170,7 @@ export default function StoreLocationPicker({
       <input type="hidden" name="publicLongitude" value={point?.lng ?? ""} />
       <div className="store-location-actions">
         <button type="button" disabled={disabled || locating} onClick={locate}>
-          {locating ? "Buscando ubicación…" : "Usar mi ubicación"}
+          {locating ? t("Buscando ubicación…") : "Usar mi ubicación"}
         </button>
         <button
           type="button"
@@ -160,10 +179,10 @@ export default function StoreLocationPicker({
             cancelLocation();
             const center = map.current?.getCenter();
             if (center)
-              setPoint(publicPosition({ lat: center.lat, lng: center.lng }));
+              setPoint(normalize({ lat: center.lat, lng: center.lng }));
           }}
         >
-          Usar el centro del mapa
+          {t("Usar el centro del mapa")}
         </button>
         <button
           type="button"
@@ -173,19 +192,26 @@ export default function StoreLocationPicker({
             setPoint(null);
           }}
         >
-          Quitar punto
+          {t("Quitar punto")}
         </button>
       </div>
-      {locationMessage && <p role="status">{locationMessage}</p>}
+      {locationMessage && <p role="status">{t(locationMessage)}</p>}
       <p role="status">
         {point
-          ? "Punto seleccionado. Se guardará al pulsar Guardar tienda."
-          : "Sin punto público seleccionado."}
+          ? t("Punto seleccionado. Se guardará al pulsar Guardar tienda.")
+          : t("Sin punto público seleccionado.")}
       </p>
       <small>
-        Se publicará el punto exacto que elijas para que puedan encontrar tu
-        tienda. Usa tu ubicación solo si estás allí y ajusta el punto a la
-        entrada. Se enviará a UZTA al pulsar Guardar tienda.
+        {approximate
+          ? t(
+              "Se publicará solo una zona aproximada, no el punto exacto de tu domicilio.",
+            )
+          : t(
+              "Se publicará el punto exacto que elijas para encontrar tu tienda.",
+            )}
+        {t(
+          "Usa tu ubicación solo si estás allí. El punto se guarda al pulsar Guardar tienda.",
+        )}
       </small>
     </div>
   );
