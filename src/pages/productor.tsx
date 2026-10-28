@@ -22,7 +22,7 @@ export function Productor() {
   useLanguage();
   const [expandedDescription, setExpandedDescription] = useState(false);
   const [tab, setTab] = useState("Productos");
-  const { data, run, mode, busy } = useDemo();
+  const { data, run, mode, busy, storageError } = useDemo();
   const search = useSearch({ strict: false }) as { tienda?: string };
   const farm = data.farms.find(
     (f) =>
@@ -30,6 +30,8 @@ export function Productor() {
       (search.tienda ?? (mode === "demo" ? "urki" : data.farms[0]?.id)),
   );
   const [added, setAdded] = useState("");
+  if (!farm && busy) return <p role="status">{t("Cargando productor…")}</p>;
+  if (!farm && storageError) return null;
   if (!farm)
     return (
       <div className="empty">
