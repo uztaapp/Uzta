@@ -26,9 +26,8 @@ const cartSchema = z.object({
 });
 export const cartKey = (userId: string | null) =>
   `uzta.cloud.cart.v1.${userId ?? "guest"}`;
-export const pendingCheckoutKey = (userId: string) =>
-  `uzta.cloud.checkout.v1.${userId}`;
-const pendingSchema = z.object({ id: uuid, fingerprint: z.string() });
+export { pendingCheckoutKey } from "./checkout-receipt";
+import { pendingCheckoutKey, pendingSchema } from "./checkout-receipt";
 function cartFingerprint(data: LocalStore, slot: Slot | undefined) {
   return JSON.stringify({
     items: Object.entries(data.quantities)
