@@ -7,3 +7,5 @@
 - Activar `notificationsReady` únicamente tras autorizar, aplicar y verificar la migración. La bandera está desactivada; sin ella no se consulta la tabla nueva.
 - Pruebas específicas: `npx vitest run src/components/notification-bell.test.tsx` y `node scripts/test-notifications.mjs`. Los estados futuros se simulan solo en PostgreSQL descartable.
 - Sin publicación en producción. Para revertir la interfaz, desactivar la bandera y conservar la tabla; no borrar historial de avisos.
+
+Activación autorizada: migración aplicada en abgysktjctrxfkcejjwu y notificationsReady activado. Verificados RLS, trigger y RPC; inserción del cliente denegada. Conservados 1 pedido, 1 producto y 9 unidades. Sin avisos históricos ni reservas de prueba en producción. Publicación conjunta con Reservas y Recogidas 2.0.
