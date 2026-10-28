@@ -306,9 +306,3 @@
 .uzta-basket .checkout select {
   min-height: 44px;
 }
-@media (min-width: 900px) {
-  .uzta-basket .basket-layout {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    align-items: start;
-  }
-}
