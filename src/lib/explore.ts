@@ -1,3 +1,8 @@
+import {
+  canReserve,
+  matchesAvailability,
+  type AvailabilityFilter,
+} from "./availability";
 import type { Farm, Product } from "./local-model";
 import { publicPosition, withinRadius, type Position } from "./nearby";
 import { sellerPosition, type SellerType } from "./sellers";
@@ -11,6 +16,7 @@ export function exploreEntries(
   radius: number,
   sellerType: SellerType | "" = "",
   availableOnly = true,
+  availability?: AvailabilityFilter,
 ) {
   const normalize = (s: string) =>
     s
@@ -23,7 +29,9 @@ export function exploreEntries(
   for (const p of products)
     if (
       p.active &&
-      (!availableOnly || p.stock > 0) &&
+      (availability
+        ? matchesAvailability(p, availability)
+        : !availableOnly || canReserve(p)) &&
       (!category || p.category === category)
     ) {
       const list = grouped.get(p.farmId) ?? [];

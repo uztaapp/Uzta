@@ -1,3 +1,4 @@
+import { canReserve } from "./availability";
 import { z } from "zod";
 import type { User, SupabaseClient } from "@supabase/supabase-js";
 import { cloudClient } from "./cloud-client";
@@ -170,6 +171,8 @@ const productRow = z.object({
     "Otros",
   ]),
   stock_units: z.number().int().nonnegative(),
+  availability: z.enum(["available", "upcoming", "sold_out"]).optional(),
+  expected_available_on: z.string().date().nullable().optional(),
   active: z.boolean(),
   featured: z.boolean().optional(),
   photo_path: z.string().nullable().optional(),
@@ -295,6 +298,8 @@ export async function loadCloudData(
     priceCents: p.price_cents,
     unit: p.unit,
     stock: p.stock_units,
+    availability: p.availability,
+    expectedAvailableOn: p.expected_available_on,
     category: p.category,
     crop: [0, 0, 0, 0],
     featured: p.featured ?? true,
@@ -382,7 +387,7 @@ export function cartTransition(data: LocalStore, command: Command) {
   else if (command.type === "remove") delete cart.quantities[command.id];
   else if (command.type === "quantity") {
     const p = data.products.find((p) => p.id === command.id);
-    if (!p || (!p.active && command.delta > 0))
+    if (!p || (!canReserve(p) && command.delta > 0))
       throw Error("El producto ya no está disponible.");
     if (
       command.delta > 0 &&
@@ -453,6 +458,16 @@ export async function persistCloudCommand(
     if (command.value.farmId !== managedFarmId)
       throw Error("Este producto no pertenece a tu tienda.");
     const p = productSchema.parse(command.value);
+    if (
+      (p.availability === "available" && p.stock === 0) ||
+      (p.availability === "sold_out" && p.stock > 0)
+    )
+      throw Error("Revisa la disponibilidad y las existencias.");
+    if (
+      !cloudConfig.availabilityReady &&
+      (p.availability === "upcoming" || p.expectedAvailableOn)
+    )
+      throw Error("Disponibilidad de temporada pendiente de activación.");
     if (!cloudConfig.sellerTypesReady && p.description)
       throw Error(
         "Descripciones de producto pendientes de activar en Supabase.",
@@ -488,6 +503,16 @@ export async function persistCloudCommand(
           unit: p.unit,
           category: p.category,
           stock_units: p.stock,
+          ...(cloudConfig.availabilityReady
+            ? {
+                availability:
+                  p.availability ?? (p.stock > 0 ? "available" : "sold_out"),
+                expected_available_on:
+                  p.availability === "upcoming"
+                    ? (p.expectedAvailableOn ?? null)
+                    : null,
+              }
+            : {}),
           active: p.active,
           featured: p.featured,
           ...(path !== undefined ? { photo_path: path } : {}),
@@ -587,7 +612,7 @@ export async function persistCloudCommand(
     uuid.parse(command.slotId);
     const items = data.products.filter((p) => (data.quantities[p.id] ?? 0) > 0);
     if (!items.length) throw Error("La cesta está vacía.");
-    if (items.some((p) => !p.active || data.quantities[p.id] > p.stock))
+    if (items.some((p) => !canReserve(p) || data.quantities[p.id] > p.stock))
       throw Error("Revisa la disponibilidad de los productos de la cesta.");
     if (new Set(items.map((p) => p.farmId)).size !== 1)
       throw Error("La cesta debe pertenecer a un productor.");

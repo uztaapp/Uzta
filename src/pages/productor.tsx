@@ -1,3 +1,5 @@
+import { AvailabilityLabel } from "../components/product-availability";
+import { canReserve } from "../lib/availability";
 import { FavoriteButton } from "../components/favorites";
 import "./productor.css";
 import { t, useLanguage } from "../lib/language";
@@ -157,18 +159,17 @@ export function Productor() {
                       <p>
                         <strong>{euro(p.priceCents)}</strong> / {p.unit}
                       </p>
+                      <AvailabilityLabel product={p} />
                       <small>
                         <Package size={11} aria-hidden="true" />
-                        {p.stock
-                          ? `Disponible: ${p.stock} ${p.unit}`
-                          : t("Agotado")}
+                        {p.stock} {p.unit}
                       </small>
                     </div>
                     <div className="product-actions">
                       <FavoriteButton id={p.id} name={p.name} />
                       <button
                         className="add"
-                        disabled={busy || !p.stock}
+                        disabled={busy || !canReserve(p)}
                         aria-label={`Añadir ${p.name} a la cesta`}
                         onClick={async () => {
                           if (

@@ -1,3 +1,4 @@
+import { canReserve } from "./availability";
 import { z } from "zod";
 import { productPhotoSchema } from "./product-photo";
 import { photoPath as checkedPhotoPath, signedPhotoUrl } from "./cloud-photos";
@@ -67,6 +68,8 @@ export const productSchema = z.object({
   priceCents: z.number().int().min(1).max(1000000),
   unit: z.enum(["kg", "docena", "unidad"]),
   stock: z.number().int().min(0).max(100000),
+  availability: z.enum(["available", "upcoming", "sold_out"]).optional(),
+  expectedAvailableOn: z.string().date().nullable().optional(),
   category: z.enum(categories),
   crop,
   featured: z.boolean(),
@@ -499,7 +502,7 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
     throw Error("Abre el perfil local para gestionar tu tienda.");
   if (command.type === "quantity") {
     const p = s.products.find((p) => p.id === command.id);
-    if (!p || (!p.active && command.delta > 0))
+    if (!p || (!canReserve(p) && command.delta > 0))
       throw Error("El producto no está disponible.");
     const other = s.products.find(
       (p) =>
@@ -585,7 +588,7 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
       );
     const lines = items.map((p) => {
       const quantity = s.quantities[p.id];
-      if (!p.active || quantity > p.stock)
+      if (!canReserve(p) || quantity > p.stock)
         throw Error(`Revisa la disponibilidad de ${p.name}.`);
       return {
         productId: p.id,
@@ -596,8 +599,12 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
         crop: p.crop,
       };
     });
-    for (const line of lines)
-      s.products.find((p) => p.id === line.productId)!.stock -= line.quantity;
+    for (const line of lines) {
+      const product = s.products.find((p) => p.id === line.productId)!;
+      product.stock -= line.quantity;
+      if (product.stock === 0 && product.availability !== "upcoming")
+        product.availability = "sold_out";
+    }
     s.orders.unshift({
       id: command.id,
       farmId: farm.id,

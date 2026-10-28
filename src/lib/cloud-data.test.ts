@@ -623,3 +623,60 @@ it("seller favorites reuse loading and persistence when activated", async () => 
     config.sellerFavoritesReady = before;
   }
 });
+
+it("persists seasonal availability and its estimate through existing product writes", async () => {
+  const config = (await import("../../config/uzta-cloud.public.json")).default;
+  const before = config.availabilityReady;
+  config.availabilityReady = true;
+  try {
+    const f = fixture();
+    f.rows.uzta_products[0].availability = "upcoming";
+    f.rows.uzta_products[0].expected_available_on = "2040-07-15";
+    const loaded = await loadCloudData(user, f.api);
+    const product = loaded.data.products[0];
+    expect(product.availability).toBe("upcoming");
+    expect(product.expectedAvailableOn).toBe("2040-07-15");
+    await persistCloudCommand(
+      loaded.data,
+      { type: "product", value: product },
+      user,
+      FARM,
+      f.api,
+    );
+    expect(f.log.at(-1)).toMatchObject({
+      table: "uzta_products",
+      value: { availability: "upcoming", expected_available_on: "2040-07-15" },
+    });
+    await expect(
+      persistCloudCommand(
+        loaded.data,
+        {
+          type: "product",
+          value: { ...product, availability: "available", stock: 0 },
+        },
+        user,
+        FARM,
+        f.api,
+      ),
+    ).rejects.toThrow();
+  } finally {
+    config.availabilityReady = before;
+  }
+});
+it("real reservation rejects upcoming products even if they still have stock", async () => {
+  const f = fixture(),
+    loaded = await loadCloudData(user, f.api);
+  const product = loaded.data.products[0];
+  product.availability = "upcoming";
+  loaded.data.quantities = { [PRODUCT]: 1 };
+  await expect(
+    persistCloudCommand(
+      loaded.data,
+      { type: "reserve", slotId: SLOT, id: ORDER, now: "2040-01-01T10:00:00Z" },
+      user,
+      null,
+      f.api,
+    ),
+  ).rejects.toThrow();
+  expect(f.rpc).not.toHaveBeenCalled();
+});

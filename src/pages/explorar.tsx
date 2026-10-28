@@ -1,3 +1,8 @@
+import {
+  AvailabilitySelect,
+  AvailabilityLabel,
+} from "../components/product-availability";
+import type { AvailabilityFilter } from "../lib/availability";
 import { FavoriteButton } from "../components/favorites";
 import {
   lazy,
@@ -35,7 +40,7 @@ const ProducerMap = lazy(() => import("../components/producer-map"));
 export function Explorar() {
   useLanguage();
   const [sellerType, setSellerType] = useState<SellerType | "">("");
-  const [availableOnly, setAvailableOnly] = useState(true);
+  const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const { data, mode, busy, storageError } = useDemo();
   const [query, setQuery] = useState(""),
     [category, setCategory] = useState(""),
@@ -66,7 +71,8 @@ export function Explorar() {
         center,
         radius,
         sellerType,
-        availableOnly,
+        false,
+        availability,
       ),
     [
       data.farms,
@@ -76,7 +82,7 @@ export function Explorar() {
       center,
       radius,
       sellerType,
-      availableOnly,
+      availability,
     ],
   );
   const onSelect = useCallback((entry: ExploreEntry) => {
@@ -164,10 +170,9 @@ export function Explorar() {
             </small>
             <p>
               {entry.products.length}{" "}
-              {entry.products.length === 1
-                ? "producto disponible"
-                : "productos disponibles"}
+              {entry.products.length === 1 ? t("producto") : t("productos")}
             </p>
+            <AvailabilityLabel product={p} />
             <p className="explore-prices">
               {entry.products
                 .slice(0, 2)
@@ -352,14 +357,10 @@ export function Explorar() {
               <input type="checkbox" disabled />
               {t("Solo ecológicos verificados (pendiente)")}
             </label>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={availableOnly}
-                onChange={(e) => setAvailableOnly(e.target.checked)}
-              />
-              {t("Solo con existencias")}
-            </label>
+            <AvailabilitySelect
+              value={availability}
+              onChange={setAvailability}
+            />
             <p>
               {t(
                 "El tipo de vendedor es declarado; no acredita actividad profesional ni producción ecológica.",

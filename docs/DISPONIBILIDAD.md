@@ -1,0 +1,7 @@
+# Disponibilidad y temporada
+Rama `feature/product-availability`, basada en `feature/user-favorites` para conservar el trabajo anterior. Valoraciones permanecen separadas.
+Reutiliza productos, formulario del vendedor, stock, filtros de Inicio/Explorar y reserva atómica. Añade Disponible/Próximamente/Agotado, fecha opcional orientativa y etiquetas. La fecha no activa automáticamente las reservas. Productos futuros y agotados siguen visibles con el filtro Todos.
+El servidor mantiene el stock como fuente de verdad: nunca queda Disponible con stock cero, la última unidad pasa a Agotado y una reserva futura se rechaza incluso con cantidad positiva. La función de reserva conserva precio, bloqueos, idempotencia y snapshots; solo añade la comprobación de disponibilidad. No se alteran pedidos anteriores ni RLS.
+Pendiente de autorización: `20261028174001_product_availability.sql`. No aplicada. Después de verificarla en Supabase, activar `availabilityReady` y probar en vista previa antes de publicar. El indicador sigue desactivado.
+Reversión local preparada: `supabase/rollback-product-availability.sql`; se niega a descartar datos de temporada sin exportación previa.
+Pruebas finales conjuntas: 54 de interfaz/datos/proveedor/reservas; 11 SQL de disponibilidad, 10 SQL de favoritos y 40 comprobaciones de compatibilidad existentes. TypeScript y una compilación final correctos. No se han creado datos reales ni ficticios en producción, ni enviado código a GitHub/Vercel. Falta verificación integrada en Supabase tras autorizar las migraciones.

@@ -1,3 +1,11 @@
+import {
+  AvailabilityLabel,
+  AvailabilitySelect,
+} from "../components/product-availability";
+import {
+  matchesAvailability,
+  type AvailabilityFilter,
+} from "../lib/availability";
 import { FavoriteButton } from "../components/favorites";
 import "./inicio.css";
 import { t, useLanguage } from "../lib/language";
@@ -21,6 +29,7 @@ export function Inicio() {
   const [allFarms, setAllFarms] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
+  const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
   const [center, setCenter] = useState<Position | null>(null);
@@ -35,6 +44,7 @@ export function Inicio() {
   const visible = data.products.filter(
     (p) =>
       p.active &&
+      matchesAvailability(p, availability) &&
       withinRadius(
         data.farms.find((f) => f.id === p.farmId)?.position,
         center,
@@ -132,6 +142,7 @@ export function Inicio() {
           {t("Mis favoritos")}
         </button>
       </details>
+      <AvailabilitySelect value={availability} onChange={setAvailability} />
       <div className="product-grid">
         {visible.map((p) => {
           const farm = data.farms.find((f) => f.id === p.farmId)!;
@@ -170,7 +181,7 @@ export function Inicio() {
                       : farm.distance}
                   </span>
                 </small>
-                {!p.stock ? <small>{t("Agotado")}</small> : null}
+                <AvailabilityLabel product={p} />
               </div>
             </article>
           );

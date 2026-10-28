@@ -1,3 +1,5 @@
+import { AvailabilityLabel } from "../components/product-availability";
+import { canReserve as productReservable } from "../lib/availability";
 import "./cesta.css";
 import { t, useLanguage } from "../lib/language";
 import { useRef, useState } from "react";
@@ -28,7 +30,7 @@ export function Cesta() {
     0,
   );
   const unavailable = items.some(
-    (p) => !p.active || data.quantities[p.id] > p.stock,
+    (p) => !productReservable(p) || data.quantities[p.id] > p.stock,
   );
   const dates = [...new Set(slots.map((s) => s.date))].sort();
   const chosenSlot = slots.find((s) => s.id === slot && s.date === date);
@@ -41,6 +43,8 @@ export function Cesta() {
       p.priceCents,
       p.active,
       p.stock,
+      p.availability,
+      p.expectedAvailableOn,
     ]),
     pickup: chosenSlot,
     message: data.message,
@@ -160,7 +164,7 @@ export function Cesta() {
                     disabled={
                       busy ||
                       step !== 1 ||
-                      !p.active ||
+                      !productReservable(p) ||
                       data.quantities[p.id] >= p.stock
                     }
                     aria-label={`${t("Aumentar")} ${p.name}`}
@@ -171,7 +175,8 @@ export function Cesta() {
                     <Plus size={15} />
                   </button>
                 </div>
-                {!p.active || data.quantities[p.id] > p.stock ? (
+                <AvailabilityLabel product={p} />
+                {!productReservable(p) || data.quantities[p.id] > p.stock ? (
                   <small role="alert">
                     {t("Revisa el stock disponible (")}
                     {p.stock}).

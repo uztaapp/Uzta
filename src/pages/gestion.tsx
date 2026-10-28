@@ -1,3 +1,7 @@
+import {
+  AvailabilityFields,
+  AvailabilityLabel,
+} from "../components/product-availability";
 import { t, useLanguage } from "../lib/language";
 import { lazy, Suspense, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
@@ -80,6 +84,19 @@ export function Gestion({ section }: { section: string }) {
       setError("Revisa el precio y las existencias.");
       return;
     }
+    const availabilityEnabled =
+      mode === "demo" || cloudConfig.availabilityReady;
+    const availability = String(
+      form.get("availability"),
+    ) as Product["availability"];
+    if (
+      availabilityEnabled &&
+      ((availability === "available" && stock === 0) ||
+        (availability === "sold_out" && stock > 0))
+    ) {
+      setError(t("Revisa la disponibilidad y las existencias."));
+      return;
+    }
     if (
       await run({
         type: "product",
@@ -97,6 +114,15 @@ export function Gestion({ section }: { section: string }) {
           unit: String(form.get("unit")) as Product["unit"],
           category: String(form.get("category")) as Product["category"],
           stock,
+          ...(availabilityEnabled
+            ? {
+                availability,
+                expectedAvailableOn:
+                  availability === "upcoming"
+                    ? String(form.get("expectedAvailableOn") ?? "") || null
+                    : null,
+              }
+            : {}),
           active: form.get("active") === "on",
           featured: form.get("featured") === "on",
         },
@@ -292,7 +318,7 @@ export function Gestion({ section }: { section: string }) {
                     <p>
                       {euro(p.priceCents)} / {p.unit}
                       {t("· Stock:")}
-                      {p.stock}
+                      {p.stock} <AvailabilityLabel product={p} />
                     </p>
                     <small>{p.active ? t("Publicado") : t("Oculto")}</small>
                   </div>
@@ -483,6 +509,9 @@ export function Gestion({ section }: { section: string }) {
                   defaultValue={edit.stock}
                 />
               </label>
+              {(mode === "demo" || cloudConfig.availabilityReady) && (
+                <AvailabilityFields key={edit.id} product={edit} />
+              )}
               <label>
                 {t("Categoría")}
                 <select name="category" defaultValue={edit.category}>
