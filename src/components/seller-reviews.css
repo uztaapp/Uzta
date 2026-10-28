@@ -1,0 +1,50 @@
+.seller-rating {
+  display: inline-block;
+  color: #31552b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.seller-reviews article {
+  padding: 14px 0;
+  border-bottom: 1px solid #e5e5dd;
+}
+.seller-reviews time {
+  margin-left: 12px;
+  font-size: 0.8rem;
+  color: #555;
+}
+.seller-reviews p {
+  overflow-wrap: anywhere;
+}
+.reservation-review {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.reservation-review fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+}
+.reservation-review fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 44px;
+}
+.reservation-review textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 80px;
+  resize: vertical;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+}
+.reservation-review legend {
+  font-size: 0.9rem;
+}

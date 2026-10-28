@@ -1,4 +1,8 @@
 import {
+  RatingSummary,
+  useReviewSummaries,
+} from "../components/seller-reviews";
+import {
   lazy,
   Suspense,
   useCallback,
@@ -36,6 +40,7 @@ export function Explorar() {
   const [sellerType, setSellerType] = useState<SellerType | "">("");
   const [availableOnly, setAvailableOnly] = useState(true);
   const { data, mode, busy, storageError } = useDemo();
+  const reviews = useReviewSummaries(data.farms.map((f) => f.id));
   const [query, setQuery] = useState(""),
     [category, setCategory] = useState(""),
     [radius, setRadius] = useState(0);
@@ -146,6 +151,9 @@ export function Explorar() {
         />
         <div>
           <h2>{entry.farm.name}</h2>
+          <RatingSummary
+            value={reviews.rows.find((r) => r.producer_id === entry.farm.id)}
+          />
           <p>{entry.farm.location}</p>
           <small>{t(sellerLabel(entry.farm.sellerType))}</small>
           <small>

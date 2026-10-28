@@ -1,3 +1,8 @@
+import {
+  SellerReviews,
+  RatingSummary,
+  useReviewSummaries,
+} from "../components/seller-reviews";
 import "./productor.css";
 import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
@@ -30,6 +35,7 @@ export function Productor() {
       (search.tienda ?? (mode === "demo" ? "urki" : data.farms[0]?.id)),
   );
   const [added, setAdded] = useState("");
+  const reviews = useReviewSummaries(farm ? [farm.id] : []);
   if (!farm && busy) return <p role="status">{t("Cargando productor…")}</p>;
   if (!farm && storageError) return null;
   if (!farm)
@@ -85,12 +91,7 @@ export function Productor() {
               {t("Ecológico")}
             </span>
           ) : null}
-          {mode === "demo" && farm.id === "urki" ? (
-            <span>
-              <Star size={18} fill="#efb329" color="#efb329" />{" "}
-              <strong>4,8</strong> (32) <small>{t("Maqueta")}</small>
-            </span>
-          ) : null}
+          <RatingSummary value={reviews.rows[0]} />
         </div>
         <p className="location">
           <MapPin size={17} />
@@ -244,39 +245,7 @@ export function Productor() {
         {tab === "Opiniones" ? (
           <div className="info-panel">
             <h2>{t("Opiniones")}</h2>
-            {mode === "demo" ? (
-              <>
-                <p className="subtle">
-                  {t("Opiniones ficticias para mostrar el diseño.")}
-                </p>
-                {[
-                  ["Maite", "Productos frescos y recogida muy cómoda."],
-                  [
-                    "Jon",
-                    "Nos ha gustado conocer la huerta y llevarnos productos de temporada.",
-                  ],
-                  [
-                    "Lucía",
-                    "Buena presentación y trato cercano en este ejemplo de tienda.",
-                  ],
-                ].map(([name, text]) => (
-                  <article className="demo-review" key={name}>
-                    <strong>
-                      {name}{" "}
-                      <span aria-label="5 estrellas de ejemplo">★★★★★</span>
-                    </strong>
-                    <p>{text}</p>
-                    <small>{t("Ejemplo · no verificada")}</small>
-                  </article>
-                ))}
-              </>
-            ) : (
-              <p>
-                {t(
-                  "Las opiniones y la valoración media están pendientes de integración.",
-                )}
-              </p>
-            )}
+            <SellerReviews producerId={farm.id} summaries={reviews} />
           </div>
         ) : null}
       </section>

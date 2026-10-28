@@ -1,3 +1,4 @@
+import { ReservationReview } from "../components/seller-reviews";
 import "./pedidos.css";
 import { t, t as translate, useLanguage } from "../lib/language";
 import { useState } from "react";
@@ -251,6 +252,14 @@ export function Pedidos() {
                 ? t("Reserva guardada en tu cuenta de UZTA.")
                 : t("Conservado en este equipo. No enviado al productor.")}
           </p>
+          {mode === "cloud" &&
+          selected.status === "Completado" &&
+          !selected.example &&
+          userId &&
+          selected.customerId === userId &&
+          selected.farmId !== managedFarmId ? (
+            <ReservationReview orderId={selected.id} userId={userId} />
+          ) : null}
           {tab === "Como productor" &&
           !selected.example &&
           selected.status === "Pendiente" &&
