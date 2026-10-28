@@ -240,6 +240,7 @@ describe("cloud data boundary", () => {
       id: FARM,
       owner_id: USER,
       name: "Mi tienda",
+      seller_type: null,
       location: "Localidad de prueba",
       description: "Prueba",
       ecological: false,
@@ -498,4 +499,35 @@ it("private locations are normalized at the cloud boundary even if an old API re
   const { data } = await loadCloudData(null, f.api);
   expect(data.farms[0].sellerType).toBe("private");
   expect(data.farms[0].position).toEqual({ lat: 43.46, lng: -1.46 });
+});
+
+it("writes a private seller with coarse coordinates and no administrative claims", async () => {
+  const f = fixture();
+  await persistCloudCommand(
+    emptyCloudData(),
+    {
+      type: "farm",
+      value: {
+        id: FARM,
+        name: "Public name",
+        location: "Town",
+        description: "",
+        ecological: false,
+        distance: "",
+        slots: [],
+        sellerType: "private",
+        position: { lat: 43.456123, lng: -1.456123 },
+      },
+    },
+    user,
+    null,
+    f.api,
+  );
+  expect(f.log[0].value).toMatchObject({
+    owner_id: USER,
+    seller_type: "private",
+    public_latitude: 43.46,
+    public_longitude: -1.46,
+  });
+  expect(f.log[0].value).not.toHaveProperty("role");
 });
