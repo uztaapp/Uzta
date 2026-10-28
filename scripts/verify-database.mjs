@@ -38,7 +38,7 @@ function pass(label) {
 }
 try {
   // Minimal Supabase auth/role fixture. Only this test process receives these roles.
-  await db.exec(`create role anon nologin; create role authenticated nologin;
+  await db.exec(`create role anon nologin; create role authenticated nologin;create role service_role nologin bypassrls;
  create schema auth; create table auth.users(id uuid primary key);
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema public,auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`);
@@ -477,9 +477,9 @@ try {
   const rls = await db.query(
     "select relname,relrowsecurity from pg_class where relname like 'uzta_%' and relkind='r'",
   );
-  assert.equal(rls.rows.length, 11);
+  assert.equal(rls.rows.length, 12);
   assert.ok(rls.rows.every((r) => r.relrowsecurity));
-  pass("RLS enabled on all eleven application tables");
+  pass("RLS enabled on all twelve application tables");
   assert.equal(
     (
       await db.query(

@@ -1,3 +1,4 @@
+import {reviewLabels} from "./review-labels";
 import { euskoLabels } from "./eusko-labels";
 import { commissionLabels } from "./commission-labels";
 import { availabilityLabels } from "./availability-labels";
@@ -96,6 +97,7 @@ const dictionary: Record<string, readonly [string, string, string]> = {
   ...extraLabels,
   ...sellerLabels,
   ...notificationLabels,
+  ...reviewLabels,
   ...euskoLabels,
   ...commissionLabels,
   ...availabilityLabels,

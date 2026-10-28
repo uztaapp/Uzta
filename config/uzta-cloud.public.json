@@ -10,5 +10,6 @@
   "sellerFavoritesReady": false,
   "availabilityReady": false,
   "commissionsReady": false,
-  "euskoReady": false
+  "euskoReady": false,
+  "reviewsReady": false
 }

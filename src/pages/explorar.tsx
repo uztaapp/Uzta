@@ -1,3 +1,4 @@
+import {RatingSummary,useReviewSummaries} from "../components/seller-reviews";
 import { EuskoBadge } from "../components/eusko";
 import {
   AvailabilitySelect,
@@ -44,6 +45,7 @@ export function Explorar() {
   const [sellerType, setSellerType] = useState<SellerType | "">("");
   const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const { data, mode, busy, storageError } = useDemo();
+  const reviews=useReviewSummaries(data.farms.map(f=>f.id));
   const [query, setQuery] = useState(""),
     [category, setCategory] = useState(""),
     [radius, setRadius] = useState(0);
@@ -162,7 +164,7 @@ export function Explorar() {
             label={p.name}
           />
           <div>
-            <h2>{entry.farm.name}</h2>
+            <h2>{entry.farm.name}</h2><RatingSummary value={reviews.rows.find(r=>r.producer_id===entry.farm.id)}/>
             <EuskoBadge farm={entry.farm} />
             <p>{entry.farm.location}</p>
             <small>{t(sellerLabel(entry.farm.sellerType))}</small>
