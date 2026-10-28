@@ -309,3 +309,15 @@ test("catalogue failure remains a Supabase error and never offers a demo fallbac
   ).not.toBeInTheDocument();
   expect(switchMode).not.toHaveBeenCalled();
 });
+
+function FavoriteProbe(){const v=useUzta();return <><button disabled={v.busy} onClick={()=>void v.run({type:"favorite",id:"product"})}>Favorito prueba</button><output>{v.data.favorites.includes("product")?"Guardado":"Sin guardar"}</output></>;}
+test("favorites update immediately, rollback errors and avoid a catalogue reload",async()=>{
+ mocks.getSession.mockResolvedValue({data:{session:{user:account,access_token:"token"}},error:null});
+ let reject!:(e:Error)=>void;mocks.persist.mockImplementation(()=>new Promise((_,r)=>{reject=r;}));
+ render(<CloudProvider switchMode={()=>{}}><FavoriteProbe/></CloudProvider>);
+ await waitFor(()=>expect(screen.getByRole("button",{name:"Favorito prueba"})).toBeEnabled());
+ const reads=mocks.load.mock.calls.length;fireEvent.click(screen.getByRole("button",{name:"Favorito prueba"}));
+ expect(screen.getByText("Guardado")).toBeInTheDocument();
+ await act(async()=>reject(Error("offline")));
+ expect(screen.getByText("Sin guardar")).toBeInTheDocument();expect(mocks.load.mock.calls.length).toBe(reads);
+});

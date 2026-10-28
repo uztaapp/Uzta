@@ -1,3 +1,4 @@
+import { FavoriteButton } from "../components/favorites";
 import "./productor.css";
 import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
@@ -59,14 +60,12 @@ export function Productor() {
         <Link className="hero-back" to="/" aria-label={t("Volver al inicio")}>
           <ArrowLeft />
         </Link>
-        <button
+        <FavoriteButton
+          id={farm.id}
+          name={farm.name}
+          target="seller"
           className="producer-favorite"
-          disabled
-          aria-label="Favoritos de productores: integración pendiente"
-          title="Favoritos de productores: integración pendiente"
-        >
-          <Heart size={23} />
-        </button>
+        />
         <ShareStore id={farm.id} name={farm.name} demo={mode === "demo"} />
       </div>
       <div className="producer-intro">
@@ -165,17 +164,22 @@ export function Productor() {
                           : t("Agotado")}
                       </small>
                     </div>
-                    <button
-                      className="add"
-                      disabled={busy || !p.stock}
-                      aria-label={`Añadir ${p.name} a la cesta`}
-                      onClick={async () => {
-                        if (await run({ type: "quantity", id: p.id, delta: 1 }))
-                          setAdded(`${p.name} añadido a la cesta.`);
-                      }}
-                    >
-                      <Plus size={20} />
-                    </button>
+                    <div className="product-actions">
+                      <FavoriteButton id={p.id} name={p.name} />
+                      <button
+                        className="add"
+                        disabled={busy || !p.stock}
+                        aria-label={`Añadir ${p.name} a la cesta`}
+                        onClick={async () => {
+                          if (
+                            await run({ type: "quantity", id: p.id, delta: 1 })
+                          )
+                            setAdded(`${p.name} añadido a la cesta.`);
+                        }}
+                      >
+                        <Plus size={20} />
+                      </button>
+                    </div>
                   </article>
                 ))}
             </div>
@@ -210,9 +214,8 @@ export function Productor() {
               </p>
             ) : null}
             <p className="pending-feature">
-              Los favoritos de productores y la carga de portada y avatar están
-              pendientes de integración. Los favoritos de productos siguen
-              disponibles en Inicio.
+              La carga de portada y avatar está pendientes de integración. Los
+              favoritos de productos siguen disponibles en Inicio.
             </p>
             <p>
               {t(

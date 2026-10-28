@@ -130,6 +130,48 @@ export function CloudProvider({
         return false;
       }
     }
+    if (command.type === "favorite" || command.type === "sellerFavorite") {
+      if (saving.current || busy) return false;
+      const actor = user.current;
+      if (!actor) {
+        show("Inicia sesión en UZTA para continuar.");
+        return false;
+      }
+      const before = current.current;
+      const field =
+        command.type === "favorite" ? "favorites" : "sellerFavorites";
+      const savedIds = before[field];
+      const generation = ++epoch.current;
+      saving.current = true;
+      setBusy(true);
+      update({
+        ...before,
+        [field]: savedIds.includes(command.id)
+          ? savedIds.filter((id) => id !== command.id)
+          : [...savedIds, command.id],
+      });
+      try {
+        await persistCloudCommand(before, command, actor, managedFarmId);
+        return (
+          alive.current &&
+          generation === epoch.current &&
+          actor.id === user.current?.id
+        );
+      } catch (e) {
+        if (
+          alive.current &&
+          generation === epoch.current &&
+          actor.id === user.current?.id
+        ) {
+          update({ ...current.current, [field]: savedIds });
+          show(cloudMessage(e));
+        }
+        return false;
+      } finally {
+        saving.current = false;
+        if (alive.current && generation === epoch.current) setBusy(false);
+      }
+    }
     if (command.type === "session") {
       if (!command.active) await signOut();
       return false;

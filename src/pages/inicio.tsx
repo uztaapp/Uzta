@@ -1,3 +1,4 @@
+import { FavoriteButton } from "../components/favorites";
 import "./inicio.css";
 import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
@@ -148,19 +149,7 @@ export function Inicio() {
                     label={p.name}
                   />
                 </Link>
-                <button
-                  className="heart"
-                  aria-label={`${data.favorites.includes(p.id) ? t("Quitar") : t("Guardar")} ${p.name} en favoritos`}
-                  aria-pressed={data.favorites.includes(p.id)}
-                  onClick={() => run({ type: "favorite", id: p.id })}
-                >
-                  <Heart
-                    fill={
-                      data.favorites.includes(p.id) ? "currentColor" : "none"
-                    }
-                    size={22}
-                  />
-                </button>
+                <FavoriteButton id={p.id} name={p.name} className="heart" />
                 {farm.ecological ? (
                   <span className="eco">{t("Ecológico")}</span>
                 ) : null}
@@ -228,29 +217,31 @@ export function Inicio() {
           .filter((f) => withinRadius(f.position, center, radius))
           .slice(0, allFarms ? undefined : 1)
           .map((f) => (
-            <Link
-              key={f.id}
-              to="/productor"
-              search={{ tienda: f.id }}
-              className="farm-banner"
-            >
-              <Photo
-                crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
-                label={`${mode === "demo" ? "Tienda de ejemplo" : "Tienda"}: ${f.name}`}
-              />
-              <div>
-                <strong>{f.name}</strong>
-                <span>
-                  {f.location}{" "}
-                  {center
-                    ? `· ${distanceLabel(center, f.position)}`
-                    : f.distance
-                      ? `· ${f.distance}`
-                      : ""}
-                </span>
-              </div>
-              <ChevronRight />
-            </Link>
+            <div className="favorite-card-wrap" key={f.id}>
+              <FavoriteButton id={f.id} name={f.name} target="seller" />
+              <Link
+                to="/productor"
+                search={{ tienda: f.id }}
+                className="farm-banner"
+              >
+                <Photo
+                  crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
+                  label={`${mode === "demo" ? "Tienda de ejemplo" : "Tienda"}: ${f.name}`}
+                />
+                <div>
+                  <strong>{f.name}</strong>
+                  <span>
+                    {f.location}{" "}
+                    {center
+                      ? `· ${distanceLabel(center, f.position)}`
+                      : f.distance
+                        ? `· ${f.distance}`
+                        : ""}
+                  </span>
+                </div>
+                <ChevronRight />
+              </Link>
+            </div>
           ))}
       </div>
     </div>

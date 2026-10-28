@@ -74,6 +74,7 @@ export function emptyCloudData(): LocalStore {
     products: [],
     quantities: {},
     favorites: [],
+    sellerFavorites: [],
     orders: [],
     message: "",
   };
@@ -229,15 +230,25 @@ export async function loadCloudData(
           .single(),
       );
     }
-    const [o, f] = await Promise.all([
+    const [o, f, sf] = await Promise.all([
       api
         .from("uzta_orders")
         .select("*,items:uzta_order_items(*)")
         .order("created_at", { ascending: false }),
       api.from("uzta_favorites").select("product_id").eq("user_id", user.id),
+      cloudConfig.sellerFavoritesReady
+        ? api
+            .from("uzta_producer_favorites")
+            .select("producer_id")
+            .eq("user_id", user.id)
+        : Promise.resolve({ data: [], error: null }),
     ]);
     orders = check(o) ?? [];
     favorites = check(f) ?? [];
+    data.sellerFavorites = z
+      .array(z.object({ producer_id: uuid }))
+      .parse(check(sf) ?? [])
+      .map((f) => f.producer_id);
   }
   data.profile = {
     name: profile?.display_name ?? "",
@@ -398,23 +409,28 @@ export async function persistCloudCommand(
   api: SupabaseClient = cloudClient(),
 ) {
   if (!user) throw Error("Inicia sesión en UZTA para continuar.");
-  if (command.type === "favorite") {
+  if (command.type === "favorite" || command.type === "sellerFavorite") {
     uuid.parse(command.id);
-    if (data.favorites.includes(command.id))
+    const seller = command.type === "sellerFavorite";
+    if (seller && !cloudConfig.sellerFavoritesReady)
+      throw Error("Favoritos de vendedores pendientes de activación.");
+    const table = seller ? "uzta_producer_favorites" : "uzta_favorites";
+    const column = seller ? "producer_id" : "product_id";
+    if ((seller ? data.sellerFavorites : data.favorites).includes(command.id))
       check(
         await api
-          .from("uzta_favorites")
+          .from(table)
           .delete()
           .eq("user_id", user.id)
-          .eq("product_id", command.id),
+          .eq(column, command.id),
       );
     else
       check(
         await api
-          .from("uzta_favorites")
+          .from(table)
           .upsert(
-            { user_id: user.id, product_id: command.id },
-            { onConflict: "user_id,product_id", ignoreDuplicates: true },
+            { user_id: user.id, [column]: command.id },
+            { onConflict: `user_id,${column}`, ignoreDuplicates: true },
           ),
       );
   } else if (command.type === "profile") {

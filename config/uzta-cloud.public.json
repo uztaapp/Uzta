@@ -6,5 +6,6 @@
   "productPhotosReady": true,
   "producerLocationsReady": true,
   "sellerTypesReady": true,
-  "notificationsReady": true
+  "notificationsReady": true,
+  "sellerFavoritesReady": false
 }

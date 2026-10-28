@@ -531,3 +531,95 @@ it("writes a private seller with coarse coordinates and no administrative claims
   });
   expect(f.log[0].value).not.toHaveProperty("role");
 });
+
+it("loads favorites again after sign-out and isolates account data", async () => {
+  const f = fixture();
+  f.rows.uzta_favorites = [{ user_id: USER, product_id: PRODUCT }];
+  expect((await loadCloudData(user, f.api)).data.favorites).toEqual([PRODUCT]);
+  expect((await loadCloudData(null, f.api)).data.favorites).toEqual([]);
+  expect(
+    (await loadCloudData({ ...user, id: OTHER }, f.api)).data.favorites,
+  ).toEqual([]);
+  expect((await loadCloudData(user, f.api)).data.favorites).toEqual([PRODUCT]);
+});
+it("writes and removes product favorites using only the current account", async () => {
+  const f = fixture(),
+    data = emptyCloudData();
+  await persistCloudCommand(
+    data,
+    { type: "favorite", id: PRODUCT },
+    user,
+    null,
+    f.api,
+  );
+  expect(f.log.at(-1)).toMatchObject({
+    table: "uzta_favorites",
+    operation: "upsert",
+    value: { user_id: USER, product_id: PRODUCT },
+  });
+  data.favorites = [PRODUCT];
+  await persistCloudCommand(
+    data,
+    { type: "favorite", id: PRODUCT },
+    user,
+    null,
+    f.api,
+  );
+  expect(f.log.at(-1)).toMatchObject({
+    operation: "delete",
+    filters: [
+      ["user_id", USER],
+      ["product_id", PRODUCT],
+    ],
+  });
+  await expect(
+    persistCloudCommand(
+      data,
+      { type: "favorite", id: PRODUCT },
+      null,
+      null,
+      f.api,
+    ),
+  ).rejects.toThrow();
+});
+it("seller favorites reuse loading and persistence when activated", async () => {
+  const config = (await import("../../config/uzta-cloud.public.json")).default;
+  const before = config.sellerFavoritesReady;
+  config.sellerFavoritesReady = true;
+  try {
+    const f = fixture();
+    f.rows.uzta_producer_favorites = [{ user_id: USER, producer_id: FARM }];
+    const data = (await loadCloudData(user, f.api)).data;
+    expect(data.sellerFavorites).toEqual([FARM]);
+    await persistCloudCommand(
+      data,
+      { type: "sellerFavorite", id: FARM },
+      user,
+      null,
+      f.api,
+    );
+    expect(f.log.at(-1)).toMatchObject({
+      table: "uzta_producer_favorites",
+      operation: "delete",
+      filters: [
+        ["user_id", USER],
+        ["producer_id", FARM],
+      ],
+    });
+    data.sellerFavorites = [];
+    await persistCloudCommand(
+      data,
+      { type: "sellerFavorite", id: FARM },
+      user,
+      null,
+      f.api,
+    );
+    expect(f.log.at(-1)).toMatchObject({
+      table: "uzta_producer_favorites",
+      operation: "upsert",
+      value: { user_id: USER, producer_id: FARM },
+    });
+  } finally {
+    config.sellerFavoritesReady = before;
+  }
+});

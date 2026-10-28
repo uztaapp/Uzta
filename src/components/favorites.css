@@ -1,0 +1,61 @@
+.favorite-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  color: #31552b;
+  border: 0;
+  border-radius: 50%;
+  background: #faf9f5;
+  flex-shrink: 0;
+}
+.favorite-button[aria-pressed="true"] {
+  color: #31552b;
+  background: #eaf1e4;
+}
+.favorite-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e4e7df;
+}
+.favorite-row > .photo {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+}
+.favorite-row > div {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.favorite-row small {
+  display: block;
+}
+.favorite-card-wrap {
+  position: relative;
+}
+.favorite-card-wrap > .favorite-button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+}
+.my-favorites .segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.producer-products .product-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.uzta-producer .producer-products article > .product-actions {
+  flex: 0 0 auto;
+  max-width: 90px;
+}

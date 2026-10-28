@@ -108,6 +108,7 @@ export const storeSchema = z
     products: z.array(productSchema),
     quantities: z.record(z.string(), z.number().int().min(0).max(100000)),
     favorites: z.array(z.string()),
+    sellerFavorites: z.array(z.string()).default([]),
     orders: z.array(orderSchema),
     message: z.string().max(1000),
   })
@@ -443,6 +444,7 @@ export function seedStore(): LocalStore {
     products,
     quantities: { tomates: 2, zanahorias: 1, huevos: 1, lechuga: 2 },
     favorites: [],
+    sellerFavorites: [],
     orders: [
       example,
       {
@@ -480,6 +482,7 @@ export type Command =
   | { type: "quantity"; id: string; delta: number }
   | { type: "remove"; id: string }
   | { type: "favorite"; id: string }
+  | { type: "sellerFavorite"; id: string }
   | { type: "message"; value: string }
   | { type: "profile"; value: LocalStore["profile"] }
   | { type: "session"; active: boolean }
@@ -518,6 +521,10 @@ export function transition(previous: LocalStore, command: Command): LocalStore {
     s.favorites = s.favorites.includes(command.id)
       ? s.favorites.filter((id) => id !== command.id)
       : [...s.favorites, command.id];
+  } else if (command.type === "sellerFavorite") {
+    s.sellerFavorites = s.sellerFavorites.includes(command.id)
+      ? s.sellerFavorites.filter((id) => id !== command.id)
+      : [...s.sellerFavorites, command.id];
   } else if (command.type === "message") s.message = command.value;
   else if (command.type === "profile")
     s.profile = profileSchema.parse(command.value);

@@ -1,9 +1,11 @@
+import { MyFavorites } from "../components/favorites";
 import "./perfil.css";
 import { t, useLanguage } from "../lib/language";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import {
   Settings,
+  Heart,
   MapPin,
   Globe,
   Store,
@@ -80,6 +82,18 @@ export function Perfil() {
         </button>
       </div>
     );
+  if (search.apartado === "favoritos")
+    return (
+      <div className="uzta-profile">
+        <div className="page-title">
+          <Link to="/perfil" aria-label={t("Volver al perfil")}>
+            <ArrowLeft />
+          </Link>
+          <h1>{t("Mis favoritos")}</h1>
+        </div>
+        <MyFavorites />
+      </div>
+    );
   if (search.apartado && labels[search.apartado])
     return (
       <>
@@ -140,6 +154,15 @@ export function Perfil() {
           <ChevronRight />
         </button>
       </section>
+      <Link
+        className="profile-row"
+        to="/perfil"
+        search={{ apartado: "favoritos" }}
+      >
+        <Heart />
+        <span>{t("Mis favoritos")}</span>
+        <ChevronRight />
+      </Link>
       <h2 className="producer-heading">{t("Para productores")}</h2>
       <div className="producer-menu">
         {[

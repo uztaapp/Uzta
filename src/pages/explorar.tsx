@@ -1,3 +1,4 @@
+import { FavoriteButton } from "../components/favorites";
 import {
   lazy,
   Suspense,
@@ -133,45 +134,52 @@ export function Explorar() {
   function card(entry: ExploreEntry) {
     const p = entry.products[0];
     return (
-      <Link
-        to="/productor"
-        search={{ tienda: entry.farm.id }}
-        className="explore-preview-content"
-        key={entry.farm.id}
-      >
-        <Photo
-          src={p.photo === undefined ? p.photoUrl : p.photo}
-          crop={mode === "demo" && p.photo !== null ? p.crop : [0, 0, 0, 0]}
-          label={p.name}
+      <div className="favorite-card-wrap" key={entry.farm.id}>
+        <FavoriteButton
+          target="seller"
+          id={entry.farm.id}
+          name={entry.farm.name}
         />
-        <div>
-          <h2>{entry.farm.name}</h2>
-          <p>{entry.farm.location}</p>
-          <small>{t(sellerLabel(entry.farm.sellerType))}</small>
-          <small>
-            {center
-              ? distanceLabel(center, entry.farm.position)
-              : publicPosition(entry.farm.position)
-                ? "Ubicación de la tienda"
-                : t("Sin ubicación pública en el mapa")}
-          </small>
-          <p>
-            {entry.products.length}{" "}
-            {entry.products.length === 1
-              ? "producto disponible"
-              : "productos disponibles"}
-          </p>
-          <p className="explore-prices">
-            {entry.products
-              .slice(0, 2)
-              .map((p) => `${p.name} · ${euro(p.priceCents)} / ${p.unit}`)
-              .join(" · ")}
-          </p>
-          <strong>
-            {t("Ver productos")} <ChevronRight size={14} />
-          </strong>
-        </div>
-      </Link>
+        <Link
+          to="/productor"
+          search={{ tienda: entry.farm.id }}
+          className="explore-preview-content"
+          key={entry.farm.id}
+        >
+          <Photo
+            src={p.photo === undefined ? p.photoUrl : p.photo}
+            crop={mode === "demo" && p.photo !== null ? p.crop : [0, 0, 0, 0]}
+            label={p.name}
+          />
+          <div>
+            <h2>{entry.farm.name}</h2>
+            <p>{entry.farm.location}</p>
+            <small>{t(sellerLabel(entry.farm.sellerType))}</small>
+            <small>
+              {center
+                ? distanceLabel(center, entry.farm.position)
+                : publicPosition(entry.farm.position)
+                  ? "Ubicación de la tienda"
+                  : t("Sin ubicación pública en el mapa")}
+            </small>
+            <p>
+              {entry.products.length}{" "}
+              {entry.products.length === 1
+                ? "producto disponible"
+                : "productos disponibles"}
+            </p>
+            <p className="explore-prices">
+              {entry.products
+                .slice(0, 2)
+                .map((p) => `${p.name} · ${euro(p.priceCents)} / ${p.unit}`)
+                .join(" · ")}
+            </p>
+            <strong>
+              {t("Ver productos")} <ChevronRight size={14} />
+            </strong>
+          </div>
+        </Link>
+      </div>
     );
   }
   return (

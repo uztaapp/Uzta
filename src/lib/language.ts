@@ -1,3 +1,4 @@
+import { favoriteLabels } from "./favorite-labels";
 import { useSyncExternalStore } from "react";
 import { notificationLabels } from "./notification-labels";
 import { sellerLabels } from "./seller-labels";
@@ -92,6 +93,7 @@ const dictionary: Record<string, readonly [string, string, string]> = {
   ...extraLabels,
   ...sellerLabels,
   ...notificationLabels,
+  ...favoriteLabels,
   ...bookingLabels,
   Inicio: ["Accueil", "Home", "Hasiera"],
   Productor: ["Producteur", "Producer", "Ekoizlea"],
