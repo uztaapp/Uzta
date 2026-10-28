@@ -1,13 +1,11 @@
-# Identidad UZTA
+# Identidad UZTA — originales suministrados
 
-Fuente aprobada por Cristian: «Pack de activos UZTA para app y web.png» (1536 × 1024). Confirmó expresamente que esta lámina es la definitiva. No se ha redibujado, generado ni vectorizado el logo.
+Fuente vigente: UZTA-recursos.zip, aportado por Cristian el 28/10/2026. Los PNG y el ICO de public/brand y public/favicon.ico son copias intactas del paquete; sustituyen todos los recortes anteriores de la lámina. Se conservan el emblema completo, letras, ilustración, colores y fondo original, sin inventar transparencia ni separar las letras.
 
-Recortes originales: emblema izquierdo (45,15)–(500,502); palabra superior derecha (1250,43)–(1515,125). Se elimina únicamente el fondo blanco exterior conectado al borde, preservando expresamente las nubes y detalles blancos interiores; los colores y detalles del dibujo se conservan. No se incluyen rótulos, tamaños ni otras piezas de la lámina. Se utiliza raster porque una vectorización exigiría reinterpretar la ilustración.
+Incluidos: principal 1254, cabecera 240, pie 480, bienvenida 960, aplicación 1024, PWA 192/512, maskable 192/512, Apple Touch 180, favicon PNG 48 e ICO. Las variantes son cuadradas. Los tamaños pequeños tienen el límite de detalle propio del emblema completo: no se ha simplificado ni redibujado para el favicon.
 
-`public/brand`: principal transparente, palabra transparente, cabecera, pie, bienvenida WebP sin texto, icono de aplicación y PWA 192/512, Apple Touch 180, favicon PNG 48. `public/favicon.ico`: 16/32/48. Los iconos cuadrados conservan el emblema entero con margen sobre crema. El favicon usa la palabra oficial para mejorar su lectura pequeña. No se incrustan eslóganes en imágenes.
+El SVG de celdas pesa 21.196.563 bytes y reproduce píxeles, no curvas suaves editables. Se conserva con el original PNG fuera del código desplegado, en outputs/uzta-brand-originals. No se sirve a cada visitante. Inventario SHA256 del ZIP verificado; SVG sin scripts, imágenes incrustadas ni referencias externas.
 
-Sin onboarding nuevo ni decoraciones innecesarias. El manifiesto prepara la identidad de instalación; no incorpora servicio offline ni modifica el proceso de reservas/autenticación.
+Integración: Inicio, bienvenida de carga, acceso/registro, perfil y pie compacto. Un solo componente de marca; textos y eslóganes continúan en la interfaz traducible. Manifiesto con iconos normales y maskable, sin añadir servicio offline. No se cambian autenticación, productos, reservas, pagos, mapa ni base de datos.
 
-SHA256 de la fuente: 890cb8799fe8d0a947d911cd1b3e61a56b57df6c6f583c40bae18fbeabfeb6b9
-
-Integración: Inicio (palabra), acceso/registro (principal), bienvenida de carga, perfil y pie compacto sin repetir el logo en Inicio/acceso. Sin cambios en lógica de autenticación, datos o reservas. 29 pruebas específicas correctas, TypeScript/compilación correctos, dimensiones y manifiesto comprobados. Revisión móvil 390 y escritorio 1280: recursos cargados, proporciones conservadas, sin desbordamiento ni errores de consola.
+Publicación únicamente en vista previa de la rama feature/official-uzta-brand; producción requiere autorización.

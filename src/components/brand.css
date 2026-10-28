@@ -6,18 +6,18 @@
   flex-shrink: 0;
 }
 .uzta-brand--header {
-  width: 150px;
+  width: 96px;
 }
 .uzta-brand--main {
   width: 150px;
   margin: 0 auto 18px;
 }
 .uzta-brand--footer {
-  width: 68px;
+  width: 48px;
   margin: 0 auto 8px;
 }
 .uzta-home .logo .uzta-brand {
-  width: 150px;
+  width: 96px;
 }
 .uzta-home .logo {
   gap: 4px;

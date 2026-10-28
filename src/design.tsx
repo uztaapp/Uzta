@@ -47,7 +47,14 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     <Suspense
       fallback={
         <div className="uzta-welcome">
-          <img src="/brand/welcome.webp" width="458" height="488" alt="UZTA" />
+          <img
+            src="/brand/welcome.png"
+            srcSet="/brand/logo-header.png 240w, /brand/logo-footer.png 480w, /brand/welcome.png 960w"
+            sizes="180px"
+            width="960"
+            height="960"
+            alt="UZTA"
+          />
           <p role="status" className="loading-status">
             {t("Abriendo UZTA…")}
           </p>

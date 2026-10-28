@@ -6,18 +6,17 @@ export function Brand({
   variant?: "header" | "footer" | "main";
   decorative?: boolean;
 }) {
-  const dimensions =
-    variant === "main"
-      ? [458, 488]
-      : variant === "footer"
-        ? [144, 47]
-        : [240, 78];
+  const size = variant === "main" ? 1254 : variant === "footer" ? 480 : 240;
   return (
     <img
       className={`uzta-brand uzta-brand--${variant}`}
       src={`/brand/logo-${variant}.png`}
-      width={dimensions[0]}
-      height={dimensions[1]}
+      srcSet="/brand/logo-header.png 240w, /brand/logo-footer.png 480w, /brand/logo-main.png 1254w"
+      sizes={
+        variant === "main" ? "150px" : variant === "footer" ? "48px" : "96px"
+      }
+      width={size}
+      height={size}
       alt={decorative ? "" : "UZTA"}
       decoding="async"
     />
