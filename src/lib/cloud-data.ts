@@ -363,6 +363,7 @@ export async function loadCloudData(
     farmName: o.producer_name,
     createdAt: o.created_at,
     pickup: {
+      startsAt: o.pickup_starts_at,
       id: o.id,
       date: madridParts(o.pickup_starts_at).date,
       start: madridParts(o.pickup_starts_at).time,

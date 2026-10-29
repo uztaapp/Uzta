@@ -2,7 +2,7 @@
 alter table public.uzta_orders drop constraint uzta_orders_status_check;
 alter table public.uzta_orders add constraint uzta_orders_status_check check(status in ('Pendiente','Completado','Cancelado')),
  add column cancelled_at timestamptz,add column cancelled_by uuid references auth.users(id),
- add constraint uzta_cancel_trace check((status='Cancelado')=(cancelled_at is not null and cancelled_by is not null));
+ add constraint uzta_cancel_trace check((status='Cancelado' and cancelled_at is not null and cancelled_by is not null) or (status<>'Cancelado' and cancelled_at is null and cancelled_by is null));
 create function uzta_private.cancel_order(p_id uuid) returns void language plpgsql security definer set search_path='' as $$
 declare o public.uzta_orders;owner uuid;item record;
 begin

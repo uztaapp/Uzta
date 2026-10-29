@@ -142,7 +142,9 @@ const orderSchema = z.object({
   farmId: z.string(),
   farmName: z.string(),
   createdAt: z.string(),
-  pickup: slotSchema,
+  pickup: slotSchema.extend({
+    startsAt: z.iso.datetime({ offset: true }).optional(),
+  }),
   message: z.string().max(1000),
   status: z.enum(["Pendiente", "Completado", "Cancelado"]),
   lines: z.array(lineSchema).min(1),
