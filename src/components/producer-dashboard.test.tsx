@@ -14,6 +14,11 @@ vi.mock("@tanstack/react-router", () => ({
 afterEach(cleanup);
 function mount(owner: string | null, empty = false) {
   const data = seedStore();
+  data.producerAccess = {
+    approved: !!owner,
+    admin: false,
+    status: owner ? "approved" : null,
+  };
   if (empty) {
     data.products = [];
     data.orders = [];

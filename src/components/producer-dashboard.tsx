@@ -35,9 +35,13 @@ const items = [
 ] as const;
 export function ProducerDashboard({ section = "panel" }: { section?: string }) {
   useLanguage();
-  const { data, managedFarmId } = useUzta();
+  const { data, managedFarmId, mode } = useUzta();
   const farm = data.farms.find((f) => f.id === managedFarmId);
-  if (!farm || !data.sessionActive || !canManageProducer(data, managedFarmId))
+  if (
+    !farm ||
+    !data.sessionActive ||
+    (mode !== "demo" && !canManageProducer(data, managedFarmId))
+  )
     return null;
   const products = data.products.filter(
       (p) => p.farmId === farm.id && p.catalogVisible !== false,

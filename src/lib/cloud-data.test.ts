@@ -1,3 +1,4 @@
+import approvalConfig from "../../config/uzta-cloud.public.json";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import {
@@ -150,8 +151,16 @@ function order() {
     ],
   };
 }
-beforeEach(() => localStorage.clear());
-afterEach(() => vi.restoreAllMocks());
+const activatedByDefault = approvalConfig.producerApprovalsReady;
+// Preserve coverage of pre-activation compatibility; approval-specific cases opt in.
+beforeEach(() => {
+  localStorage.clear();
+  approvalConfig.producerApprovalsReady = false;
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  approvalConfig.producerApprovalsReady = activatedByDefault;
+});
 describe("cloud data boundary", () => {
   it("persists only an uploaded photo reference, never its data URL or temporary signed URL", async () => {
     const f = fixture();
@@ -828,4 +837,26 @@ it("approval query errors never fall back to editable user metadata", async () =
   } finally {
     config.producerApprovalsReady = previous;
   }
+});
+
+it("activated approval loads a server-approved producer and preserves management access", async () => {
+  approvalConfig.producerApprovalsReady = true;
+  const f = fixture();
+  f.rpc.mockResolvedValue({
+    data: { approved: true, admin: false, status: "approved" } as any,
+    error: null,
+  });
+  const loaded = await loadCloudData(user, f.api);
+  expect(loaded.managedFarmId).toBe(FARM);
+  expect(loaded.data.producerAccess?.approved).toBe(true);
+  await persistCloudCommand(
+    loaded.data,
+    { type: "product", value: loaded.data.products[0] },
+    user,
+    FARM,
+    f.api,
+  );
+  expect(
+    f.log.some((e) => e.table === "uzta_products" && e.operation === "upsert"),
+  ).toBe(true);
 });
