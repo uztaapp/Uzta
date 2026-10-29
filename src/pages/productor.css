@@ -169,13 +169,6 @@
   margin-bottom: 8px;
   letter-spacing: -0.4px;
 }
-.uzta-producer .producer-added {
-  font-size: 12px;
-  color: #31552b;
-}
-.uzta-producer .producer-added:empty {
-  margin: 0;
-}
 .uzta-producer .producer-products {
   display: grid;
   grid-template-columns: 1fr;

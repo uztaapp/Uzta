@@ -44,7 +44,6 @@ export function Productor() {
             ? "urki"
             : data.farms.find((f) => f.catalogVisible !== false)?.id)),
   );
-  const [added, setAdded] = useState("");
   const reviews = useReviewSummaries(farm ? [farm.id] : []);
   if (!farm && busy) return <p role="status">{t("Cargando productor…")}</p>;
   if (!farm && storageError) return null;
@@ -153,9 +152,6 @@ export function Productor() {
         {tab === "Productos" ? (
           <>
             <h2>{t("Productos disponibles")}</h2>
-            <p role="status" className="producer-added">
-              {added}
-            </p>
             <div className="producer-products">
               {data.products
                 .filter(
@@ -214,16 +210,9 @@ export function Productor() {
                             (data.quantities[p.id] ?? 0) >= p.stock
                           }
                           aria-label={`${t("Aumentar")} ${p.name}`}
-                          onClick={async () => {
-                            if (
-                              await run({
-                                type: "quantity",
-                                id: p.id,
-                                delta: 1,
-                              })
-                            )
-                              setAdded(`${p.name} añadido a la cesta.`);
-                          }}
+                          onClick={() =>
+                            void run({ type: "quantity", id: p.id, delta: 1 })
+                          }
                         >
                           <Plus size={16} aria-hidden="true" />
                         </button>
