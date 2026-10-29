@@ -226,7 +226,7 @@ create schema storage;create table storage.buckets(id text primary key,name text
   const releaseConfig = (
     await vite.ssrLoadModule("/config/uzta-cloud.public.json")
   ).default;
-  releaseConfig.cancellationsReady = true; // Isolated DB includes the pending production migration.
+  releaseConfig.cancellationsReady = true; // Isolated DB includes the cancellation migration.
   const admin = id(1);
   await db.query("insert into auth.users values($1)", [admin]);
   await db.query(
