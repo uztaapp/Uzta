@@ -78,14 +78,18 @@
 }
 .uzta-home .categories {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
   gap: 10px;
   padding: 16px 0 4px;
   scrollbar-width: none;
 }
 .uzta-home .categories button {
-  flex: 0 0 48px;
+  flex: 0 0 68px;
+  scroll-snap-align: start;
+  white-space: nowrap;
   font-size: 11px;
   gap: 6px;
   min-height: 72px;
@@ -257,4 +261,28 @@
   .uzta-home .section-heading h2 {
     font-size: 16px;
   }
+}
+
+.category-carousel {
+  min-width: 0;
+}
+.category-scroll-controls {
+  min-height: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.category-scroll-controls button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: #31552b;
+  border: 1px solid #dfe5d8;
+  border-radius: 50%;
+  background: #eaf1e4;
+}
+.uzta-home .categories::-webkit-scrollbar {
+  display: none;
 }

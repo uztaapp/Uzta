@@ -1,6 +1,6 @@
 import React from "react";
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { Inicio } from "./inicio";
 import { AppContext, type AppContextValue } from "../app-context";
 import { emptyCloudData } from "../lib/cloud-data";
@@ -87,4 +87,17 @@ test("a known inherited sample is not mistaken for a real catalogue or a connect
   expect(
     screen.getByText("Todavía no hay productos publicados."),
   ).toBeInTheDocument();
+});
+
+test("home carousel omits Others and preserves category filtering", () => {
+  home("", true);
+  expect(
+    screen.queryByRole("button", { name: "Otros", exact: true }),
+  ).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Frutas", exact: true }));
+  expect(screen.queryByText("Producto registrado")).toBeNull();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Verduras", exact: true }),
+  );
+  expect(screen.getByText("Producto registrado")).toBeInTheDocument();
 });

@@ -46,19 +46,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   ) : (
     <Suspense
       fallback={
-        <div className="uzta-welcome">
-          <img
-            src="/brand/welcome.png"
-            srcSet="/brand/logo-header.png 240w, /brand/logo-footer.png 480w, /brand/welcome.png 960w"
-            sizes="180px"
-            width="960"
-            height="960"
-            alt="UZTA"
-          />
-          <p role="status" className="loading-status">
-            {t("Abriendo UZTA…")}
-          </p>
-        </div>
+        <p role="status" className="loading-status">
+          {t("Abriendo UZTA…")}
+        </p>
       }
     >
       <CloudProvider switchMode={switchMode}>{children}</CloudProvider>

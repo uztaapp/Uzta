@@ -1,4 +1,3 @@
-import { SheetIcon } from "../components/sheet-icon";
 import { Brand } from "../components/brand";
 import { SalesLinks, SalesPanel } from "../components/sales-panel";
 import { MyFavorites } from "../components/favorites";
@@ -8,6 +7,10 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import {
   Settings,
+  MapPin,
+  Heart,
+  Package,
+  CalendarDays,
   Globe,
   Store,
   FileText,
@@ -152,7 +155,7 @@ export function Perfil() {
           </div>
         </div>
         <button className="profile-row" onClick={() => setEditing(true)}>
-          <SheetIcon name="location" />
+          <MapPin aria-hidden="true" />
           <span>
             <small>{t("Dirección de entrega / ubicación")}</small>
             {data.profile.location}
@@ -173,7 +176,7 @@ export function Perfil() {
         to="/perfil"
         search={{ apartado: "favoritos" }}
       >
-        <SheetIcon name="heart" />
+        <Heart aria-hidden="true" />
         <span>{t("Mis favoritos")}</span>
         <ChevronRight />
       </Link>
@@ -182,9 +185,9 @@ export function Perfil() {
       <div className="producer-menu">
         {[
           ["Mi tienda", "tienda", Store],
-          ["Productos", "productos", Store],
+          ["Productos", "productos", Package],
           ["Pedidos recibidos", "pedidos", FileText],
-          ["Horarios y entregas", "horarios", Store],
+          ["Horarios y entregas", "horarios", CalendarDays],
           ["Estadísticas", "estadisticas", ChartNoAxesColumn],
         ]
           .filter(
@@ -209,15 +212,7 @@ export function Perfil() {
                       })
                 }
               >
-                {section === "tienda" ? (
-                  <SheetIcon name="store" />
-                ) : section === "productos" ? (
-                  <SheetIcon name="basket" />
-                ) : section === "pedidos" || section === "horarios" ? (
-                  <SheetIcon name="calendar" />
-                ) : (
-                  <Symbol />
-                )}
+                <Symbol aria-hidden="true" />
                 <span>{t(label as string)}</span>
                 <ChevronRight />
               </button>

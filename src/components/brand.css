@@ -6,7 +6,7 @@
   flex-shrink: 0;
 }
 .uzta-brand--header {
-  width: 96px;
+  width: 128px;
 }
 .uzta-brand--main {
   width: 150px;
@@ -17,7 +17,7 @@
   margin: 0 auto 8px;
 }
 .uzta-home .logo .uzta-brand {
-  width: 96px;
+  width: 128px;
 }
 .uzta-home .logo {
   gap: 4px;

@@ -1,3 +1,4 @@
+import { ChartNoAxesColumn, Coins, ChevronRight } from "lucide-react";
 import { EuskoAdminSummary } from "./eusko";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
@@ -46,7 +47,9 @@ export function SalesLinks() {
           to="/perfil"
           search={{ apartado: "ventas" }}
         >
-          {t("Mis ventas")}
+          <ChartNoAxesColumn aria-hidden="true" />
+          <span>{t("Mis ventas")}</span>
+          <ChevronRight aria-hidden="true" />
         </Link>
       )}
       {admin === userId && (
@@ -55,7 +58,9 @@ export function SalesLinks() {
           to="/perfil"
           search={{ apartado: "comisiones" }}
         >
-          {t("Comisiones")}
+          <Coins aria-hidden="true" />
+          <span>{t("Comisiones")}</span>
+          <ChevronRight aria-hidden="true" />
         </Link>
       )}
     </>

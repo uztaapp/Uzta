@@ -12,7 +12,7 @@ import { FavoriteButton } from "../components/favorites";
 import "./inicio.css";
 import { Brand } from "../components/brand";
 import { t, useLanguage } from "../lib/language";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { Search, MapPin, Heart, ChevronRight, ChevronDown } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
@@ -20,6 +20,34 @@ import { NearbyControls } from "../components/nearby-controls";
 import { withinRadius, distanceLabel, type Position } from "../lib/nearby";
 export function Inicio() {
   useLanguage();
+  const categoriesRef = useRef<HTMLDivElement>(null);
+  const [categoryEdges, setCategoryEdges] = useState({
+    previous: false,
+    next: false,
+  });
+  function updateCategoryEdges() {
+    const el = categoriesRef.current;
+    if (!el) return;
+    setCategoryEdges({
+      previous: el.scrollLeft > 2,
+      next: el.scrollLeft + el.clientWidth < el.scrollWidth - 2,
+    });
+  }
+  useEffect(() => {
+    const el = categoriesRef.current;
+    if (!el) return;
+    updateCategoryEdges();
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateCategoryEdges)
+        : null;
+    observer?.observe(el);
+    window.addEventListener("resize", updateCategoryEdges);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateCategoryEdges);
+    };
+  }, []);
   const [locationOpen, setLocationOpen] = useState(false);
   const [allFarms, setAllFarms] = useState(false);
   const [query, setQuery] = useState("");
@@ -92,26 +120,74 @@ export function Inicio() {
           onChange={(e) => setQuery(e.target.value)}
         />
       </label>
-      <div className="categories" aria-label="Categorías">
-        {[
-          ["vegetables", "Verduras"],
-          ["fruit", "Frutas"],
-          ["eggs", "Huevos"],
-          ["dairy", "Lácteos"],
-          ["honey", "Miel"],
-          ["other", "Otros"],
-        ].map(([icon, label]) => (
-          <button
-            key={label}
-            aria-pressed={category === label}
-            onClick={() => setCategory(category === label ? "" : label)}
-          >
-            <span>
-              <SheetIcon name={icon as SheetIconName} />
-            </span>
-            {t(label)}
-          </button>
-        ))}
+      <div className="category-carousel">
+        <div
+          className="categories"
+          aria-label="Categorías"
+          ref={categoriesRef}
+          onScroll={updateCategoryEdges}
+        >
+          {[
+            ["vegetables", "Verduras"],
+            ["fruit", "Frutas"],
+            ["eggs", "Huevos"],
+            ["dairy", "Lácteos"],
+            ["honey", "Miel"],
+          ].map(([icon, label]) => (
+            <button
+              key={label}
+              aria-pressed={category === label}
+              onClick={() => setCategory(category === label ? "" : label)}
+            >
+              <span>
+                <SheetIcon name={icon as SheetIconName} />
+              </span>
+              {t(label)}
+            </button>
+          ))}
+        </div>
+        <div className="category-scroll-controls">
+          {categoryEdges.previous && (
+            <button
+              type="button"
+              aria-label={t("Categorías anteriores")}
+              onClick={() =>
+                categoriesRef.current?.scrollBy({
+                  left: -200,
+                  behavior: window.matchMedia?.(
+                    "(prefers-reduced-motion: reduce)",
+                  ).matches
+                    ? "instant"
+                    : "smooth",
+                })
+              }
+            >
+              <ChevronRight
+                style={{ transform: "rotate(180deg)" }}
+                aria-hidden="true"
+                size={16}
+              />
+            </button>
+          )}
+          {categoryEdges.next && (
+            <button
+              type="button"
+              aria-label={t("Más categorías")}
+              onClick={() =>
+                categoriesRef.current?.scrollBy({
+                  left: 200,
+                  behavior: window.matchMedia?.(
+                    "(prefers-reduced-motion: reduce)",
+                  ).matches
+                    ? "instant"
+                    : "smooth",
+                })
+              }
+            >
+              <ChevronRight aria-hidden="true" size={16} />
+            </button>
+          )}
+        </div>
       </div>
       <div className="section-heading">
         <h2>{t("Productos cerca de ti")}</h2>
