@@ -1,6 +1,6 @@
 /* One geometry for every standard page; Explore keeps its map overlay. */
 .app {
-  --app-header-top: 4px;
+  --app-header-top: 20px;
   --app-header-row: 44px;
   --app-header-gap: 2px;
   --app-header-logo: 128px;
