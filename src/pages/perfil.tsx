@@ -1,3 +1,9 @@
+import {
+  ProducerApplication,
+  ProducerRequestsAdmin,
+} from "../components/producer-application";
+import { CreateStore } from "../components/create-store";
+import { canManageProducer } from "../lib/producer-approval";
 import { ProducerDashboard } from "../components/producer-dashboard";
 import { privacyCopy } from "../lib/privacy-copy";
 import {
@@ -105,7 +111,26 @@ export function Perfil() {
         </button>
       </div>
     );
+  const producerAllowed =
+    mode === "demo" ? !!managedFarmId : canManageProducer(data, managedFarmId);
+  if (search.apartado === "solicitudes") return <ProducerRequestsAdmin />;
   if (
+    [
+      "panel",
+      "nuevo",
+      "productos",
+      "tienda",
+      "horarios",
+      "estadisticas",
+      "ventas",
+    ].includes(search.apartado ?? "") &&
+    !producerAllowed
+  )
+    return <ProducerApplication />;
+  if (producerAllowed && !managedFarmId && search.apartado !== "cuenta")
+    return <CreateStore />;
+  if (
+    producerAllowed &&
     managedFarmId &&
     (!search.apartado ||
       [
@@ -219,44 +244,16 @@ export function Perfil() {
         <ChevronRight />
       </Link>
       <SalesLinks />
-      <h2 className="producer-heading">{t("Para productores")}</h2>
-      <div className="producer-menu">
-        {[
-          ["Mi tienda", "tienda", Store],
-          ["Productos", "productos", Package],
-          ["Pedidos recibidos", "pedidos", FileText],
-          ["Horarios y entregas", "horarios", CalendarDays],
-          ["Estadísticas", "estadisticas", ChartNoAxesColumn],
-        ]
-          .filter(
-            ([, section]) =>
-              mode === "demo" || managedFarmId || section === "tienda",
-          )
-          .map(([label, section, Icon]) => {
-            const Symbol = Icon as typeof Store;
-            return (
-              <button
-                className="profile-row"
-                key={label as string}
-                onClick={() =>
-                  section === "pedidos"
-                    ? void navigate({
-                        to: "/pedidos",
-                        search: { vista: "productor" },
-                      })
-                    : void navigate({
-                        to: "/perfil",
-                        search: { apartado: section as string },
-                      })
-                }
-              >
-                <Symbol aria-hidden="true" />
-                <span>{t(label as string)}</span>
-                <ChevronRight />
-              </button>
-            );
-          })}
-      </div>
+      {!producerAllowed && <ProducerApplication />}
+      {data.producerAccess?.admin && (
+        <Link
+          className="profile-row"
+          to="/perfil"
+          search={{ apartado: "solicitudes" }}
+        >
+          {t("Solicitudes de productores")}
+        </Link>
+      )}
       <div className="profile-bottom">
         <Link className="profile-row" to="/privacidad">
           <ShieldCheck aria-hidden="true" />

@@ -1,5 +1,126 @@
 export const releaseLabels: Record<string, readonly [string, string, string]> =
   {
+    "Quiero ser productor": [
+      "Je veux devenir producteur",
+      "Become a producer",
+      "Ekoizlea izan nahi dut",
+    ],
+    "Las solicitudes estarán disponibles al activar la aprobación de productores.":
+      [
+        "Les demandes seront disponibles après activation de l’approbation.",
+        "Applications will be available once producer approval is activated.",
+        "Eskaerak ekoizleen onarpena aktibatzean egongo dira erabilgarri.",
+      ],
+    "Tu solicitud está pendiente de aprobación": [
+      "Votre demande est en attente d’approbation",
+      "Your application is awaiting approval",
+      "Zure eskaera onartzeko zain dago",
+    ],
+    "Tu permiso de productor ha sido revocado. Contacta con administración.": [
+      "Votre autorisation de producteur a été révoquée. Contactez l’administration.",
+      "Your producer access has been revoked. Contact administration.",
+      "Ekoizle baimena kendu dizute. Jarri harremanetan administrazioarekin.",
+    ],
+    "Solicitud aprobada": [
+      "Demande approuvée",
+      "Application approved",
+      "Eskaera onartua",
+    ],
+    "Solicitud rechazada. Puedes enviar una nueva solicitud.": [
+      "Demande refusée. Vous pouvez en envoyer une nouvelle.",
+      "Application rejected. You may submit a new one.",
+      "Eskaera baztertua. Beste bat bidal dezakezu.",
+    ],
+    "Nombre de la explotación o actividad": [
+      "Nom de l’exploitation ou activité",
+      "Farm or activity name",
+      "Ustiategiaren edo jardueraren izena",
+    ],
+    "Tipo de producción": [
+      "Type de production",
+      "Production type",
+      "Ekoizpen mota",
+    ],
+    "Breve descripción": [
+      "Brève description",
+      "Brief description",
+      "Deskribapen laburra",
+    ],
+    "Enviar solicitud": [
+      "Envoyer la demande",
+      "Submit application",
+      "Bidali eskaera",
+    ],
+    "Comprobar estado": [
+      "Vérifier le statut",
+      "Check status",
+      "Egiaztatu egoera",
+    ],
+    "Solicitudes de productores": [
+      "Demandes de producteurs",
+      "Producer applications",
+      "Ekoizleen eskaerak",
+    ],
+    "Acceso reservado a administración.": [
+      "Accès réservé à l’administration.",
+      "Administrators only.",
+      "Administraziorako sarbidea soilik.",
+    ],
+    "No hay solicitudes.": [
+      "Aucune demande.",
+      "No applications.",
+      "Ez dago eskaerarik.",
+    ],
+    Aprobado: ["Approuvé", "Approved", "Onartua"],
+    Rechazado: ["Refusé", "Rejected", "Baztertua"],
+    Revocado: ["Révoqué", "Revoked", "Baimena kenduta"],
+    "Consultar detalles": [
+      "Voir les détails",
+      "View details",
+      "Ikusi xehetasunak",
+    ],
+    Aprobar: ["Approuver", "Approve", "Onartu"],
+    Rechazar: ["Refuser", "Reject", "Baztertu"],
+    "Revocar permiso": [
+      "Révoquer l’autorisation",
+      "Revoke access",
+      "Kendu baimena",
+    ],
+    "Confirmar cambio de permiso": [
+      "Confirmer la modification des droits",
+      "Confirm access change",
+      "Berretsi baimen aldaketa",
+    ],
+    "Motivo (opcional)": [
+      "Motif (facultatif)",
+      "Reason (optional)",
+      "Arrazoia (aukerakoa)",
+    ],
+    "Revisa los campos de la solicitud.": [
+      "Vérifiez les champs de la demande.",
+      "Check the application fields.",
+      "Egiaztatu eskaeraren eremuak.",
+    ],
+    "No se pudo enviar la solicitud.": [
+      "Impossible d’envoyer la demande.",
+      "Could not submit the application.",
+      "Ezin izan da eskaera bidali.",
+    ],
+    "No se pudieron cargar las solicitudes.": [
+      "Impossible de charger les demandes.",
+      "Could not load applications.",
+      "Ezin izan dira eskaerak kargatu.",
+    ],
+    "No se pudo actualizar la solicitud.": [
+      "Impossible de modifier la demande.",
+      "Could not update the application.",
+      "Ezin izan da eskaera eguneratu.",
+    ],
+    "Necesitas la aprobación de productor.": [
+      "Une approbation de producteur est nécessaire.",
+      "Producer approval is required.",
+      "Ekoizle gisa onartua izan behar duzu.",
+    ],
     "La foto se guarda al guardar la tienda.": [
       "La photo est enregistrée avec la boutique.",
       "The photo is saved with the store.",

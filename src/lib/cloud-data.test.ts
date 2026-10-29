@@ -786,3 +786,46 @@ it("legacy examples remain available to owner history but are not public offers"
     f.log.filter((e) => e.table !== "uzta_profiles" && e.operation !== "read"),
   ).toEqual([]);
 });
+
+it("server approval result overrides ownership and editable metadata", async () => {
+  const config = (await import("../../config/uzta-cloud.public.json")).default;
+  const previous = config.producerApprovalsReady;
+  config.producerApprovalsReady = true;
+  try {
+    const f = fixture();
+    f.rpc.mockResolvedValue({
+      data: { approved: false, admin: false, status: "revoked" } as any,
+      error: null,
+    });
+    const loaded = await loadCloudData(user, f.api);
+    expect(loaded.managedFarmId).toBeNull();
+    expect(loaded.data.producerAccess?.admin).toBe(false);
+    await expect(
+      persistCloudCommand(
+        loaded.data,
+        { type: "complete", id: ORDER },
+        user,
+        FARM,
+        f.api,
+      ),
+    ).rejects.toThrow("aprobación");
+    expect(f.log.filter((e) => e.operation !== "read")).toEqual([]);
+  } finally {
+    config.producerApprovalsReady = previous;
+  }
+});
+it("approval query errors never fall back to editable user metadata", async () => {
+  const config = (await import("../../config/uzta-cloud.public.json")).default;
+  const previous = config.producerApprovalsReady;
+  config.producerApprovalsReady = true;
+  try {
+    const f = fixture();
+    f.rpc.mockResolvedValue({
+      data: null as any,
+      error: { code: "42501" } as any,
+    });
+    await expect(loadCloudData(user, f.api)).rejects.toEqual({ code: "42501" });
+  } finally {
+    config.producerApprovalsReady = previous;
+  }
+});

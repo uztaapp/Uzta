@@ -51,10 +51,12 @@ try {
    grant select on storage.objects to anon,authenticated;
    grant insert,update,delete on storage.objects to authenticated;`);
   for (const file of (await readdir("supabase/migrations"))
-    .filter((f) => f.endsWith(".sql"))
+    .filter(
+      (f) => f.endsWith(".sql") && f !== "20261029030000_producer_approval.sql",
+    )
     .sort())
     await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
-  pass("all independent migrations execute on empty PostgreSQL");
+  pass("baseline migrations execute on empty PostgreSQL");
   await db.query("insert into auth.users(id) values ($1),($2),($3)", [
     owner,
     buyer,

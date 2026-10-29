@@ -1,3 +1,5 @@
+import { ProducerApplication } from "./producer-application";
+import { canManageProducer } from "../lib/producer-approval";
 import { t, useLanguage } from "../lib/language";
 import { useState, useRef, type FormEvent } from "react";
 import { useUzta } from "../app-context";
@@ -6,7 +8,7 @@ import { SellerFields } from "./seller-fields";
 import type { SellerType } from "../lib/sellers";
 export function CreateStore() {
   useLanguage();
-  const { run, busy, mode } = useUzta();
+  const { run, busy, mode, data, managedFarmId } = useUzta();
   const enabled = mode === "demo" || config.sellerTypesReady;
   const [sellerType, setSellerType] = useState<SellerType | "">("");
   const id = useRef(crypto.randomUUID());
@@ -33,6 +35,8 @@ export function CreateStore() {
         "No se pudo guardar la tienda. Revisa el aviso y vuelve a intentarlo.",
       );
   }
+  if (mode === "cloud" && !canManageProducer(data, managedFarmId))
+    return <ProducerApplication />;
   return (
     <section className="management">
       <h2>{t("Tu tienda de productor")}</h2>

@@ -21,5 +21,6 @@
   ],
   "cancellationsReady": false,
   "producerCoversReady": true,
-  "producerAvatarsReady": true
+  "producerAvatarsReady": true,
+  "producerApprovalsReady": false
 }

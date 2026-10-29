@@ -1,3 +1,5 @@
+import { ProducerApplication } from "../components/producer-application";
+import { canManageProducer } from "../lib/producer-approval";
 import { EuskoFields } from "../components/eusko";
 import {
   AvailabilityFields,
@@ -219,6 +221,8 @@ export function Gestion({
       setSaved("Franja de recogida añadida.");
     }
   }
+  if (mode === "cloud" && !canManageProducer(data, managedFarmId))
+    return <ProducerApplication />;
   if (!farm) return <CreateStore />;
   const ownOrders = data.orders.filter(
     (o) => o.farmId === farm.id && !o.example,

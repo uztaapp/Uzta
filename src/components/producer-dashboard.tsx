@@ -1,3 +1,4 @@
+import { canManageProducer } from "../lib/producer-approval";
 import { Link } from "@tanstack/react-router";
 import {
   Home,
@@ -35,7 +36,8 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
   useLanguage();
   const { data, managedFarmId } = useUzta();
   const farm = data.farms.find((f) => f.id === managedFarmId);
-  if (!farm || !data.sessionActive) return null;
+  if (!farm || !data.sessionActive || !canManageProducer(data, managedFarmId))
+    return null;
   const products = data.products.filter(
       (p) => p.farmId === farm.id && p.catalogVisible !== false,
     ),

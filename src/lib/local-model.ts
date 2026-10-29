@@ -148,6 +148,15 @@ export const profileSchema = z.object({
 });
 export const storeSchema = z
   .object({
+    producerAccess: z
+      .object({
+        approved: z.boolean(),
+        admin: z.boolean(),
+        status: z
+          .enum(["pending", "approved", "rejected", "revoked"])
+          .nullable(),
+      })
+      .optional(),
     version: z.literal(1),
     revision: z.number().int().nonnegative(),
     profile: profileSchema,

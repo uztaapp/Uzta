@@ -1,4 +1,5 @@
 import { madridToUtc } from "../lib/cloud-data";
+import { canManageProducer } from "../lib/producer-approval";
 import cloudConfig from "../../config/uzta-cloud.public.json";
 import { ReservationReview } from "../components/seller-reviews";
 import { PaymentMethods } from "../components/eusko";
@@ -19,7 +20,7 @@ export function Pedidos() {
     vista?: string;
   };
   const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
-  const [tab, setTab] = useState(
+  const [requestedTab, setTab] = useState(
     search.vista === "productor" ? "Como productor" : "Compras",
   );
   const {
@@ -32,6 +33,9 @@ export function Pedidos() {
     refresh,
     storageError,
   } = useDemo();
+  const producerAllowed =
+    mode === "demo" ? !!managedFarmId : canManageProducer(data, managedFarmId);
+  const tab = producerAllowed ? requestedTab : "Compras";
   const navigate = useNavigate();
   const selected = data.orders.find((o) => o.id === search.pedido);
   const visible =
@@ -48,16 +52,18 @@ export function Pedidos() {
         <h1>{t("Mis pedidos")}</h1>
       </div>
       <div className="segmented" role="tablist" aria-label="Tipo de pedidos">
-        {["Compras", "Como productor"].map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-          >
-            {translate(t)}
-          </button>
-        ))}
+        {(producerAllowed ? ["Compras", "Como productor"] : ["Compras"]).map(
+          (t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+            >
+              {translate(t)}
+            </button>
+          ),
+        )}
       </div>
       <p className="subtle">
         {mode === "demo"

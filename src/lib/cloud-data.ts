@@ -1,3 +1,4 @@
+import { accessSchema } from "./producer-approval";
 import { paymentAllowed } from "./eusko";
 import { canReserve } from "./availability";
 import { z } from "zod";
@@ -203,6 +204,10 @@ export async function loadCloudData(
   const products = z.array(productRow).parse(check(productResponse));
   const slots = z.array(slotRow).parse(check(slotResponse));
   const data = emptyCloudData();
+  if (user && cloudConfig.producerApprovalsReady)
+    data.producerAccess = accessSchema.parse(
+      check(await api.rpc("uzta_producer_access")),
+    );
   let profile: { display_name: string; location: string } | null = null;
   let orders: any[] = [];
   let favorites: { product_id: string }[] = [];
@@ -432,7 +437,10 @@ export async function loadCloudData(
   }
   return {
     data,
-    managedFarmId: farms.find((f) => f.owner_id === user?.id)?.id ?? null,
+    managedFarmId:
+      cloudConfig.producerApprovalsReady && !data.producerAccess?.approved
+        ? null
+        : (farms.find((f) => f.owner_id === user?.id)?.id ?? null),
   };
 }
 export function cartTransition(data: LocalStore, command: Command) {
@@ -467,6 +475,12 @@ export async function persistCloudCommand(
   managedFarmId: string | null,
   api: SupabaseClient = cloudClient(),
 ) {
+  if (
+    cloudConfig.producerApprovalsReady &&
+    ["farm", "product", "complete"].includes(command.type) &&
+    !data.producerAccess?.approved
+  )
+    throw Error("Necesitas la aprobación de productor.");
   if (!user) throw Error("Inicia sesión en UZTA para continuar.");
   if (command.type === "favorite" || command.type === "sellerFavorite") {
     uuid.parse(command.id);

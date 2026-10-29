@@ -1,3 +1,4 @@
+import config from "../../config/uzta-cloud.public.json";
 import React from "react";
 import { test, expect, vi, afterEach } from "vitest";
 import {
@@ -17,14 +18,24 @@ vi.mock("@tanstack/react-router", () => ({
     </a>
   ),
 }));
-afterEach(cleanup);
+const ready = config.producerApprovalsReady;
+afterEach(() => {
+  cleanup();
+  config.producerApprovalsReady = ready;
+});
 for (const type of ["professional", "private"])
   test(
-    "new " +
+    "approved " +
       type +
       " seller can reach and submit store creation without an existing farm",
     async () => {
+      config.producerApprovalsReady = true;
       const data = emptyCloudData();
+      data.producerAccess = {
+        approved: true,
+        admin: false,
+        status: "approved",
+      };
       data.sessionActive = true;
       const run = vi.fn().mockResolvedValue(true);
       render(
