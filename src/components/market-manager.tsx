@@ -736,25 +736,30 @@ export function MarketManager({ admin = false }: { admin?: boolean }) {
       )}
       {admin && (
         <details>
-          <summary>{t("Importación inicial OSM para revisar")}</summary>
+          <summary>{t("Importación del catálogo verificado")}</summary>
           <p>
             {t(
               "Se importan como propuestas. No se sobrescriben mercados existentes ni se publican automáticamente.",
             )}
           </p>
-          {initialMarkets.map((m) => (
-            <p key={m.data.source_key}>
-              <a href={m.data.source_url} target="_blank" rel="noreferrer">
-                {m.data.name} · {m.data.locality}
-              </a>
-            </p>
-          ))}
-          <small>© OpenStreetMap contributors · ODbL 1.0</small>
+          {initialMarkets
+            .filter((m) => m.review_status === "verified")
+            .map((m) => (
+              <p key={m.data.source_key}>
+                <a href={m.data.source_url} target="_blank" rel="noreferrer">
+                  {m.data.name} · {m.data.locality}
+                </a>
+              </p>
+            ))}
+          <small>
+            {t("Coordenadas OSM: © OpenStreetMap contributors · ODbL 1.0")}
+          </small>
           <button
             disabled={!config.marketsReady}
             onClick={async () => {
               try {
                 for (const m of initialMarkets) {
+                  if (m.review_status !== "verified") continue;
                   if (
                     state.data.markets.some(
                       (x) => x.source_key === m.data.source_key,
@@ -773,7 +778,7 @@ export function MarketManager({ admin = false }: { admin?: boolean }) {
               }
             }}
           >
-            {t("Importar propuestas OSM")}
+            {t("Importar catálogo como propuestas")}
           </button>
         </details>
       )}

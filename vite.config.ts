@@ -4,6 +4,11 @@ import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath, URL } from "node:url";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    "import.meta.env.UZTA_MARKET_CATALOG_REVIEW": JSON.stringify(
+      process.env.VERCEL_ENV === "preview",
+    ),
+  },
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   server: { host: "127.0.0.1", port: 5178, strictPort: true },
   envDir: "./config/offline",

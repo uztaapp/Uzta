@@ -451,6 +451,41 @@ try {
   await denied("completed reservation still cannot be cancelled", () =>
     as(buyer, "select public.uzta_cancel_order($1)", [oldId]),
   );
+  const catalogue = JSON.parse(
+    await readFile("src/data/markets-initial.json", "utf8"),
+  );
+  const verified = catalogue.filter(
+    (entry) => entry.review_status === "verified",
+  );
+  const countBeforeImport = await scalar(
+    "select count(*)::int from public.uzta_markets",
+  );
+  for (const entry of verified) {
+    await as(
+      admin,
+      "select public.uzta_save_market(null,$1::jsonb,$2::jsonb)",
+      [JSON.stringify(entry.data), JSON.stringify(entry.rules)],
+    );
+  }
+  assert.equal(
+    await scalar("select count(*)::int from public.uzta_markets"),
+    countBeforeImport + verified.length,
+  );
+  assert.equal(
+    await scalar(
+      "select count(*)::int from public.uzta_markets where source_key like 'iparralde/%' and status<>'pending'",
+    ),
+    0,
+  );
+  ok(
+    "entire verified research catalogue imports through existing RPC as proposals only",
+  );
+  await denied("catalogue source keys cannot be imported twice", () =>
+    as(admin, "select public.uzta_save_market(null,$1::jsonb,$2::jsonb)", [
+      JSON.stringify(verified[0].data),
+      JSON.stringify(verified[0].rules),
+    ]),
+  );
   console.log(
     `${checks} isolated market SQL/security/reservation checks passed. Production untouched.`,
   );

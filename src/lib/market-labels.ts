@@ -1,4 +1,33 @@
 export const marketLabels: Record<string, readonly [string, string, string]> = {
+  "Catálogo real en revisión: consulta sin reservas. Todavía no importado a Supabase.":
+    [
+      "Catalogue réel en révision : consultation sans réservation. Pas encore importé dans Supabase.",
+      "Real catalogue under review: browse without booking. Not yet imported into Supabase.",
+      "Benetako katalogoa berrikusten: kontsulta erreserbarik gabe. Oraindik ez da Supabasera inportatu.",
+    ],
+  "Fuentes y registros pendientes de revisión": [
+    "Sources et fiches à vérifier",
+    "Sources and records awaiting review",
+    "Berrikusteko iturriak eta erregistroak",
+  ],
+  "Importación del catálogo verificado": [
+    "Import du catalogue vérifié",
+    "Verified catalogue import",
+    "Egiaztatutako katalogoaren inportazioa",
+  ],
+  "Importar catálogo como propuestas": [
+    "Importer le catalogue comme propositions",
+    "Import catalogue as proposals",
+    "Katalogoa proposamen gisa inportatu",
+  ],
+  "Coordenadas OSM: © OpenStreetMap contributors · ODbL 1.0": [
+    "Coordonnées OSM : © OpenStreetMap contributors · ODbL 1.0",
+    "OSM coordinates: © OpenStreetMap contributors · ODbL 1.0",
+    "OSM koordenatuak: © OpenStreetMap contributors · ODbL 1.0",
+  ],
+  Confianza: ["Fiabilité", "Confidence", "Fidagarritasuna"],
+  Alta: ["Élevée", "High", "Handia"],
+  Media: ["Moyenne", "Medium", "Ertaina"],
   "Importación inicial OSM para revisar": [
     "Import OSM initial à vérifier",
     "Initial OSM import for review",

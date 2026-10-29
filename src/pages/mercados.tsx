@@ -1,4 +1,8 @@
-import initialMarkets from "../data/markets-initial.json";
+import {
+  marketCatalogue,
+  marketCatalogueData,
+  isCatalogueReview,
+} from "../lib/market-catalogue";
 import { lazy, Suspense, useState } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
@@ -26,6 +30,13 @@ const Map = lazy(() => import("../components/producer-map"));
 export function Mercados() {
   useLanguage();
   const state = useMarkets();
+  const catalogueReview = isCatalogueReview(
+    (import.meta.env.DEV && import.meta.env.MODE !== "test") ||
+      import.meta.env.UZTA_MARKET_CATALOG_REVIEW === true,
+    config.marketsReady,
+    state.error,
+  );
+  const data = catalogueReview ? marketCatalogueData() : state.data;
   const { data: app } = useUzta();
   const buyer = useBuyerLocation();
   const navigate = useNavigate();
@@ -43,19 +54,17 @@ export function Mercados() {
     nextMonth = new Date(Date.parse(first + "T12:00:00Z"));
   nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
   const last = addDays(nextMonth.toISOString().slice(0, 10), -1);
-  const all = marketOccurrences(state.data, today, addDays(today, 90)).filter(
-    (o) => {
-      if (o.day > today || !o.closes) return true;
-      try {
-        return (
-          Date.parse(pickupInstant(o.day, o.closes, o.market.timezone)) >
-          Date.now()
-        );
-      } catch {
-        return true;
-      }
-    },
-  );
+  const all = marketOccurrences(data, today, addDays(today, 90)).filter((o) => {
+    if (o.day > today || !o.closes) return true;
+    try {
+      return (
+        Date.parse(pickupInstant(o.day, o.closes, o.market.timezone)) >
+        Date.now()
+      );
+    } catch {
+      return true;
+    }
+  });
   const filtered = filterMarkets(all, {
     query,
     locality,
@@ -64,7 +73,7 @@ export function Mercados() {
     radius,
     position: buyer.point,
   });
-  const calendar = filterMarkets(marketOccurrences(state.data, first, last), {
+  const calendar = filterMarkets(marketOccurrences(data, first, last), {
     query,
     locality,
     category,
@@ -72,7 +81,7 @@ export function Mercados() {
     radius,
     position: buyer.point,
   });
-  const detail = state.data.markets.find(
+  const detail = data.markets.find(
     (m) => m.id === search.mercado && m.status === "published",
   );
   function open(m: Market) {
@@ -92,10 +101,20 @@ export function Mercados() {
   );
   const offset = (new Date(first + "T12:00:00Z").getUTCDay() + 6) % 7;
   const total = Number(last.slice(-2));
-  const shown =
-    view === "Calendario" && selectedDay
-      ? calendar.filter((o) => o.day === selectedDay)
+  const candidates =
+    view === "Calendario"
+      ? selectedDay
+        ? calendar.filter((o) => o.day === selectedDay)
+        : calendar
       : filtered;
+  // One upcoming occurrence per market; its detail retains all dates. Avoid
+  // mounting thousands of identical cards when importing a regional catalogue.
+  const seenMarkets = new Set<string>();
+  const shown = candidates.filter((o) => {
+    if (seenMarkets.has(o.market.id)) return false;
+    seenMarkets.add(o.market.id);
+    return true;
+  });
   const cards = (list: MarketOccurrence[]) =>
     list.map((o) => (
       <button
@@ -118,10 +137,10 @@ export function Mercados() {
           </span>
           <small>
             {t(
-              state.data.participants.some(
+              data.participants.some(
                 (p) =>
                   p.market_id === o.market.id &&
-                  marketPresence(state.data, p, o.day, o.day).length,
+                  marketPresence(data, p, o.day, o.day).length,
               )
                 ? "Con vendedores de UZTA"
                 : "Sin vendedores de UZTA inscritos",
@@ -132,7 +151,7 @@ export function Mercados() {
       </button>
     ));
   const unique = Array.from(new Set(filtered.map((o) => o.market.id))).map(
-    (id) => state.data.markets.find((m) => m.id === id)!,
+    (id) => data.markets.find((m) => m.id === id)!,
   );
   const entries = unique
     .filter((m) => m.latitude !== null && m.longitude !== null)
@@ -159,6 +178,13 @@ export function Mercados() {
         <p className="market-notice" role="status">
           {t(
             "Sección preparada. La base de mercados está pendiente de revisión y activación.",
+          )}
+        </p>
+      )}
+      {catalogueReview && (
+        <p className="market-notice" role="status">
+          {t(
+            "Catálogo real en revisión: consulta sin reservas. Todavía no importado a Supabase.",
           )}
         </p>
       )}
@@ -191,15 +217,39 @@ export function Mercados() {
                 : t("Pendiente")}
             </p>
             <small>{detail.source_license}</small>
+            {catalogueReview &&
+              (() => {
+                const evidence = marketCatalogue.find(
+                  (m) => m.catalog_id === detail.id,
+                );
+                return evidence ? (
+                  <aside>
+                    <p>
+                      {t("Confianza")}:{" "}
+                      {t(evidence.confidence === "high" ? "Alta" : "Media")}
+                    </p>
+                    {evidence.review_note && <p>{evidence.review_note}</p>}
+                    {evidence.source_urls
+                      .filter((s) => s.url !== detail.source_url)
+                      .map((s) => (
+                        <p key={s.url}>
+                          <a href={s.url} target="_blank" rel="noreferrer">
+                            {t("Fuente de información")}:{" "}
+                            {new URL(s.url).hostname}
+                          </a>
+                        </p>
+                      ))}
+                  </aside>
+                ) : null;
+              })()}
             <h3>{t("Próximas fechas")}</h3>
             {cards(all.filter((o) => o.market.id === detail.id).slice(0, 12))}
             <h3>{t("Productores y artesanos participantes")}</h3>
-            {state.data.participants
+            {data.participants
               .filter(
                 (p) =>
                   p.market_id === detail.id &&
-                  marketPresence(state.data, p, today, addDays(today, 90))
-                    .length,
+                  marketPresence(data, p, today, addDays(today, 90)).length,
               )
               .map((p) => {
                 const farm = app.farms.find((f) => f.id === p.producer_id);
@@ -218,12 +268,7 @@ export function Mercados() {
                         </small>
                       </Link>
                       <small>
-                        {marketPresence(
-                          state.data,
-                          p,
-                          today,
-                          addDays(today, 30),
-                        )
+                        {marketPresence(data, p, today, addDays(today, 30))
                           .slice(0, 3)
                           .map(
                             (o) =>
@@ -252,7 +297,7 @@ export function Mercados() {
                   </article>
                 );
               })}
-            {!state.data.participants.some(
+            {!data.participants.some(
               (p) => p.market_id === detail.id && p.active,
             ) && (
               <p>
@@ -415,7 +460,7 @@ export function Mercados() {
                     radius={radius}
                     kind="markets"
                     onSelect={(e) =>
-                      open(state.data.markets.find((m) => m.id === e.farm.id)!)
+                      open(data.markets.find((m) => m.id === e.farm.id)!)
                     }
                     onGroup={(group) => {
                       setQuery("");
@@ -448,17 +493,22 @@ export function Mercados() {
           )}
         </>
       )}
-      {!config.marketsReady && (
+      {catalogueReview && (
         <details>
-          <summary>{t("Fuentes iniciales verificadas")}</summary>
-          {initialMarkets.map((m) => (
-            <p key={m.data.source_key}>
-              <a href={m.data.source_url} target="_blank" rel="noreferrer">
-                {m.data.name} · {m.data.locality}
-              </a>
-            </p>
-          ))}
-          <small>© OpenStreetMap contributors · ODbL 1.0</small>
+          <summary>{t("Fuentes y registros pendientes de revisión")}</summary>
+          {marketCatalogue
+            .filter((m) => m.review_status !== "verified")
+            .map((m) => (
+              <p key={m.data.source_key}>
+                <a href={m.data.source_url} target="_blank" rel="noreferrer">
+                  {m.data.name} · {m.data.locality}
+                </a>
+                <small>{m.review_note}</small>
+              </p>
+            ))}
+          <small>
+            {t("Coordenadas OSM: © OpenStreetMap contributors · ODbL 1.0")}
+          </small>
         </details>
       )}
     </div>

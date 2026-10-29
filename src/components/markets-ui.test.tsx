@@ -20,7 +20,17 @@ const mocked = vi.hoisted(() => ({
   data: null as MarketData | null,
   error: "",
   loading: false,
+  catalogueReview: false,
 }));
+vi.mock("../lib/market-catalogue", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../lib/market-catalogue")>();
+  return {
+    ...actual,
+    isCatalogueReview: (...args: Parameters<typeof actual.isCatalogueReview>) =>
+      mocked.catalogueReview || actual.isCatalogueReview(...args),
+  };
+});
 vi.mock("./market-data", () => ({
   useMarkets: () => ({
     ...mocked,
@@ -33,9 +43,45 @@ vi.mock("./producer-map", () => ({
 }));
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
   setLanguage("es");
   mocked.data = null;
   mocked.error = "";
+  mocked.catalogueReview = false;
+});
+test("preview renders the verified real catalogue in calendar, list and existing map without sellers", async () => {
+  mocked.catalogueReview = true;
+  await open();
+  expect(screen.getByText(/Catálogo real en revisión/)).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Mes"), {
+    target: { value: "2026-11" },
+  });
+  const seventh = screen
+    .getAllByRole("button", { name: /Con mercados/ })
+    .find((b) => b.textContent?.startsWith("7"))!;
+  fireEvent.click(seventh);
+  expect(
+    screen.getByRole("button", { name: /Marché de la Basse-Ville/ }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /Marché de la Haute-Ville/ }),
+  ).toBeNull();
+  fireEvent.click(screen.getByRole("tab", { name: "Lista" }));
+  expect(
+    screen.getAllByRole("button", { name: /Marché de Quintaou/ }),
+  ).toHaveLength(1);
+  fireEvent.click(screen.getByRole("button", { name: /Marché de Quintaou/ }));
+  await screen.findByRole("heading", {
+    name: "Productores y artesanos participantes",
+  });
+  expect(
+    screen.getByText(
+      "Este mercado todavía no tiene vendedores de UZTA inscritos.",
+    ),
+  ).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("link", { name: "Volver" }));
+  fireEvent.click(await screen.findByRole("tab", { name: "Mapa" }));
+  expect(await screen.findByLabelText("Map markets")).toBeInTheDocument();
 });
 const id = (n: number) =>
   `60000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
