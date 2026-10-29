@@ -401,3 +401,4 @@
 .dashboard-order > .photo {
   max-width: 48px;
 }
+.producer-dashboard a.dashboard-add { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; min-height: 44px; line-height: 1.2; background: #245c20; color: white; }.producer-dashboard a.dashboard-add > svg { flex-shrink: 0; }
