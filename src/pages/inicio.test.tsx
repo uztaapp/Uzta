@@ -92,12 +92,12 @@ test("a known inherited sample is not mistaken for a real catalogue or a connect
 test("home carousel omits Others and preserves category filtering", () => {
   home("", true);
   expect(
-    screen.queryByRole("button", { name: "Otros", exact: true }),
+    screen.queryByRole("button", { name: "Otros" }),
   ).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Frutas", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Frutas" }));
   expect(screen.queryByText("Producto registrado")).toBeNull();
   fireEvent.click(
-    screen.getByRole("button", { name: "Verduras", exact: true }),
+    screen.getByRole("button", { name: "Verduras" }),
   );
   expect(screen.getByText("Producto registrado")).toBeInTheDocument();
 });
