@@ -10,7 +10,15 @@ export const categories = [
   "Frutas",
   "Huevos",
   "Lácteos",
+  "Pan",
+  "Carne",
+  "Aves",
   "Miel",
+  "Aceite",
+  "Vino",
+  "Conservas",
+  "Plantas",
+  "Flores",
   "Otros",
 ] as const;
 const crop = z.array(z.number().finite()).length(4);

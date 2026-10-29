@@ -20,7 +20,7 @@ function ExploreRoute() {
     </Suspense>
   );
 }
-import { NotificationBell } from "./components/notification-bell";
+import { HeaderLayout } from "./components/app-header";
 import { Inicio } from "./pages/inicio";
 import { Productor } from "./pages/productor";
 import { Cesta } from "./pages/cesta";
@@ -46,13 +46,14 @@ export function Shell() {
         <a className="skip" href="#contenido">
           Saltar al contenido
         </a>
-        {pathname !== "/explorar" && <NotificationBell />}
-        <main id="contenido">
-          <AppRecovery key={pathname}>
-            <Outlet />
-          </AppRecovery>
-        </main>
-        <BottomNavigation />
+        <HeaderLayout>
+          <main id="contenido">
+            <AppRecovery key={pathname}>
+              <Outlet />
+            </AppRecovery>
+          </main>
+          <BottomNavigation />
+        </HeaderLayout>
       </div>
     </DemoProvider>
   );

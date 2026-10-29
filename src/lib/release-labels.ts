@@ -1,5 +1,14 @@
 export const releaseLabels: Record<string, readonly [string, string, string]> =
   {
+    "Cabecera de UZTA": ["En-tête UZTA", "UZTA header", "UZTA goiburua"],
+    Pan: ["Pain", "Bread", "Ogia"],
+    Carne: ["Viande", "Meat", "Haragia"],
+    Aves: ["Volaille", "Poultry", "Hegaztiak"],
+    Aceite: ["Huile", "Oil", "Olioa"],
+    Vino: ["Vin", "Wine", "Ardoa"],
+    Conservas: ["Conserves", "Preserves", "Kontserbak"],
+    Plantas: ["Plantes", "Plants", "Landareak"],
+    Flores: ["Fleurs", "Flowers", "Loreak"],
     "Volver al perfil": [
       "Retour au profil",
       "Back to profile",

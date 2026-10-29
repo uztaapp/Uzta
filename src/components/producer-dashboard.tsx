@@ -1,4 +1,3 @@
-import { BackLink } from "./back-link";
 import { canManageProducer } from "../lib/producer-approval";
 import { Link } from "@tanstack/react-router";
 import {
@@ -15,7 +14,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useUzta } from "../app-context";
-import { Brand } from "./brand";
 import { StoreCover } from "./store-cover";
 import { Photo } from "./presentation";
 import { euro as money } from "../lib/local-model";
@@ -97,7 +95,6 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
   return (
     <div className="producer-dashboard">
       <aside className="dashboard-sidebar">
-        <Brand />
         {items.map(([label, key, Icon]) => (
           <div key={key}>{destination(label, key, Icon)}</div>
         ))}
@@ -111,7 +108,6 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
         </Link>
       </aside>
       <div className="dashboard-content">
-        {section === "panel" && <BackLink />}
         <header className="dashboard-header">
           <div>
             <h1>
@@ -130,7 +126,6 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
         </header>
         {section !== "panel" ? (
           <>
-            <BackLink to="/perfil" section="panel" label="Volver al panel" />
             <Gestion
               key={section}
               section={section === "nuevo" ? "productos" : section}
@@ -140,7 +135,6 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
         ) : (
           <>
             <section className="dashboard-store-mobile">
-              <Brand />
               <div className="dashboard-store-title">
                 <h2>{t("Mi tienda")}</h2>
                 <Link to="/productor" search={{ tienda: farm.id }}>

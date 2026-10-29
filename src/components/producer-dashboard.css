@@ -17,10 +17,6 @@
   gap: 8px;
   border-right: 1px solid #e8e7df;
 }
-.dashboard-sidebar .uzta-brand {
-  margin: 0 auto 24px;
-  width: 128px;
-}
 .dashboard-sidebar a,
 .dashboard-unavailable {
   display: flex;
@@ -284,11 +280,6 @@
   .dashboard-store-mobile {
     display: block;
   }
-  .dashboard-store-mobile > .uzta-brand {
-    width: 128px;
-    height: 128px;
-    margin: 0 auto 12px;
-  }
   .dashboard-store-title {
     display: flex;
     justify-content: space-between;
@@ -416,10 +407,6 @@
 }
 .producer-dashboard a.dashboard-add > svg {
   flex-shrink: 0;
-}
-
-.dashboard-header {
-  padding-right: 44px;
 }
 
 @media (max-width: 760px) {

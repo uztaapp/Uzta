@@ -1,4 +1,3 @@
-import { BackLink } from "../components/back-link";
 import { madridToUtc } from "../lib/cloud-data";
 import { canManageProducer } from "../lib/producer-approval";
 import cloudConfig from "../../config/uzta-cloud.public.json";
@@ -50,7 +49,6 @@ export function Pedidos() {
   return (
     <div className="uzta-orders">
       <div className="page-title">
-        <BackLink compact />
         <h1>{t("Mis pedidos")}</h1>
       </div>
       <div className="segmented" role="tablist" aria-label="Tipo de pedidos">

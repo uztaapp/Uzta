@@ -116,33 +116,7 @@ main {
   position: relative;
   margin: 4px 0 23px;
 }
-.basket-shortcut {
-  position: absolute;
-  right: 6px;
-  top: 10px;
-  color: #2e4725;
-}
-.basket-shortcut svg {
-  width: 29px;
-  height: 29px;
-}
-.basket-shortcut span {
-  position: absolute;
-  right: -5px;
-  top: -8px;
-  background: #de4d2a;
-  color: white;
-  border-radius: 50%;
-  font-size: 11px;
-  padding: 2px 5px;
-}
-.location {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 14px;
-  margin: 13px 0;
-}
+
 .search {
   display: flex;
   gap: 10px;

@@ -1,3 +1,4 @@
+import { HeaderLoading } from "./components/app-header";
 import {
   useState,
   useRef,
@@ -44,13 +45,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   return mode === "demo" ? (
     <LocalDemoProvider switchMode={switchMode}>{children}</LocalDemoProvider>
   ) : (
-    <Suspense
-      fallback={
-        <p role="status" className="loading-status">
-          {t("Abriendo UZTA…")}
-        </p>
-      }
-    >
+    <Suspense fallback={<HeaderLoading />}>
       <CloudProvider switchMode={switchMode}>{children}</CloudProvider>
     </Suspense>
   );

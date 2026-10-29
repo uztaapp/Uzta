@@ -1,4 +1,3 @@
-import { BackLink } from "../components/back-link";
 import { currentLanguage, useLanguage } from "../lib/language";
 import { privacyCopy } from "../lib/privacy-copy";
 import legal from "../../config/uzta-legal.public.json";
@@ -13,7 +12,6 @@ export function Privacidad({ preview = false }: { preview?: boolean }) {
   const copy = privacyCopy[currentLanguage()];
   return (
     <article className="uzta-privacy">
-      <BackLink to="/perfil" section="cuenta" label="Volver al perfil" />
       <h1>{copy.title}</h1>
       <LanguageSelector />
       {!legal.privacyApproved && !preview ? (

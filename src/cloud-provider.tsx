@@ -329,7 +329,7 @@ export function CloudProvider({
         </div>
       ) : null}
       {busy ? (
-        <p role="status" className="loading-status">
+        <p role="status" className="loading-status cloud-loading-status">
           Actualizando UZTA…
         </p>
       ) : null}

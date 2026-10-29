@@ -1,4 +1,3 @@
-import { BackLink } from "./back-link";
 import { ProducerApplication } from "./producer-application";
 import { canManageProducer } from "../lib/producer-approval";
 import { t, useLanguage } from "../lib/language";
@@ -40,7 +39,6 @@ export function CreateStore() {
     return <ProducerApplication />;
   return (
     <section className="management">
-      <BackLink to="/perfil" section="cuenta" label="Volver al perfil" />
       <h2>{t("Tu tienda de productor")}</h2>
       <p>
         {t(

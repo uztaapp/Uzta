@@ -13,7 +13,15 @@ export type SheetIconName =
   | "eggs"
   | "dairy"
   | "honey"
-  | "other";
+  | "other"
+  | "bread"
+  | "meat"
+  | "poultry"
+  | "oil"
+  | "wine"
+  | "preserves"
+  | "plants"
+  | "flowers";
 export function SheetIcon({ name }: { name: SheetIconName }) {
   return (
     <img

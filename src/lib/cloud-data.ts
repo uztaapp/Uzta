@@ -13,6 +13,7 @@ import {
   photoPath,
 } from "./cloud-photos";
 import {
+  categories,
   seedStore,
   futureSlot,
   farmSchema,
@@ -169,14 +170,7 @@ const productRow = z.object({
   name: z.string(),
   price_cents: z.number().int().positive(),
   unit: z.enum(["kg", "docena", "unidad"]),
-  category: z.enum([
-    "Verduras",
-    "Frutas",
-    "Huevos",
-    "Lácteos",
-    "Miel",
-    "Otros",
-  ]),
+  category: z.enum(categories),
   stock_units: z.number().int().nonnegative(),
   availability: z.enum(["available", "upcoming", "sold_out"]).optional(),
   expected_available_on: z.string().date().nullable().optional(),

@@ -1,4 +1,4 @@
-import { BackLink } from "../components/back-link";
+import { HeaderActions } from "../components/app-header";
 import {
   ProducerApplication,
   ProducerRequestsAdmin,
@@ -34,7 +34,6 @@ import {
   HelpCircle,
   LogOut,
   ChevronRight,
-  ArrowLeft,
 } from "lucide-react";
 import { Photo, Modal, useDemo } from "../design";
 import { profileSchema } from "../lib/local-model";
@@ -129,7 +128,6 @@ export function Perfil() {
   )
     return (
       <>
-        <BackLink to="/perfil" section="cuenta" label="Volver al perfil" />
         <ProducerApplication />
       </>
     );
@@ -153,9 +151,6 @@ export function Perfil() {
     return (
       <div className="uzta-profile">
         <div className="page-title">
-          <Link to="/perfil" aria-label={t("Volver al perfil")}>
-            <ArrowLeft />
-          </Link>
           <h1>
             {t(search.apartado === "ventas" ? "Mis ventas" : "Comisiones")}
           </h1>
@@ -167,9 +162,6 @@ export function Perfil() {
     return (
       <div className="uzta-profile">
         <div className="page-title">
-          <Link to="/perfil" aria-label={t("Volver al perfil")}>
-            <ArrowLeft />
-          </Link>
           <h1>{t("Mis favoritos")}</h1>
         </div>
         <MyFavorites />
@@ -179,9 +171,6 @@ export function Perfil() {
     return (
       <>
         <div className="page-title">
-          <Link to="/perfil" aria-label={t("Volver al perfil")}>
-            <ArrowLeft />
-          </Link>
           <h1>{t(labels[search.apartado])}</h1>
         </div>
         <Gestion key={search.apartado} section={search.apartado} />
@@ -190,15 +179,16 @@ export function Perfil() {
   return (
     <div className="uzta-profile">
       <div className="page-title">
-        <BackLink compact />
         <h1>{t("Mi perfil")}</h1>
-        <button
-          className="profile-settings"
-          aria-label={t("Editar perfil")}
-          onClick={() => setEditing(true)}
-        >
-          <Settings />
-        </button>
+        <HeaderActions>
+          <button
+            className="profile-settings"
+            aria-label={t("Editar perfil")}
+            onClick={() => setEditing(true)}
+          >
+            <Settings />
+          </button>
+        </HeaderActions>
       </div>
       <section className="profile-card">
         <div className="profile-person">

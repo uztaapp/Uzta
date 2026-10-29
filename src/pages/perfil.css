@@ -16,20 +16,6 @@
   font-weight: 750;
   letter-spacing: -0.6px;
 }
-.uzta-profile .profile-settings {
-  display: grid;
-  place-items: center;
-  position: absolute;
-  right: -6px;
-  width: 40px;
-  height: 40px;
-  color: #171b15;
-}
-.uzta-profile .profile-settings svg {
-  width: 23px;
-  height: 23px;
-  stroke-width: 1.6;
-}
 .uzta-profile .profile-card {
   padding: 16px 14px 0;
   background: #fff;

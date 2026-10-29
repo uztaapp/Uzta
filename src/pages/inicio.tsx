@@ -18,7 +18,6 @@ import {
 } from "../lib/availability";
 import { FavoriteButton } from "../components/favorites";
 import "./inicio.css";
-import { Brand } from "../components/brand";
 import { t, useLanguage } from "../lib/language";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
@@ -97,18 +96,6 @@ export function Inicio() {
   );
   return (
     <div className="uzta-home">
-      <div className="home-heading">
-        <div className="logo">
-          <Brand />
-          <small>{t("Del productor a tu mesa")}</small>
-        </div>
-        <Link to="/cesta" aria-label="Abrir cesta" className="basket-shortcut">
-          <SheetIcon name="basket" />
-          <span>
-            {Object.values(data.quantities).filter((q) => q > 0).length}
-          </span>
-        </Link>
-      </div>
       <h1 className="sr-only">{t("Inicio")}</h1>
       <button
         className="home-location"
@@ -210,13 +197,31 @@ export function Inicio() {
           aria-label="Categorías"
           ref={categoriesRef}
           onScroll={updateCategoryEdges}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+              e.preventDefault();
+              categoriesRef.current?.scrollBy({
+                left: e.key === "ArrowRight" ? 160 : -160,
+                behavior: "instant",
+              });
+            }
+          }}
         >
           {[
             ["vegetables", "Verduras"],
             ["fruit", "Frutas"],
             ["eggs", "Huevos"],
             ["dairy", "Lácteos"],
+            ["bread", "Pan"],
+            ["meat", "Carne"],
+            ["poultry", "Aves"],
             ["honey", "Miel"],
+            ["oil", "Aceite"],
+            ["wine", "Vino"],
+            ["preserves", "Conservas"],
+            ["plants", "Plantas"],
+            ["flowers", "Flores"],
           ].map(([icon, label]) => (
             <button
               key={label}

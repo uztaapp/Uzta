@@ -7,7 +7,7 @@ import "./cesta.css";
 import { t, useLanguage } from "../lib/language";
 import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Trash2, Minus, Plus, CalendarDays } from "lucide-react";
+import { Trash2, Minus, Plus, CalendarDays } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 import { pickupDate } from "../lib/pickup-date";
 import { PickupLocation } from "../components/pickup-location";
@@ -126,9 +126,6 @@ export function Cesta() {
   return (
     <div className="uzta-basket">
       <div className="page-title">
-        <Link to="/" aria-label={t("Volver al inicio")}>
-          <ArrowLeft />
-        </Link>
         <h1>{t("Cesta de compra")}</h1>
       </div>
       <ol className="checkout-steps" aria-label={t("Pasos de la reserva")}>

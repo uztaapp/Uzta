@@ -1,3 +1,4 @@
+import { HeaderActions } from "../components/app-header";
 import { StoreCover } from "../components/store-cover";
 import {
   SellerReviews,
@@ -13,7 +14,6 @@ import { t, useLanguage } from "../lib/language";
 import { useState } from "react";
 import { Link, useSearch } from "@tanstack/react-router";
 import {
-  ArrowLeft,
   MapPin,
   Star,
   ShoppingBasket,
@@ -55,7 +55,6 @@ export function Productor() {
             ? t("Productor no encontrado")
             : t("Aún no hay productores publicados")}
         </h1>
-        <Link to="/">{t("Volver al inicio")}</Link>
       </div>
     );
   const tabs = [
@@ -66,15 +65,7 @@ export function Productor() {
   ] as const;
   return (
     <div className="uzta-producer">
-      <div className="producer-hero">
-        <StoreCover
-          farm={farm}
-          crop={mode === "demo" ? [480, 105, 170, 110] : [0, 0, 0, 0]}
-          label={`${mode === "demo" ? "Explotación de ejemplo" : "Explotación"}: ${farm.name}`}
-        />
-        <Link className="hero-back" to="/" aria-label={t("Volver al inicio")}>
-          <ArrowLeft />
-        </Link>
+      <HeaderActions>
         <FavoriteButton
           id={farm.id}
           name={farm.name}
@@ -82,6 +73,13 @@ export function Productor() {
           className="producer-favorite"
         />
         <ShareStore id={farm.id} name={farm.name} demo={mode === "demo"} />
+      </HeaderActions>
+      <div className="producer-hero">
+        <StoreCover
+          farm={farm}
+          crop={mode === "demo" ? [480, 105, 170, 110] : [0, 0, 0, 0]}
+          label={`${mode === "demo" ? "Explotación de ejemplo" : "Explotación"}: ${farm.name}`}
+        />
       </div>
       <div className="producer-intro">
         <Photo

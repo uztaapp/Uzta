@@ -1,0 +1,83 @@
+/* One geometry for every standard page; Explore keeps its map overlay. */
+.app {
+  --app-header-top: 12px;
+  --app-header-row: 44px;
+  --app-header-gap: 4px;
+  --app-header-logo: 128px;
+  --app-header-caption: 18px;
+  --app-header-bottom: 12px;
+}
+.app-header {
+  padding-top: max(var(--app-header-top), env(safe-area-inset-top));
+  padding-bottom: var(--app-header-bottom);
+  color: #31552b;
+}
+.app-header-navigation {
+  height: var(--app-header-row);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.app-header-back {
+  min-width: var(--app-header-row);
+}
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.app-header-actions > button {
+  position: static;
+  display: grid;
+  place-items: center;
+  width: var(--app-header-row);
+  height: var(--app-header-row);
+  min-height: var(--app-header-row);
+  padding: 0;
+  color: #31552b;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+}
+.app-header-actions > button:hover {
+  background: #eaf1e4;
+}
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--app-header-gap);
+  margin-top: var(--app-header-gap);
+}
+.app-header .uzta-brand {
+  width: var(--app-header-logo);
+  height: var(--app-header-logo);
+  max-width: none;
+  margin: 0;
+  object-fit: contain;
+}
+.app-header-brand small {
+  height: var(--app-header-caption);
+  line-height: var(--app-header-caption);
+  font-size: 11px;
+  color: #171b15;
+}
+.app:has(> .app-header) > main {
+  padding-top: 0;
+}
+.app:has(.producer-dashboard) > .app-header {
+  padding-inline: 20px;
+}
+
+/* Background refresh announcements never push the shared header down. */
+.cloud-loading-status {
+  position: fixed;
+  z-index: 25;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  border-radius: 10px;
+  pointer-events: none;
+}
