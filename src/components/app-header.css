@@ -125,7 +125,7 @@
 .app:has(> .app-header) > main {
   padding-bottom: calc(110px + env(safe-area-inset-bottom));
 }
-/* All sections share fixed navigation geometry; the selected item has a shape and underline. */
+/* All sections share fixed navigation geometry; the existing circle identifies the selected item. */
 .app > nav.bottom-navigation {
   padding: 8px 8px calc(10px + env(safe-area-inset-bottom));
   background: #faf9f5f5;
@@ -144,8 +144,6 @@
 }
 .app > nav.bottom-navigation a.active {
   color: #31552b;
-  background: #eaf1e4;
-  border-bottom-color: #31552b;
 }
 .app > nav.bottom-navigation a .nav-icon {
   flex-shrink: 0;
