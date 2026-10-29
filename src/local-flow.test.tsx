@@ -63,7 +63,7 @@ test("manual locality filters the nearby catalogue without storing coordinates",
 });
 
 test("profile help explains the existing buyer and producer flows without promising payments", async () => {
-  await open("/perfil");
+  await open("/perfil?apartado=cuenta");
   fireEvent.click(screen.getByRole("button", { name: /Ayuda y soporte/ }));
   const dialog = await screen.findByRole("dialog");
   expect(dialog).toHaveTextContent("Cómo usar UZTA");
@@ -190,7 +190,7 @@ test("a reservation survives a reload and can be marked collected in the produce
   expect(screen.getByRole("dialog")).toHaveTextContent("Completado");
 });
 test("profile edits and favorites persist independently of navigation", async () => {
-  await open("/perfil");
+  await open("/perfil?apartado=cuenta");
   fireEvent.click(screen.getByRole("button", { name: "Editar perfil" }));
   fireEvent.change(screen.getByLabelText("Nombre"), {
     target: { value: "Perfil de prueba" },

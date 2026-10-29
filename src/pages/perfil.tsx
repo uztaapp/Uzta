@@ -1,3 +1,4 @@
+import { ProducerDashboard } from "../components/producer-dashboard";
 import { privacyCopy } from "../lib/privacy-copy";
 import {
   useBuyerLocation,
@@ -104,6 +105,19 @@ export function Perfil() {
         </button>
       </div>
     );
+  if (
+    managedFarmId &&
+    (!search.apartado ||
+      [
+        "panel",
+        "nuevo",
+        "productos",
+        "tienda",
+        "horarios",
+        "estadisticas",
+      ].includes(search.apartado))
+  )
+    return <ProducerDashboard section={search.apartado ?? "panel"} />;
   if (search.apartado === "ventas" || search.apartado === "comisiones")
     return (
       <div className="uzta-profile">

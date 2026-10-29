@@ -1,5 +1,96 @@
 export const releaseLabels: Record<string, readonly [string, string, string]> =
   {
+    "Buenos días": ["Bonjour", "Good morning", "Egun on"],
+    "Buenas tardes": ["Bon après-midi", "Good afternoon", "Arratsalde on"],
+    "Buenas noches": ["Bonsoir", "Good evening", "Gabon"],
+    "Aquí tienes un resumen de tu actividad": [
+      "Voici un résumé de votre activité",
+      "Here is your activity summary",
+      "Hona hemen zure jardueraren laburpena",
+    ],
+    "Productos activos": [
+      "Produits actifs",
+      "Active products",
+      "Produktu aktiboak",
+    ],
+    "Pedidos pendientes": [
+      "Commandes en attente",
+      "Pending orders",
+      "Zain dauden eskaerak",
+    ],
+    "Mensajes nuevos": ["Nouveaux messages", "New messages", "Mezu berriak"],
+    "Visitas esta semana": [
+      "Visites cette semaine",
+      "Visits this week",
+      "Aste honetako bisitak",
+    ],
+    "No disponible todavía": [
+      "Pas encore disponible",
+      "Not available yet",
+      "Oraindik ez dago erabilgarri",
+    ],
+    Mensajes: ["Messages", "Messages", "Mezuak"],
+    Calendario: ["Calendrier", "Calendar", "Egutegia"],
+    Ajustes: ["Paramètres", "Settings", "Ezarpenak"],
+    "Ver mi perfil público": [
+      "Voir mon profil public",
+      "View my public profile",
+      "Ikusi nire profil publikoa",
+    ],
+    "Volver al panel": [
+      "Retour au tableau de bord",
+      "Back to dashboard",
+      "Itzuli panelera",
+    ],
+    "Ver perfil": ["Voir le profil", "View profile", "Ikusi profila"],
+    "Cambiar portada": [
+      "Changer la couverture",
+      "Change cover",
+      "Aldatu azala",
+    ],
+    "Resumen de actividad": [
+      "Résumé de l’activité",
+      "Activity summary",
+      "Jardueraren laburpena",
+    ],
+    "Gestión rápida": [
+      "Gestion rapide",
+      "Quick management",
+      "Kudeaketa azkarra",
+    ],
+    "Ver pedidos": ["Voir les commandes", "View orders", "Ikusi eskaerak"],
+    "Ver mensajes": ["Voir les messages", "View messages", "Ikusi mezuak"],
+    "Actualizar disponibilidad": [
+      "Mettre à jour la disponibilité",
+      "Update availability",
+      "Eguneratu erabilgarritasuna",
+    ],
+    "Tu tienda siempre al día": [
+      "Votre boutique toujours à jour",
+      "Keep your store up to date",
+      "Zure denda beti eguneratuta",
+    ],
+    "Añade productos y gestiona tus pedidos desde un mismo lugar.": [
+      "Ajoutez vos produits et gérez vos commandes au même endroit.",
+      "Add products and manage orders in one place.",
+      "Gehitu produktuak eta kudeatu eskaerak toki berean.",
+    ],
+    "Tus productos": ["Vos produits", "Your products", "Zure produktuak"],
+    "Pedidos recientes": [
+      "Commandes récentes",
+      "Recent orders",
+      "Azken eskaerak",
+    ],
+    "Todavía no tienes productos publicados.": [
+      "Vous n’avez pas encore de produits publiés.",
+      "You have no published products yet.",
+      "Oraindik ez duzu produkturik argitaratu.",
+    ],
+    "Publicar producto": [
+      "Publier le produit",
+      "Publish product",
+      "Argitaratu produktua",
+    ],
     "Cerca de": ["Près de", "Near", "Inguruan:"],
     "Ubicación aproximada": [
       "Position approximative",

@@ -23,7 +23,13 @@ import { sellerPosition, type SellerType } from "../lib/sellers";
 const StoreLocationPicker = lazy(
   () => import("../components/store-location-picker"),
 );
-export function Gestion({ section }: { section: string }) {
+export function Gestion({
+  section,
+  create = false,
+}: {
+  section: string;
+  create?: boolean;
+}) {
   useLanguage();
   const { data, run, show, mode, busy, managedFarmId } = useDemo();
   const farm = data.farms.find((f) => f.id === managedFarmId)!;
@@ -36,6 +42,21 @@ export function Gestion({ section }: { section: string }) {
     [farm?.id, farm?.sellerType],
   );
   const [edit, setEdit] = useState<Product | null>(null);
+  useEffect(() => {
+    if (create && farm)
+      setEdit({
+        id: crypto.randomUUID(),
+        farmId: farm.id,
+        name: "",
+        priceCents: 100,
+        unit: "kg",
+        stock: 0,
+        category: "Verduras",
+        crop: [0, 0, 0, 0],
+        featured: true,
+        active: true,
+      });
+  }, [create, farm?.id]);
   const [saved, setSaved] = useState("");
   const [error, setError] = useState("");
   const [cover, setCover] = useState<string | null | undefined>(undefined);
@@ -611,7 +632,11 @@ export function Gestion({ section }: { section: string }) {
               )}
               {error ? <p role="alert">{t(error)}</p> : null}
               <button className="primary" disabled={photoPending}>
-                {t("Guardar producto")}
+                {t(
+                  data.products.some((p) => p.id === edit?.id)
+                    ? "Guardar producto"
+                    : "Publicar producto",
+                )}
               </button>
             </fieldset>
           </form>
