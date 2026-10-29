@@ -20,6 +20,7 @@ import {
   Info,
   Clock,
   Plus,
+  Minus,
   Heart,
   Package,
   Leaf,
@@ -184,19 +185,49 @@ export function Productor() {
                     </div>
                     <div className="product-actions">
                       <FavoriteButton id={p.id} name={p.name} />
-                      <button
-                        className="add"
-                        disabled={busy || !canReserve(p)}
-                        aria-label={`Añadir ${p.name} a la cesta`}
-                        onClick={async () => {
-                          if (
-                            await run({ type: "quantity", id: p.id, delta: 1 })
-                          )
-                            setAdded(`${p.name} añadido a la cesta.`);
-                        }}
+                      <div
+                        className="product-quantity"
+                        role="group"
+                        aria-label={`${t("Cantidad de")} ${p.name}`}
                       >
-                        <Plus size={20} />
-                      </button>
+                        <button
+                          type="button"
+                          disabled={busy || !(data.quantities[p.id] > 0)}
+                          aria-label={`${t("Reducir")} ${p.name}`}
+                          onClick={() =>
+                            void run({ type: "quantity", id: p.id, delta: -1 })
+                          }
+                        >
+                          <Minus size={16} aria-hidden="true" />
+                        </button>
+                        <output
+                          aria-live="polite"
+                          aria-label={`${t("Cantidad de")} ${p.name}`}
+                        >
+                          {data.quantities[p.id] ?? 0}
+                        </output>
+                        <button
+                          type="button"
+                          disabled={
+                            busy ||
+                            !canReserve(p) ||
+                            (data.quantities[p.id] ?? 0) >= p.stock
+                          }
+                          aria-label={`${t("Aumentar")} ${p.name}`}
+                          onClick={async () => {
+                            if (
+                              await run({
+                                type: "quantity",
+                                id: p.id,
+                                delta: 1,
+                              })
+                            )
+                              setAdded(`${p.name} añadido a la cesta.`);
+                          }}
+                        >
+                          <Plus size={16} aria-hidden="true" />
+                        </button>
+                      </div>
                     </div>
                   </article>
                 ))}

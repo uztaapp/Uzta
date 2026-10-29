@@ -122,7 +122,7 @@ test("producer product edits affect the catalogue and survive navigation", async
   cleanup();
   await open("/productor");
   expect(
-    screen.getByRole("button", { name: "Añadir Tomates a la cesta" }),
+    screen.getByRole("button", { name: "Aumentar Tomates" }),
   ).toBeDisabled();
 });
 test("pickup configuration appears in checkout without inventing availability", async () => {
@@ -250,4 +250,30 @@ test("dashboard publish shortcut opens the existing complete form", async () => 
   expect(
     screen.getByRole("button", { name: "Publicar producto" }),
   ).toBeInTheDocument();
+});
+
+test("product quantity selector mirrors the basket and stops at available stock", async () => {
+  const data = seedStore();
+  data.quantities = {};
+  data.products.find((p) => p.id === "tomates")!.stock = 1;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  await open("/productor?tienda=urki");
+  const plus = screen.getByRole("button", { name: "Aumentar Tomates" });
+  expect(
+    screen.getByRole("button", { name: "Reducir Tomates" }),
+  ).toBeDisabled();
+  fireEvent.click(plus);
+  await vi.waitFor(() =>
+    expect(
+      screen.getByLabelText("Cantidad de Tomates", { selector: "output" }),
+    ).toHaveTextContent("1"),
+  );
+  expect(plus).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Reducir Tomates" }));
+  await vi.waitFor(() =>
+    expect(
+      screen.getByLabelText("Cantidad de Tomates", { selector: "output" }),
+    ).toHaveTextContent("0"),
+  );
+  expect(plus).toBeEnabled();
 });
