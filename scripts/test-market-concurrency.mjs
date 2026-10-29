@@ -295,7 +295,7 @@ try {
     "two genuine simultaneous preparations create exactly one concrete pickup slot",
   );
   const reserveSql =
-    "select public.uzta_reserve_order_payment($1,$2,$3::jsonb,'market race','EUR')";
+    "select public.uzta_reserve_market_order($1,$2,$3::jsonb,'market race','EUR')";
   const args = (n) => [
     id(n),
     first,

@@ -289,9 +289,18 @@ try {
   const reserve = () =>
     as(
       buyer,
-      "select public.uzta_reserve_order_payment($1,$2,$3::jsonb,'market','EUR')",
+      "select public.uzta_reserve_market_order($1,$2,$3::jsonb,'market','EUR')",
       [order, linked, JSON.stringify([{ product_id: p, quantity: 2 }])],
     );
+  await denied(
+    "legacy client cannot silently book a market as a farm pickup",
+    () =>
+      as(
+        buyer,
+        "select public.uzta_reserve_order_payment($1,$2,$3::jsonb,'','EUR')",
+        [id(70), linked, JSON.stringify([{ product_id: p, quantity: 1 }])],
+      ),
+  );
   await reserve();
   await reserve();
   assert.equal(

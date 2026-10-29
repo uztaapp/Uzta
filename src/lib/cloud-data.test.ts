@@ -912,3 +912,40 @@ it("unreadable visitor storage cannot block sign-in or be silently erased", () =
   expect(localStorage.getItem(cartKey(null))).toBe("unreadable");
   expect(localStorage.getItem(cartKey(USER))).toBeNull();
 });
+
+it("market pickup uses explicit wrapper and records the place in the retry fingerprint", async () => {
+  const previous = approvalConfig.marketsReady;
+  approvalConfig.marketsReady = true;
+  try {
+    const f = fixture();
+    const { data } = await loadCloudData(user, f.api);
+    data.quantities[PRODUCT] = 2;
+    const s = data.farms[0].slots[0];
+    s.marketParticipationId = FARM;
+    s.marketPickup = {
+      id: OTHER,
+      name: "Isolated market",
+      address: "Fixture",
+      locality: "Fixture",
+      lat: 43.49,
+      lng: -1.47,
+      date: s.date,
+      timezone: "Europe/Paris",
+    };
+    await persistCloudCommand(
+      data,
+      { type: "reserve", id: ORDER, slotId: SLOT, now: "2039-01-01T00:00:00Z" },
+      user,
+      FARM,
+      f.api,
+    );
+    expect(f.rpc).toHaveBeenCalledWith(
+      "uzta_reserve_market_order",
+      expect.objectContaining({ p_id: ORDER, p_slot: SLOT }),
+    );
+    const pending = JSON.parse(localStorage.getItem(pendingCheckoutKey(USER))!);
+    expect(JSON.parse(pending.fingerprint).pickup.marketId).toBe(OTHER);
+  } finally {
+    approvalConfig.marketsReady = previous;
+  }
+});

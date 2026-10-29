@@ -808,9 +808,11 @@ export async function persistCloudCommand(
     };
     localStorage.setItem(pendingCheckoutKey(user.id), JSON.stringify(pending));
     const response = await api.rpc(
-      cloudConfig.euskoReady
-        ? "uzta_reserve_order_payment"
-        : "uzta_reserve_order",
+      cloudConfig.marketsReady && slot?.marketParticipationId
+        ? "uzta_reserve_market_order"
+        : cloudConfig.euskoReady
+          ? "uzta_reserve_order_payment"
+          : "uzta_reserve_order",
       {
         p_id: pending.id,
         p_slot: command.slotId,

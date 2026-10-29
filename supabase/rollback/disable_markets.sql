@@ -6,6 +6,7 @@ revoke execute on function public.uzta_prepare_market_pickup(uuid,date) from pub
 revoke execute on function public.uzta_save_market(uuid,jsonb,jsonb) from public,anon,authenticated;
 revoke execute on function public.uzta_save_market_participation(uuid,uuid,boolean,boolean,integer,text,jsonb) from public,anon,authenticated;
 revoke execute on function public.uzta_save_market_exception(uuid,uuid,date,boolean,time,time) from public,anon,authenticated;
+revoke execute on function public.uzta_reserve_market_order(uuid,uuid,jsonb,text,text) from public,anon,authenticated;
 notify pgrst,'reload schema';
 commit;
 -- Existing market reservations remain readable, cancellable and collectable by the usual RPCs.

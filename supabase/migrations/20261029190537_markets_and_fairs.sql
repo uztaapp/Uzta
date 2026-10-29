@@ -137,6 +137,7 @@ begin
  select * into s from public.uzta_pickup_slots where id=new.pickup_slot_id;
  if s.market_participation_id is null then return new;end if;
  if not uzta_private.markets_enabled() then raise exception 'Market booking disabled';end if;
+ if current_setting('uzta.market_checkout_slot',true) is distinct from s.id::text then raise exception 'Explicit market pickup confirmation required';end if;
  select * into p from public.uzta_market_participations where id=s.market_participation_id for share;
  select * into m from public.uzta_markets where id=p.market_id for share;
  if not uzta_private.producer_approved((select owner_id from public.uzta_producers where id=p.producer_id)) or not p.active or not p.pickup_enabled or m.status<>'published' or p.producer_id<>new.producer_id then raise exception 'Market pickup unavailable';end if;
@@ -256,3 +257,17 @@ grant execute on function uzta_private.save_market_exception(uuid,uuid,date,bool
 create function public.uzta_save_market_exception(p_market uuid,p_part uuid,p_day date,p_cancelled boolean,p_opens time,p_closes time) returns void language sql security invoker set search_path='' as $$select uzta_private.save_market_exception(p_market,p_part,p_day,p_cancelled,p_opens,p_closes);$$;
 revoke all on function public.uzta_save_market_exception(uuid,uuid,date,boolean,time,time) from public,anon;
 grant execute on function public.uzta_save_market_exception(uuid,uuid,date,boolean,time,time) to authenticated;
+
+-- Explicit opt-in for updated clients; reuse the original atomic reservation/payment implementation.
+create function uzta_private.reserve_market_order(p_id uuid,p_slot uuid,p_items jsonb,p_message text,p_preference text) returns uuid language plpgsql security definer set search_path='' as $$
+begin
+ if auth.uid() is null then raise exception 'Authentication required' using errcode='42501';end if;
+ if not exists(select 1 from public.uzta_pickup_slots where id=p_slot and market_participation_id is not null) then raise exception 'Market slot required';end if;
+ perform set_config('uzta.market_checkout_slot',p_slot::text,true);
+ return uzta_private.reserve_order_payment(p_id,p_slot,p_items,p_message,p_preference);
+end;$$;
+revoke all on function uzta_private.reserve_market_order(uuid,uuid,jsonb,text,text) from public,anon;
+grant execute on function uzta_private.reserve_market_order(uuid,uuid,jsonb,text,text) to authenticated;
+create function public.uzta_reserve_market_order(p_id uuid,p_slot uuid,p_items jsonb,p_message text default '',p_preference text default 'EUR') returns uuid language sql security invoker set search_path='' as $$select uzta_private.reserve_market_order(p_id,p_slot,p_items,p_message,p_preference);$$;
+revoke all on function public.uzta_reserve_market_order(uuid,uuid,jsonb,text,text) from public,anon;
+grant execute on function public.uzta_reserve_market_order(uuid,uuid,jsonb,text,text) to authenticated;
