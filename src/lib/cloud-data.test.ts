@@ -860,3 +860,19 @@ it("activated approval loads a server-approved producer and preserves management
     f.log.some((e) => e.table === "uzta_products" && e.operation === "upsert"),
   ).toBe(true);
 });
+
+it("preserves original UTC pickup instants for cancellation during repeated local hours", async () => {
+  for (const instant of ["2026-10-25T00:30:00Z", "2026-10-25T01:30:00Z"]) {
+    const f = fixture();
+    f.rows.uzta_orders = [
+      {
+        ...order(),
+        pickup_starts_at: instant,
+        pickup_ends_at: "2026-10-25T02:30:00Z",
+      },
+    ];
+    const loaded = await loadCloudData(user, f.api);
+    expect(loaded.data.orders[0].pickup.startsAt).toBe(instant);
+    expect(loaded.data.orders[0].pickup.start).toBe("02:30");
+  }
+});

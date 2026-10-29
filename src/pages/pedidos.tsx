@@ -316,10 +316,11 @@ export function Pedidos() {
                       busy ||
                       (selected.farmId !== managedFarmId &&
                         Date.parse(
-                          madridToUtc(
-                            selected.pickup.date,
-                            selected.pickup.start,
-                          ),
+                          selected.pickup.startsAt ??
+                            madridToUtc(
+                              selected.pickup.date,
+                              selected.pickup.start,
+                            ),
                         ) <= Date.now())
                     }
                     onClick={() => setCancelConfirm(selected.id)}
