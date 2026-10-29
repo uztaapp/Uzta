@@ -194,3 +194,29 @@ test("direct nested menus always identify their owning section", async () => {
   });
   expect(activeSection()).toEqual(["Perfil"]);
 });
+
+test("favorites back remembers Home after remount and falls back to Profile on direct access", async () => {
+  const router = await open("/");
+  fireEvent.click(screen.getByRole("link", { name: "Mis favoritos" }));
+  await screen.findByRole("heading", { name: "Mis favoritos" });
+  expect(
+    screen.getByRole("link", { name: "Volver al inicio" }),
+  ).toHaveAttribute("href", "/");
+  cleanup();
+  render(<RouterProvider router={router} />);
+  expect(
+    screen.getByRole("link", { name: "Volver al inicio" }),
+  ).toHaveAttribute("href", "/");
+  fireEvent.click(screen.getByRole("link", { name: "Volver al inicio" }));
+  await screen.findByRole("heading", { name: "Inicio" });
+  await act(async () => {
+    await router.navigate({
+      to: "/perfil",
+      search: { apartado: "favoritos" },
+      state: {},
+    });
+  });
+  expect(
+    screen.getByRole("link", { name: "Volver al perfil" }),
+  ).toHaveAttribute("href", "/perfil?apartado=cuenta");
+});

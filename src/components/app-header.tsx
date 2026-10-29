@@ -112,12 +112,17 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
               <Link
                 to="/perfil"
                 search={{ apartado: "favoritos" }}
+                state={{ favoriteReturnTo: "/" }}
                 className="uzta-back uzta-back--compact"
                 aria-label={t("Mis favoritos")}
                 title={t("Mis favoritos")}
               >
                 <Heart size={22} aria-hidden="true" />
               </Link>
+            ) : pathname === "/perfil" &&
+              section === "favoritos" &&
+              location.state.favoriteReturnTo === "/" ? (
+              <BackLink compact />
             ) : internalProfile || pathname === "/privacidad" ? (
               <BackLink
                 compact

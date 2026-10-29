@@ -7,6 +7,12 @@ import {
 } from "react";
 import { useRouterState } from "@tanstack/react-router";
 
+declare module "@tanstack/react-router" {
+  interface HistoryState {
+    favoriteReturnTo?: "/" | "/perfil";
+  }
+}
+
 export const sections = [
   "/",
   "/explorar",
