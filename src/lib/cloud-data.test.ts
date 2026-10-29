@@ -5,6 +5,7 @@ import {
   madridToUtc,
   madridParts,
   readCloudCart,
+  adoptGuestCart,
   writeCloudCart,
   cartKey,
   pendingCheckoutKey,
@@ -859,4 +860,39 @@ it("activated approval loads a server-approved producer and preserves management
   expect(
     f.log.some((e) => e.table === "uzta_products" && e.operation === "upsert"),
   ).toBe(true);
+});
+
+it("verified sign-in retains visitor basket once and never transfers it to a second account", () => {
+  const guest = {
+    quantities: { [PRODUCT]: 2 },
+    message: "Recogida por la tarde",
+  };
+  writeCloudCart(null, guest);
+  expect(adoptGuestCart(USER)).toBe(true);
+  expect(readCloudCart(USER)).toEqual(guest);
+  expect(readCloudCart(null)).toEqual({ quantities: {}, message: "" });
+  expect(adoptGuestCart(OTHER)).toBe(false);
+  expect(readCloudCart(OTHER)).toEqual({ quantities: {}, message: "" });
+});
+it("visitor basket never replaces a saved account basket or an uncertain reservation", () => {
+  const guest = { quantities: { [PRODUCT]: 2 }, message: "Visitante" };
+  const saved = { quantities: { [PRODUCT]: 1 }, message: "Cuenta" };
+  writeCloudCart(null, guest);
+  writeCloudCart(USER, saved);
+  expect(adoptGuestCart(USER)).toBe(false);
+  expect(readCloudCart(USER)).toEqual(saved);
+  writeCloudCart(USER, { quantities: {}, message: "" });
+  localStorage.setItem(
+    pendingCheckoutKey(USER),
+    JSON.stringify({ id: ORDER, fingerprint: "pending" }),
+  );
+  expect(adoptGuestCart(USER)).toBe(false);
+  expect(readCloudCart(null)).toEqual(guest);
+});
+
+it("unreadable visitor storage cannot block sign-in or be silently erased", () => {
+  localStorage.setItem(cartKey(null), "unreadable");
+  expect(adoptGuestCart(USER)).toBe(false);
+  expect(localStorage.getItem(cartKey(null))).toBe("unreadable");
+  expect(localStorage.getItem(cartKey(USER))).toBeNull();
 });

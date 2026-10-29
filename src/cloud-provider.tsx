@@ -7,6 +7,7 @@ import { AppContext, type AppContextValue } from "./app-context";
 import { cloudClient, authReturnUrl } from "./lib/cloud-client";
 import {
   loadCloudData,
+  adoptGuestCart,
   emptyCloudData,
   cartTransition,
   writeCloudCart,
@@ -102,6 +103,8 @@ export function CloudProvider({
           );
         verified = result.data.user;
       }
+      if (!alive.current || generation !== epoch.current) return;
+      if (verified) adoptGuestCart(verified.id);
       const loaded = await loadCloudData(verified);
       if (!alive.current || generation !== epoch.current) return;
       user.current = verified;

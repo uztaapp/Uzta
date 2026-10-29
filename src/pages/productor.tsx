@@ -249,10 +249,6 @@ export function Productor() {
                 {t("Ecológico")}
               </p>
             ) : null}
-            <p className="pending-feature">
-              La carga de portada y avatar está pendientes de integración. Los
-              favoritos de productos siguen disponibles en Inicio.
-            </p>
             <p>
               {t(
                 "Recogida en el productor. Las fechas y horas se seleccionan al reservar.",

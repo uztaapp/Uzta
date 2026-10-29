@@ -70,6 +70,27 @@ export function writeCloudCart(
     JSON.stringify(cartSchema.parse(value)),
   );
 }
+// A verified sign-in keeps the visitor selection when no saved account basket exists.
+export function adoptGuestCart(userId: string) {
+  uuid.parse(userId);
+  const own = readCloudCart(userId);
+  if (
+    Object.values(own.quantities).some((q) => q > 0) ||
+    own.message ||
+    localStorage.getItem(pendingCheckoutKey(userId))
+  )
+    return false;
+  let guest: ReturnType<typeof readCloudCart>;
+  try {
+    guest = readCloudCart(null);
+  } catch {
+    return false;
+  } // Preserve unreadable visitor data without blocking sign-in.
+  if (!Object.values(guest.quantities).some((q) => q > 0)) return false;
+  writeCloudCart(userId, guest);
+  localStorage.removeItem(cartKey(null));
+  return true;
+}
 export function emptyCloudData(): LocalStore {
   return {
     ...seedStore(),

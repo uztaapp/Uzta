@@ -182,6 +182,14 @@ function apiFor(uid) {
           "p_message",
           "p_preference",
         ],
+        uzta_producer_access: [],
+        uzta_request_producer: [
+          "p_activity",
+          "p_locality",
+          "p_type",
+          "p_description",
+        ],
+        uzta_review_producer: ["p_id", "p_action", "p_reason"],
         uzta_complete_order: ["p_id"],
         uzta_cancel_order: ["p_id"],
       }[name];
@@ -209,9 +217,7 @@ try {
   await db.exec(`create role anon nologin;create role authenticated nologin;create role service_role nologin bypassrls;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to anon,authenticated;
 create schema storage;create table storage.buckets(id text primary key,name text not null,public boolean not null default false,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text references storage.buckets(id),name text not null,unique(bucket_id,name));alter table storage.objects enable row level security;grant usage on schema storage to anon,authenticated;grant select on storage.objects to anon,authenticated;grant insert,update,delete on storage.objects to authenticated;`);
   for (const f of (await readdir("supabase/migrations"))
-    .filter(
-      (f) => f.endsWith(".sql") && f !== "20261029030000_producer_approval.sql",
-    )
+    .filter((f) => f.endsWith(".sql"))
     .sort())
     await db.exec(await readFile("supabase/migrations/" + f, "utf8"));
   const { loadCloudData, persistCloudCommand, cartTransition, writeCloudCart } =
@@ -220,7 +226,13 @@ create schema storage;create table storage.buckets(id text primary key,name text
   const releaseConfig = (
     await vite.ssrLoadModule("/config/uzta-cloud.public.json")
   ).default;
-  releaseConfig.cancellationsReady = true;
+  releaseConfig.cancellationsReady = true; // Isolated DB includes the pending production migration.
+  const admin = id(1);
+  await db.query("insert into auth.users values($1)", [admin]);
+  await db.query(
+    "insert into uzta_private.commission_admins(user_id) values($1)",
+    [admin],
+  );
   const buyer = {
     id: id(2),
     email: "buyer@example.test",
@@ -241,6 +253,23 @@ create schema storage;create table storage.buckets(id text primary key,name text
       buyerApi = apiFor(buyer.id);
     let loaded = await loadCloudData(seller, api);
     assert.equal(loaded.managedFarmId, null);
+    assert.equal(loaded.data.producerAccess.approved, false);
+    const application = await api.rpc("uzta_request_producer", {
+      p_activity: "Huerta aislada",
+      p_locality: "Baiona",
+      p_type: type,
+      p_description: "Prueba desechable",
+    });
+    assert.equal(application.error, null);
+    const approval = await apiFor(admin).rpc("uzta_review_producer", {
+      p_id: application.data,
+      p_action: "approved",
+      p_reason: "Prueba aislada",
+    });
+    assert.equal(approval.error, null);
+    loaded = await loadCloudData(seller, api);
+    assert.equal(loaded.data.producerAccess.approved, true);
+    checks++;
     const farm = {
       id: id(offset + 1),
       sellerType: type,
@@ -277,7 +306,7 @@ create schema storage;create table storage.buckets(id text primary key,name text
       priceCents: 199,
       stock: 5,
       unit: "kg",
-      category: "Verduras",
+      category: "Pan",
       crop: [0, 0, 0, 0],
       photo: null,
       active: true,
@@ -305,6 +334,52 @@ create schema storage;create table storage.buckets(id text primary key,name text
       ).some((e) => e.farm.id === farm.id),
     );
     checks++;
+    const ownProductData = (await loadCloudData(seller, api)).data;
+    const edited = {
+      ...ownProductData.products.find((p) => p.id === product.id),
+      description: "Descripción editada",
+    };
+    await persistCloudCommand(
+      ownProductData,
+      { type: "product", value: edited },
+      seller,
+      farm.id,
+      api,
+    );
+    assert.equal(
+      (await loadCloudData(buyer, buyerApi)).data.products.find(
+        (p) => p.id === product.id,
+      ).description,
+      "Descripción editada",
+    );
+    assert.equal(
+      (await loadCloudData(buyer, buyerApi)).data.products.find(
+        (p) => p.id === product.id,
+      ).category,
+      "Pan",
+    );
+    checks++;
+    await persistCloudCommand(
+      ownProductData,
+      { type: "product", value: { ...edited, active: false } },
+      seller,
+      farm.id,
+      api,
+    );
+    assert.ok(
+      !(await loadCloudData(null, apiFor(null))).data.products.some(
+        (p) => p.id === product.id,
+      ),
+    );
+    checks++;
+    await persistCloudCommand(
+      ownProductData,
+      { type: "product", value: edited },
+      seller,
+      farm.id,
+      api,
+    );
+    shopping = (await loadCloudData(buyer, buyerApi)).data;
     if (type === "private")
       assert.equal(
         shopping.farms.find((f) => f.id === farm.id).position.lat,

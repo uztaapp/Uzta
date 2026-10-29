@@ -11,7 +11,12 @@ import {
 import { CloudProvider } from "./cloud-provider";
 import { useUzta } from "./app-context";
 import { Access } from "./components/access";
-import { emptyCloudData } from "./lib/cloud-data";
+import {
+  emptyCloudData,
+  cartKey,
+  writeCloudCart,
+  readCloudCart,
+} from "./lib/cloud-data";
 const mocks = vi.hoisted(() => ({
   getSession: vi.fn(),
   getUser: vi.fn(),
@@ -87,6 +92,7 @@ function Probe() {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   mocks.callback = null;
   mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
   mocks.updateUser.mockResolvedValue({ error: null });
@@ -416,4 +422,76 @@ test("a recovery event allows a password change only for the verified recovery a
   expect(
     await screen.findByText("Contraseña actualizada."),
   ).toBeInTheDocument();
+});
+
+test("restored verified session retains the visitor basket while invalid sessions leave it untouched", async () => {
+  const guest = {
+    quantities: { ["00000000-0000-4000-8000-000000000020"]: 2 },
+    message: "Visitante",
+  };
+  writeCloudCart(null, guest);
+  mocks.getSession.mockResolvedValueOnce({
+    data: { session: { user: account, access_token: "restored" } },
+    error: null,
+  });
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await waitFor(() => expect(mocks.load).toHaveBeenCalledWith(account));
+  expect(readCloudCart(account.id)).toEqual(guest);
+  expect(localStorage.getItem(cartKey(null))).toBeNull();
+  cleanup();
+  localStorage.clear();
+  mocks.load.mockClear();
+  writeCloudCart(null, guest);
+  mocks.getSession.mockResolvedValueOnce({
+    data: { session: { user: account, access_token: "invalid" } },
+    error: null,
+  });
+  mocks.getUser.mockResolvedValueOnce({
+    data: { user: null },
+    error: { message: "expired" },
+  });
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await screen.findByRole("alert");
+  expect(mocks.load).not.toHaveBeenCalled();
+  expect(readCloudCart(null)).toEqual(guest);
+  expect(readCloudCart(account.id)).toEqual({ quantities: {}, message: "" });
+});
+
+test("a late identity check after logout cannot move the visitor basket to the old account", async () => {
+  const guest = {
+    quantities: { ["00000000-0000-4000-8000-000000000020"]: 1 },
+    message: "Visitante",
+  };
+  writeCloudCart(null, guest);
+  let finish!: (value: any) => void;
+  mocks.getSession.mockResolvedValueOnce({
+    data: { session: { user: account, access_token: "old" } },
+    error: null,
+  });
+  mocks.getUser.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  render(
+    <CloudProvider switchMode={() => {}}>
+      <Probe />
+    </CloudProvider>,
+  );
+  await waitFor(() => expect(mocks.getUser).toHaveBeenCalled());
+  act(() => mocks.callback?.("SIGNED_OUT", null));
+  await waitFor(() => expect(mocks.load).toHaveBeenCalledWith(null));
+  await act(async () => finish({ data: { user: account }, error: null }));
+  expect(mocks.load).not.toHaveBeenCalledWith(account);
+  expect(readCloudCart(null)).toEqual(guest);
+  expect(localStorage.getItem(cartKey(account.id))).toBeNull();
 });
