@@ -15,6 +15,11 @@ import { NotificationBell } from "./notification-bell";
 import { t, useLanguage } from "../lib/language";
 import "./app-header.css";
 
+const sectionTitles: Record<string, string> = {
+  "/cesta": "Cesta de compra",
+  "/pedidos": "Mis pedidos",
+  "/perfil": "Mi perfil",
+};
 const Actions = createContext<{ target: HTMLDivElement | null } | null>(null);
 export function HeaderActions({ children }: { children: ReactNode }) {
   const context = useContext(Actions);
@@ -23,11 +28,13 @@ export function HeaderActions({ children }: { children: ReactNode }) {
 }
 function HeaderFrame({
   home = false,
+  title,
   left,
   right,
   actionsRef,
 }: {
   home?: boolean;
+  title?: string;
   left?: ReactNode;
   right?: ReactNode;
   actionsRef?: Ref<HTMLDivElement>;
@@ -40,6 +47,11 @@ function HeaderFrame({
     >
       <div className="app-header-navigation">
         <div className="app-header-back">{left}</div>
+        {title && (
+          <span className="app-header-title" aria-hidden="true">
+            {t(title)}
+          </span>
+        )}
         <div className="app-header-right">
           {right}
           <div ref={actionsRef} className="app-header-actions" />
@@ -66,7 +78,7 @@ export function HeaderLoading() {
     );
   return (
     <div className="app">
-      <HeaderFrame home={pathname === "/"} />
+      <HeaderFrame home={pathname === "/"} title={sectionTitles[pathname]} />
       <p role="status" className="sr-only">
         {t("Abriendo UZTA…")}
       </p>
@@ -92,6 +104,7 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
       {pathname !== "/explorar" && (
         <HeaderFrame
           home={pathname === "/"}
+          title={sectionTitles[pathname]}
           actionsRef={setTarget}
           right={pathname === "/" ? <NotificationBell /> : null}
           left={

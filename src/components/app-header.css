@@ -155,3 +155,17 @@
 body:has(.uzta-explore) .local-strip + .app .uzta-explore {
   height: calc(100dvh - 102px - env(safe-area-inset-bottom));
 }
+
+.app-header-title {
+  flex: 1;
+  min-width: 0;
+  color: #171b15;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+.app-header-title + .app-header-right {
+  margin-inline-start: 0;
+}
