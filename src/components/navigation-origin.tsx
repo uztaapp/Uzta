@@ -47,7 +47,9 @@ export function NavigationOrigin({ children }: { children: ReactNode }) {
       : valid(saved)
         ? saved
         : (previous.current ??
-          (location.pathname === "/productor" ? "/" : null));
+          (["/productor", "/mercados"].includes(location.pathname)
+            ? "/"
+            : null));
   useEffect(() => {
     previous.current = section;
     if (section) {

@@ -1,3 +1,4 @@
+import { Mercados } from "./pages/mercados";
 import {
   NavigationOrigin,
   useNavigationOrigin,
@@ -162,6 +163,14 @@ const profile = createRoute({
   }),
   component: Perfil,
 });
+const markets = createRoute({
+  getParentRoute: () => root,
+  path: "/mercados",
+  validateSearch: (s: Record<string, unknown>): { mercado?: string } => ({
+    mercado: typeof s.mercado === "string" ? s.mercado : undefined,
+  }),
+  component: Mercados,
+});
 const privacy = createRoute({
   getParentRoute: () => root,
   path: "/privacidad",
@@ -169,6 +178,7 @@ const privacy = createRoute({
 });
 export const routeTree = root.addChildren([
   privacy,
+  markets,
   home,
   explore,
   producer,

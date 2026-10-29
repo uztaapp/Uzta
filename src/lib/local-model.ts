@@ -1,3 +1,4 @@
+import { marketPickupSchema } from "./market-pickup";
 import { paymentAllowed } from "./eusko";
 import { canReserve } from "./availability";
 import { z } from "zod";
@@ -23,6 +24,9 @@ export const categories = [
 ] as const;
 const crop = z.array(z.number().finite()).length(4);
 const slotSchema = z.object({
+  marketLabel: z.string().optional(),
+  marketParticipationId: z.string().uuid().optional(),
+  marketPickup: marketPickupSchema.optional(),
   id: z.string(),
   date: z.string().date(),
   start: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),

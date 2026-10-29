@@ -1,3 +1,4 @@
+import { MarketPickupChoices } from "../components/market-pickup-choices";
 import { PaymentChoice } from "../components/eusko";
 import { paymentAllowed, type PaymentPreference } from "../lib/eusko";
 import cloudConfig from "../../config/uzta-cloud.public.json";
@@ -250,6 +251,15 @@ export function Cesta() {
               <h2>{t(step === 2 ? "Elegir recogida" : "Revisar reserva")}</h2>
               {step === 2 ? (
                 <>
+                  {cloudConfig.marketsReady && mode === "cloud" && farm && (
+                    <MarketPickupChoices
+                      producer={farm.id}
+                      onSelect={(id, day) => {
+                        setSlot(id);
+                        setDate(day);
+                      }}
+                    />
+                  )}
                   {slots.length ? (
                     <>
                       <label>
@@ -282,6 +292,7 @@ export function Cesta() {
                             .filter((s) => s.date === date)
                             .map((s) => (
                               <option key={s.id} value={s.id}>
+                                {s.marketLabel ? s.marketLabel + " · " : ""}
                                 {s.start} – {s.end}
                               </option>
                             ))}
@@ -342,7 +353,7 @@ export function Cesta() {
                   disabled={step !== 2 || busy}
                 />
               )}
-              <PickupLocation farm={farm} />
+              <PickupLocation farm={farm} market={chosenSlot?.marketPickup} />
               <p className="payment-note">
                 {t(
                   "Paga directamente al vendedor durante la recogida. UZTA no cobra online.",

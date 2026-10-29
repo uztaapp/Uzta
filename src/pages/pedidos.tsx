@@ -223,7 +223,10 @@ export function Pedidos() {
             {t("Estado:")}
             <strong>{t(selected.status)}</strong>
           </p>
-          <PickupLocation farm={selectedFarm} />
+          <PickupLocation
+            farm={selectedFarm}
+            market={selected.pickup.marketPickup}
+          />
           {selected.paymentPreference && (
             <>
               <PaymentMethods

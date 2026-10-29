@@ -1,3 +1,4 @@
+import { marketPickupSchema } from "./market-pickup";
 import { accessSchema } from "./producer-approval";
 import { paymentAllowed } from "./eusko";
 import { canReserve } from "./availability";
@@ -39,7 +40,14 @@ function cartFingerprint(data: LocalStore, slot: Slot | undefined) {
       .filter(([, q]) => q > 0)
       .sort(([a], [b]) => a.localeCompare(b)),
     message: data.message,
-    pickup: slot ? { date: slot.date, start: slot.start, end: slot.end } : null,
+    pickup: slot
+      ? {
+          date: slot.date,
+          start: slot.start,
+          end: slot.end,
+          ...(slot.marketPickup ? { marketId: slot.marketPickup.id } : {}),
+        }
+      : null,
   });
 }
 function savedOrderFingerprint(order: LocalStore["orders"][number]) {
@@ -52,6 +60,9 @@ function savedOrderFingerprint(order: LocalStore["orders"][number]) {
       date: order.pickup.date,
       start: order.pickup.start,
       end: order.pickup.end,
+      ...(order.pickup.marketPickup
+        ? { marketId: order.pickup.marketPickup.id }
+        : {}),
     },
   });
 }
@@ -105,9 +116,9 @@ export function emptyCloudData(): LocalStore {
     message: "",
   };
 }
-export function madridParts(instant: string) {
+export function madridParts(instant: string, zone = "Europe/Madrid") {
   const parts = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Europe/Madrid",
+    timeZone: zone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -121,7 +132,11 @@ export function madridParts(instant: string) {
     time: `${p.hour}:${p.minute}`,
   };
 }
-export function madridToUtc(date: string, time: string) {
+export function madridToUtc(
+  date: string,
+  time: string,
+  zone = "Europe/Madrid",
+) {
   z.iso.date().parse(date);
   if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) throw Error("Hora no válida.");
   const [y, m, d] = date.split("-").map(Number);
@@ -129,14 +144,14 @@ export function madridToUtc(date: string, time: string) {
   const target = Date.UTC(y, m - 1, d, h, min);
   let utc = target;
   for (let i = 0; i < 3; i++) {
-    const p = madridParts(new Date(utc).toISOString());
+    const p = madridParts(new Date(utc).toISOString(), zone);
     const [py, pm, pd] = p.date.split("-").map(Number);
     const [ph, pmin] = p.time.split(":").map(Number);
     utc += target - Date.UTC(py, pm - 1, pd, ph, pmin);
   }
-  const p = madridParts(new Date(utc).toISOString());
+  const p = madridParts(new Date(utc).toISOString(), zone);
   const same = (t: number) => {
-    const q = madridParts(new Date(t).toISOString());
+    const q = madridParts(new Date(t).toISOString(), zone);
     return q.date === date && q.time === time;
   };
   if (
@@ -202,6 +217,9 @@ const productRow = z.object({
 const slotRow = z.object({
   id: uuid,
   producer_id: uuid,
+  market_label: z.string().nullable().optional(),
+  market_participation_id: z.string().uuid().nullable().optional(),
+  market_location: marketPickupSchema.nullable().optional(),
   starts_at: z.string(),
   ends_at: z.string(),
   active: z.boolean(),
@@ -349,9 +367,21 @@ export async function loadCloudData(
       .filter((s) => s.producer_id === f.id && s.active)
       .map((s) => ({
         id: s.id,
-        date: madridParts(s.starts_at).date,
-        start: madridParts(s.starts_at).time,
-        end: madridParts(s.ends_at).time,
+        marketLabel: s.market_label ?? undefined,
+        marketParticipationId: s.market_participation_id ?? undefined,
+        marketPickup: s.market_location ?? undefined,
+        date: madridParts(
+          s.starts_at,
+          s.market_location?.timezone ?? "Europe/Madrid",
+        ).date,
+        start: madridParts(
+          s.starts_at,
+          s.market_location?.timezone ?? "Europe/Madrid",
+        ).time,
+        end: madridParts(
+          s.ends_at,
+          s.market_location?.timezone ?? "Europe/Madrid",
+        ).time,
       })),
   }));
   const photoUrls = await loadProductPhotos(
@@ -385,10 +415,20 @@ export async function loadCloudData(
     createdAt: o.created_at,
     pickup: {
       startsAt: o.pickup_starts_at,
+      marketPickup: o.pickup_market ?? undefined,
       id: o.id,
-      date: madridParts(o.pickup_starts_at).date,
-      start: madridParts(o.pickup_starts_at).time,
-      end: madridParts(o.pickup_ends_at).time,
+      date: madridParts(
+        o.pickup_starts_at,
+        o.pickup_market?.timezone ?? "Europe/Madrid",
+      ).date,
+      start: madridParts(
+        o.pickup_starts_at,
+        o.pickup_market?.timezone ?? "Europe/Madrid",
+      ).time,
+      end: madridParts(
+        o.pickup_ends_at,
+        o.pickup_market?.timezone ?? "Europe/Madrid",
+      ).time,
     },
     message: o.message,
     paymentPreference: o.payment_preference ?? null,
@@ -730,8 +770,10 @@ export async function persistCloudCommand(
     if (newSlots.length)
       check(await api.from("uzta_pickup_slots").insert(newSlots));
     const removed =
-      previous?.slots.filter((s) => !f.slots.some((now) => now.id === s.id)) ??
-      [];
+      previous?.slots.filter(
+        (s) =>
+          !s.marketParticipationId && !f.slots.some((now) => now.id === s.id),
+      ) ?? [];
     for (const slot of removed)
       check(
         await api

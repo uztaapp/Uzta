@@ -1,3 +1,4 @@
+import { t } from "../lib/language";
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -5,12 +6,14 @@ import { clusterEntries, type ExploreEntry } from "../lib/explore";
 import { publicPosition, type Position } from "../lib/nearby";
 import { sellerMarkerClass, sellerPosition } from "../lib/sellers";
 export default function ProducerMap({
+  kind = "producers",
   entries,
   center,
   radius,
   onSelect,
   onGroup,
 }: {
+  kind?: "producers" | "markets";
   entries: ExploreEntry[];
   center: Position | null;
   radius: number;
@@ -115,14 +118,18 @@ export default function ProducerMap({
           L.marker(point, {
             icon: L.divIcon({
               className: "uzta-map-marker",
-              html: `<div class="uzta-map-pin${count > 1 ? " uzta-map-group" : sellerMarkerClass(list[0].farm.sellerType)}"><span aria-hidden="true">${count > 1 ? count : list[0].farm.sellerType === "private" ? "👤" : list[0].farm.sellerType === "professional" ? "🌱" : "📍"}</span></div>`,
+              html: `<div class="uzta-map-pin${count > 1 ? " uzta-map-group" : sellerMarkerClass(list[0].farm.sellerType)}"><span aria-hidden="true">${count > 1 ? count : kind === "markets" ? '<img src="/brand/icons/calendar.png" width="30" height="30" alt="" />' : list[0].farm.sellerType === "private" ? "👤" : list[0].farm.sellerType === "professional" ? "🌱" : "📍"}</span></div>`,
               iconSize: [48, 48],
               iconAnchor: [24, 24],
             }),
             title:
-              count > 1 ? `${count} productores agrupados` : list[0].farm.name,
+              count > 1
+                ? `${count} ${kind === "markets" ? t("mercados agrupados") : "productores agrupados"}`
+                : list[0].farm.name,
             alt:
-              count > 1 ? `${count} productores agrupados` : list[0].farm.name,
+              count > 1
+                ? `${count} ${kind === "markets" ? t("mercados agrupados") : "productores agrupados"}`
+                : list[0].farm.name,
             bubblingMouseEvents: false,
             autoPanOnFocus: false,
           })
@@ -145,17 +152,21 @@ export default function ProducerMap({
       m.off("moveend resize", render);
       layer.remove();
     };
-  }, [entries, center, radius, onSelect, onGroup]);
+  }, [entries, center, radius, onSelect, onGroup, kind]);
   return (
     <>
       <div
         ref={el}
         className="explore-canvas"
-        aria-label="Mapa interactivo de productores"
+        aria-label={
+          kind === "markets"
+            ? t("Mapa de mercados")
+            : "Mapa interactivo de productores"
+        }
       />
       {tileError ? (
         <p className="map-tile-error" role="status">
-          No se pudo cargar parte del mapa. Puedes usar la lista.
+          {t("No se pudo cargar parte del mapa. Puedes usar la lista.")}
         </p>
       ) : null}
     </>

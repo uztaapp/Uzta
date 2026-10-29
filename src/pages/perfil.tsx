@@ -1,3 +1,4 @@
+import { MarketManager } from "../components/market-manager";
 import { HeaderActions } from "../components/app-header";
 import {
   ProducerApplication,
@@ -113,6 +114,7 @@ export function Perfil() {
     );
   const producerAllowed =
     mode === "demo" ? !!managedFarmId : canManageProducer(data, managedFarmId);
+  if (search.apartado === "mercados-admin") return <MarketManager admin />;
   if (search.apartado === "solicitudes") return <ProducerRequestsAdmin />;
   if (
     [
@@ -144,6 +146,7 @@ export function Perfil() {
         "tienda",
         "horarios",
         "estadisticas",
+        "mercados",
       ].includes(search.apartado))
   )
     return <ProducerDashboard section={search.apartado ?? "panel"} />;

@@ -1,3 +1,5 @@
+import "./mercados.css";
+import { CalendarDays as MarketCalendar } from "lucide-react";
 import { StoreCover } from "../components/store-cover";
 import {
   useBuyerLocation,
@@ -105,6 +107,11 @@ export function Inicio() {
         {locationLabel}
         <ChevronDown size={13} aria-hidden="true" />
       </button>
+      <Link className="market-discover" to="/mercados">
+        <MarketCalendar size={20} />
+        <span>{t("Mercados y ferias")}</span>
+        <ChevronDown size={16} />
+      </Link>
       <div id="home-zone" className="home-zone" hidden={!locationOpen}>
         <button
           type="button"

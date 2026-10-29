@@ -201,7 +201,11 @@ export function Gestion({
     }
     if (
       farm.slots.some(
-        (s) => s.date === next.date && next.start < s.end && next.end > s.start,
+        (s) =>
+          !s.marketParticipationId &&
+          s.date === next.date &&
+          next.start < s.end &&
+          next.end > s.start,
       )
     ) {
       setError("La franja se solapa con otra de ese día.");
@@ -212,7 +216,12 @@ export function Gestion({
         type: "farm",
         value: {
           ...farm,
-          slots: [...farm.slots.filter((s) => futureSlot(s)), next],
+          slots: [
+            ...farm.slots.filter(
+              (s) => futureSlot(s) && !s.marketParticipationId,
+            ),
+            next,
+          ],
         },
       })
     ) {
@@ -442,7 +451,7 @@ export function Gestion({
           </p>
           <ul className="slot-list">
             {farm.slots
-              .filter((s) => futureSlot(s))
+              .filter((s) => futureSlot(s) && !s.marketParticipationId)
               .map((s) => (
                 <li key={s.id}>
                   <span>
@@ -472,7 +481,8 @@ export function Gestion({
                 </li>
               ))}
           </ul>
-          {!farm.slots.filter((s) => futureSlot(s)).length ? (
+          {!farm.slots.filter((s) => futureSlot(s) && !s.marketParticipationId)
+            .length ? (
             <p>{t("No hay franjas publicadas.")}</p>
           ) : null}
           <form className="uzta-form" onSubmit={addSlot}>

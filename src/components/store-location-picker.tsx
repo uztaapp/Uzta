@@ -6,10 +6,12 @@ import { sellerPosition } from "../lib/sellers";
 import "./store-location-picker.css";
 import { t, useLanguage } from "../lib/language";
 export default function StoreLocationPicker({
+  context = "store",
   initialPosition,
   approximate = false,
   disabled = false,
 }: {
+  context?: "store" | "market";
   initialPosition?: Position | null;
   approximate?: boolean;
   disabled?: boolean;
@@ -157,20 +159,26 @@ export default function StoreLocationPicker({
     <div className="store-location-picker">
       <p>
         {t(
-          "Pulsa en el mapa para colocar el punto de tu tienda. Después puedes arrastrarlo o desplazar el mapa y usar el centro.",
+          context === "market"
+            ? "Coloca en el mapa el punto público del mercado."
+            : "Pulsa en el mapa para colocar el punto de tu tienda. Después puedes arrastrarlo o desplazar el mapa y usar el centro.",
         )}
       </p>
       <div
         ref={canvas}
         className="store-location-map"
-        aria-label="Elegir ubicación pública de la tienda"
+        aria-label={
+          context === "market"
+            ? t("Elegir ubicación del mercado")
+            : "Elegir ubicación pública de la tienda"
+        }
         aria-disabled={disabled}
       />
       <input type="hidden" name="publicLatitude" value={point?.lat ?? ""} />
       <input type="hidden" name="publicLongitude" value={point?.lng ?? ""} />
       <div className="store-location-actions">
         <button type="button" disabled={disabled || locating} onClick={locate}>
-          {locating ? t("Buscando ubicación…") : "Usar mi ubicación"}
+          {locating ? t("Buscando ubicación…") : t("Usar mi ubicación")}
         </button>
         <button
           type="button"
@@ -198,7 +206,11 @@ export default function StoreLocationPicker({
       {locationMessage && <p role="status">{t(locationMessage)}</p>}
       <p role="status">
         {point
-          ? t("Punto seleccionado. Se guardará al pulsar Guardar tienda.")
+          ? t(
+              context === "market"
+                ? "Punto seleccionado. Se guardará con el mercado."
+                : "Punto seleccionado. Se guardará al pulsar Guardar tienda.",
+            )
           : t("Sin punto público seleccionado.")}
       </p>
       <small>
@@ -207,10 +219,14 @@ export default function StoreLocationPicker({
               "Se publicará solo una zona aproximada, no el punto exacto de tu domicilio.",
             )
           : t(
-              "Se publicará el punto exacto que elijas para encontrar tu tienda.",
+              context === "market"
+                ? "Se publicará el punto del mercado."
+                : "Se publicará el punto exacto que elijas para encontrar tu tienda.",
             )}
         {t(
-          "Usa tu ubicación solo si estás allí. El punto se guarda al pulsar Guardar tienda.",
+          context === "market"
+            ? "Usa tu ubicación solo si estás en el mercado."
+            : "Usa tu ubicación solo si estás allí. El punto se guarda al pulsar Guardar tienda.",
         )}
       </small>
     </div>

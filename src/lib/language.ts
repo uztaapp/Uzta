@@ -1,3 +1,4 @@
+import { marketLabels } from "./market-labels";
 import { releaseLabels } from "./release-labels";
 import { googleLabels } from "./google-labels";
 import { reviewLabels } from "./review-labels";
@@ -96,6 +97,7 @@ export function useLanguagePreference() {
 }
 // Display labels only. Never translate database identifiers or user-authored text.
 const dictionary: Record<string, readonly [string, string, string]> = {
+  ...marketLabels,
   ...extraLabels,
   ...sellerLabels,
   ...notificationLabels,

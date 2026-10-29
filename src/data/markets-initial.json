@@ -1,0 +1,62 @@
+[
+  {
+    "data": {
+      "name": "Marché de producteurs locaux",
+      "kind": "producers",
+      "description": "",
+      "locality": "Bayonne",
+      "address": "",
+      "region": "Iparralde",
+      "latitude": 43.490444,
+      "longitude": -1.475035,
+      "timezone": "Europe/Paris",
+      "categories": [],
+      "status": "pending",
+      "source_url": "https://www.openstreetmap.org/node/10053931962",
+      "source_key": "osm/node/10053931962",
+      "source_license": "OpenStreetMap contributors · ODbL 1.0 · https://www.openstreetmap.org/copyright",
+      "source_updated_at": "2024-12-04T14:57:59Z"
+    },
+    "rules": [
+      {
+        "frequency": "weekly",
+        "starts_on": "2026-10-29",
+        "ends_on": null,
+        "weekdays": [
+          6
+        ],
+        "ordinal": null,
+        "opens": "08:00",
+        "closes": "13:00"
+      }
+    ],
+    "source_updated_at": "2024-12-04T14:57:59Z",
+    "retrieved_at": "2026-10-29",
+    "location_method": "OSM node",
+    "review_note": "Confirm current access and programme before publishing; no holidays inferred."
+  },
+  {
+    "data": {
+      "name": "Zerkausia",
+      "kind": "weekly",
+      "description": "",
+      "locality": "Tolosa",
+      "address": "Zerkausia kalea",
+      "region": "Gipuzkoa",
+      "latitude": 43.137285,
+      "longitude": -2.072573,
+      "timezone": "Europe/Madrid",
+      "categories": [],
+      "status": "pending",
+      "source_url": "https://www.openstreetmap.org/way/40952683",
+      "source_key": "osm/way/40952683",
+      "source_license": "OpenStreetMap contributors · ODbL 1.0 · https://www.openstreetmap.org/copyright",
+      "source_updated_at": "2026-02-08T11:29:33Z"
+    },
+    "rules": [],
+    "source_updated_at": "2026-02-08T11:29:33Z",
+    "retrieved_at": "2026-10-29",
+    "location_method": "centroid of OSM public marketplace footprint",
+    "review_note": "Confirm current access and programme before publishing; no holidays inferred."
+  }
+]

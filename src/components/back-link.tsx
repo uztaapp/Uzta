@@ -11,7 +11,7 @@ export function BackLink({
   label,
   compact = false,
 }: {
-  to?: NavigationSection;
+  to?: NavigationSection | "/mercados";
   section?: string;
   label?: string;
   compact?: boolean;

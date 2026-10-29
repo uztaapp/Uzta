@@ -1,0 +1,212 @@
+.markets-page {
+  color: #171b15;
+  max-width: 720px;
+  margin: auto;
+}
+.markets-page h1 {
+  font-size: 23px;
+  margin: 4px 0 18px;
+}
+.markets-page h2 {
+  font-size: 20px;
+}
+.market-notice {
+  background: #f3f1ea;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.market-views {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0;
+}
+.market-views button {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  background: #f3f1ea;
+  font-weight: 650;
+}
+.market-views button[aria-selected="true"] {
+  background: #31552b;
+  color: white;
+}
+.market-filters {
+  padding: 12px 0;
+}
+.market-filters summary {
+  cursor: pointer;
+  min-height: 38px;
+}
+.market-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0;
+}
+.market-month button {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
+.market-month input {
+  width: 160px;
+  max-width: 65%;
+  border: 0;
+  background: transparent;
+  color: #31552b;
+  font-weight: 700;
+}
+.market-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-inline: -14px;
+  padding: 8px 0;
+  border-block: 1px solid #e8e7df;
+}
+.market-calendar > * {
+  text-align: center;
+}
+.market-calendar button {
+  height: 48px;
+  position: relative;
+  border-radius: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.market-calendar button.has-market {
+  font-weight: 800;
+  color: #31552b;
+  background: #eaf1e4;
+}
+.market-calendar button[aria-pressed="true"] {
+  outline: 2px solid #31552b;
+  outline-offset: -3px;
+}
+.market-calendar button > span {
+  position: absolute;
+  bottom: 1px;
+  left: 0;
+  right: 0;
+}
+.market-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  text-align: start;
+  padding: 16px 12px;
+  margin: 12px 0;
+  background: white;
+  border: 1px solid #e8e7df;
+  border-radius: 14px;
+  min-width: 0;
+}
+.market-card > span {
+  flex: 1;
+  min-width: 0;
+}
+.market-card strong,
+.market-card small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.market-card small {
+  color: #60675c;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+.market-map {
+  height: 420px;
+  position: relative;
+  isolation: isolate;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.market-detail > p {
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+}
+.market-detail h3 {
+  margin-top: 24px;
+}
+.market-rule {
+  padding: 12px;
+  border: 1px solid #dfdfd4;
+  border-radius: 12px;
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.market-weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.market-weekdays label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+}
+.market-weekdays input {
+  width: auto;
+}
+.market-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.market-inline > * {
+  flex: 1;
+  min-width: 110px;
+}
+.market-manager {
+  padding-bottom: 20px;
+}
+.market-manager h2 {
+  margin: 10px 0;
+}
+.market-manager form {
+  margin-bottom: 24px;
+}
+.market-manager button {
+  min-height: 44px;
+}
+.market-manager details {
+  margin: 12px 0;
+}
+.market-manager summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.market-manager .uzta-form {
+  margin-top: 12px;
+}
+.market-manager input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+.market-discover {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  margin: 12px 0;
+  background: #eaf1e4;
+  border-radius: 12px;
+  color: #31552b;
+  font-weight: 650;
+}
+.market-discover span {
+  flex: 1;
+}
+.market-pickup select {
+  width: 100%;
+}

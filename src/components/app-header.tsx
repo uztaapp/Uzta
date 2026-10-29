@@ -16,6 +16,7 @@ import { t, useLanguage } from "../lib/language";
 import "./app-header.css";
 
 const sectionTitles: Record<string, string> = {
+  "/mercados": "Mercados y ferias",
   "/cesta": "Cesta de compra",
   "/pedidos": "Mis pedidos",
   "/perfil": "Mi perfil",
@@ -91,6 +92,9 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
   const pathname = location.pathname;
   const origin = useNavigationOrigin();
   const section = (location.search as { apartado?: string }).apartado;
+  const marketDetail =
+    pathname === "/mercados" &&
+    !!(location.search as { mercado?: string }).mercado;
   const [target, setTarget] = useState<HTMLDivElement | null>(null);
   const personal = ["solicitudes", "favoritos", "comisiones"].includes(
     section ?? "",
@@ -119,6 +123,8 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
               >
                 <Heart size={22} aria-hidden="true" />
               </Link>
+            ) : marketDetail ? (
+              <BackLink compact to="/mercados" />
             ) : pathname === "/perfil" &&
               section === "favoritos" &&
               location.state.favoriteReturnTo === "/" ? (

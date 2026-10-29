@@ -56,6 +56,17 @@ export function SalesLinks() {
         <Link
           className="profile-row"
           to="/perfil"
+          search={{ apartado: "mercados-admin" }}
+        >
+          <ChartNoAxesColumn aria-hidden="true" />
+          <span>{t("Administrar mercados")}</span>
+          <ChevronRight aria-hidden="true" />
+        </Link>
+      )}
+      {admin === userId && (
+        <Link
+          className="profile-row"
+          to="/perfil"
           search={{ apartado: "comisiones" }}
         >
           <Coins aria-hidden="true" />

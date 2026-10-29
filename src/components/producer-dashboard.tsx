@@ -1,3 +1,4 @@
+import { MarketManager } from "./market-manager";
 import { canManageProducer } from "../lib/producer-approval";
 import { Link } from "@tanstack/react-router";
 import {
@@ -27,6 +28,7 @@ const items = [
   ["Pedidos", "pedidos", ShoppingCart],
   ["Mensajes", "mensajes", MessageCircle],
   ["Calendario", "horarios", CalendarDays],
+  ["Mis mercados", "mercados", CalendarDays],
   ["Mi tienda", "tienda", Store],
   ["Estadísticas", "estadisticas", ChartNoAxesColumn],
   ["Ajustes", "cuenta", Settings],
@@ -126,11 +128,15 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
         </header>
         {section !== "panel" ? (
           <>
-            <Gestion
-              key={section}
-              section={section === "nuevo" ? "productos" : section}
-              create={section === "nuevo"}
-            />
+            {section === "mercados" ? (
+              <MarketManager />
+            ) : (
+              <Gestion
+                key={section}
+                section={section === "nuevo" ? "productos" : section}
+                create={section === "nuevo"}
+              />
+            )}
           </>
         ) : (
           <>
