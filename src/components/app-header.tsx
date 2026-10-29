@@ -21,9 +21,11 @@ export function HeaderActions({ children }: { children: ReactNode }) {
 }
 function HeaderFrame({
   left,
+  right,
   actionsRef,
 }: {
   left?: ReactNode;
+  right?: ReactNode;
   actionsRef?: Ref<HTMLDivElement>;
 }) {
   useLanguage();
@@ -31,7 +33,10 @@ function HeaderFrame({
     <header className="app-header" aria-label={t("Cabecera de UZTA")}>
       <div className="app-header-navigation">
         <div className="app-header-back">{left}</div>
-        <div ref={actionsRef} className="app-header-actions" />
+        <div className="app-header-right">
+          {right}
+          <div ref={actionsRef} className="app-header-actions" />
+        </div>
       </div>
       <div className="app-header-brand">
         <Brand />
@@ -77,10 +82,10 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
       {pathname !== "/explorar" && (
         <HeaderFrame
           actionsRef={setTarget}
+          right={pathname === "/" ? <NotificationBell /> : null}
           left={
-            pathname === "/" ? (
-              <NotificationBell />
-            ) : internalProfile || pathname === "/privacidad" ? (
+            pathname === "/" ? null : internalProfile ||
+              pathname === "/privacidad" ? (
               <BackLink
                 compact
                 to="/perfil"
