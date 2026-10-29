@@ -241,3 +241,13 @@ test("failed local storage writes do not show a successful reservation or decrem
     20,
   );
 });
+
+test("dashboard publish shortcut opens the existing complete form", async () => {
+  await open("/perfil?apartado=nuevo");
+  expect(await screen.findByLabelText("Nombre")).toBeInTheDocument();
+  expect(screen.getByLabelText("Precio (€)")).toBeInTheDocument();
+  expect(screen.getByLabelText("Existencias")).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Publicar producto" }),
+  ).toBeInTheDocument();
+});
