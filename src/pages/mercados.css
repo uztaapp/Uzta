@@ -54,8 +54,12 @@
   place-items: center;
 }
 .market-month input {
-  width: 160px;
-  max-width: 65%;
+  flex: 1;
+  min-width: 0;
+  width: 0;
+  max-width: none;
+  font-size: 14px;
+  text-align: center;
   border: 0;
   background: transparent;
   color: #31552b;
