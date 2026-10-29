@@ -23,14 +23,6 @@ function valid(value: unknown): value is NavigationSection {
 export function NavigationOrigin({ children }: { children: ReactNode }) {
   const location = useRouterState({ select: (state) => state.location });
   const previous = useRef<NavigationSection | null>(null);
-  const search = location.search as { apartado?: string; pedido?: string };
-  const nested =
-    location.pathname === "/productor" ||
-    location.pathname === "/privacidad" ||
-    (location.pathname === "/perfil" &&
-      !!search.apartado &&
-      !["panel", "cuenta"].includes(search.apartado)) ||
-    (location.pathname === "/pedidos" && !!search.pedido);
   const key =
     prefix +
     (location.state.__TSR_key ?? location.state.key ?? location.href) +
@@ -42,12 +34,14 @@ export function NavigationOrigin({ children }: { children: ReactNode }) {
   } catch {
     /* Navigation still works when storage is unavailable. */
   }
-  const section =
-    !nested && valid(location.pathname)
-      ? location.pathname
+  const section = valid(location.pathname)
+    ? location.pathname
+    : location.pathname === "/privacidad"
+      ? "/perfil"
       : valid(saved)
         ? saved
-        : previous.current;
+        : (previous.current ??
+          (location.pathname === "/productor" ? "/" : null));
   useEffect(() => {
     previous.current = section;
     if (section) {

@@ -151,17 +151,46 @@ test("seller preserves Home through reload, and Explore through back/forward his
   });
   expect(activeSection()).toEqual(["Explorar"]);
 });
-test("favorites retains its entry section without a second active Profile link", async () => {
+test("profile submenus highlight Profile even when opened from Home", async () => {
   const router = await open("/");
   fireEvent.click(screen.getByRole("link", { name: "Mis favoritos" }));
   await screen.findByRole("heading", { name: "Mis favoritos" });
-  expect(activeSection()).toEqual(["Inicio"]);
+  expect(activeSection()).toEqual(["Perfil"]);
   await act(async () => {
     await router.navigate({ to: "/perfil", search: { apartado: "cuenta" } });
   });
   expect(activeSection()).toEqual(["Perfil"]);
 });
-test("direct seller link does not invent an origin section", async () => {
+test("a direct seller link uses the home catalogue when no navigation origin exists", async () => {
   await open("/productor?tienda=urki");
-  expect(activeSection()).toEqual([]);
+  expect(activeSection()).toEqual(["Inicio"]);
+});
+
+test("direct nested menus always identify their owning section", async () => {
+  const router = await open("/perfil?apartado=productos");
+  expect(activeSection()).toEqual(["Perfil"]);
+  for (const apartado of [
+    "nuevo",
+    "horarios",
+    "tienda",
+    "estadisticas",
+    "favoritos",
+    "comisiones",
+  ]) {
+    await act(async () => {
+      await router.navigate({ to: "/perfil", search: { apartado } });
+    });
+    expect(activeSection()).toEqual(["Perfil"]);
+  }
+  await act(async () => {
+    await router.navigate({
+      to: "/pedidos",
+      search: { pedido: "pedido-inexistente" },
+    });
+  });
+  expect(activeSection()).toEqual(["Pedidos"]);
+  await act(async () => {
+    await router.navigate({ to: "/privacidad" });
+  });
+  expect(activeSection()).toEqual(["Perfil"]);
 });
