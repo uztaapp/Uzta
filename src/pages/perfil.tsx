@@ -1,11 +1,19 @@
-import { Brand } from "../components/brand";
+import { privacyCopy } from "../lib/privacy-copy";
+import {
+  useBuyerLocation,
+  locateBuyer,
+  selectBuyerLocality,
+  nearbyLocality,
+  localityMatches,
+} from "../lib/buyer-location";
 import { SalesLinks, SalesPanel } from "../components/sales-panel";
 import { MyFavorites } from "../components/favorites";
 import "./perfil.css";
 import { t, useLanguage } from "../lib/language";
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import {
+  ShieldCheck,
   Settings,
   MapPin,
   Heart,
@@ -30,6 +38,11 @@ import { languages, currentLanguage } from "../lib/language";
 export function Perfil() {
   useLanguage();
   const { data, run, show, mode, busy, signOut, managedFarmId } = useDemo();
+  const buyerLocation = useBuyerLocation(
+    data.sessionActive && !busy && !data.profile.location,
+  );
+  const detectedTown = nearbyLocality(buyerLocation.point, data.farms);
+  const profileLocationInput = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { apartado?: string };
   const [editing, setEditing] = useState(false);
@@ -57,6 +70,13 @@ export function Perfil() {
       return;
     }
     if (await run({ type: "profile", value: result.data })) {
+      const place = data.farms.find(
+        (f) =>
+          f.catalogVisible !== false &&
+          localityMatches(f.location, result.data.location) &&
+          localityMatches(result.data.location, f.location),
+      );
+      selectBuyerLocality(result.data.location, place?.position);
       setEditing(false);
       setError("");
     }
@@ -124,7 +144,6 @@ export function Perfil() {
     );
   return (
     <div className="uzta-profile">
-      <Brand variant="footer" decorative />
       <div className="page-title">
         <h1>{t("Mi perfil")}</h1>
         <button
@@ -158,7 +177,11 @@ export function Perfil() {
           <MapPin aria-hidden="true" />
           <span>
             <small>{t("Dirección de entrega / ubicación")}</small>
-            {data.profile.location}
+            {buyerLocation.locality ||
+              data.profile.location ||
+              (detectedTown
+                ? `${t("Cerca de")} ${detectedTown}`
+                : t("Sin localidad configurada"))}
           </span>
           <ChevronRight />
         </button>
@@ -220,6 +243,11 @@ export function Perfil() {
           })}
       </div>
       <div className="profile-bottom">
+        <Link className="profile-row" to="/privacidad">
+          <ShieldCheck aria-hidden="true" />
+          <span>{privacyCopy[currentLanguage()].title}</span>
+          <ChevronRight aria-hidden="true" />
+        </Link>
         <button className="profile-row" onClick={() => setGuideOpen(true)}>
           <HelpCircle />
           <span>{t("Ayuda y soporte")}</span>
@@ -291,11 +319,37 @@ export function Perfil() {
                 {t("Ubicación")}
                 <input
                   name="location"
+                  ref={profileLocationInput}
                   required
                   maxLength={200}
-                  defaultValue={data.profile.location}
+                  defaultValue={buyerLocation.locality || data.profile.location}
                 />
               </label>
+              <button
+                type="button"
+                className="text-button"
+                disabled={buyerLocation.status === "pending"}
+                onClick={() => void locateBuyer()}
+              >
+                {t("Usar mi ubicación")}
+              </button>
+              {detectedTown && (
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => {
+                    if (profileLocationInput.current)
+                      profileLocationInput.current.value = detectedTown;
+                  }}
+                >
+                  {t("Usar localidad detectada")}: {detectedTown}
+                </button>
+              )}
+              <p className="subtle">
+                {t(
+                  "La localidad del comprador no modifica la ubicación pública de tu tienda.",
+                )}
+              </p>
               <p className="subtle">
                 {mode === "cloud"
                   ? t(

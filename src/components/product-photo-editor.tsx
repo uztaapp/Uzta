@@ -8,8 +8,10 @@ export function ProductPhotoEditor({
   product,
   onChange,
   onPending,
+  cover = false,
 }: {
-  product: Product;
+  product: Pick<Product, "name" | "photo" | "photoUrl" | "crop">;
+  cover?: boolean;
   onChange: (src: string | null) => void;
   onPending: (pending: boolean) => void;
 }) {
@@ -51,16 +53,19 @@ export function ProductPhotoEditor({
     }
   }
   return (
-    <section className="photo-editor" aria-label={t("Fotografía del producto")}>
+    <section
+      className="photo-editor"
+      aria-label={t(cover ? "Portada de la tienda" : "Fotografía del producto")}
+    >
       <Photo
         src={product.photo === undefined ? product.photoUrl : product.photo}
         crop={product.photo === null ? [0, 0, 0, 0] : product.crop}
         label={product.name || "Producto"}
       />
       <label>
-        {t("Fotografía del producto")}
+        {t(cover ? "Portada de la tienda" : "Fotografía del producto")}
         <input
-          aria-label="Elegir fotografía"
+          aria-label={t(cover ? "Elegir portada" : "Elegir fotografía")}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           disabled={pending}
@@ -84,7 +89,9 @@ export function ProductPhotoEditor({
       ) : null}
       <p className="subtle">
         {t(
-          "JPG, PNG o WebP. Se reduce el tamaño y se eliminan los metadatos de ubicación. La foto se guarda al pulsar Guardar producto.",
+          cover
+            ? "La portada se guarda al pulsar Guardar tienda. Se eliminan los metadatos de ubicación."
+            : "JPG, PNG o WebP. Se reduce el tamaño y se eliminan los metadatos de ubicación. La foto se guarda al pulsar Guardar producto.",
         )}
       </p>
     </section>

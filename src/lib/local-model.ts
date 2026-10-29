@@ -22,6 +22,30 @@ const slotSchema = z.object({
 });
 export const farmSchema = z.object({
   catalogVisible: z.boolean().optional(),
+  cover: productPhotoSchema,
+  coverPath: z
+    .string()
+    .refine((v) => {
+      try {
+        checkedPhotoPath(v);
+        return true;
+      } catch {
+        return false;
+      }
+    })
+    .nullable()
+    .optional(),
+  coverUrl: z
+    .string()
+    .refine((v) => {
+      try {
+        signedPhotoUrl(v, "uzta-producer-covers");
+        return true;
+      } catch {
+        return false;
+      }
+    })
+    .optional(),
   euskoNotes: z.boolean().optional(),
   euskoDigital: z.boolean().optional(),
   sellerType: z.enum(["professional", "private"]).nullable().optional(),

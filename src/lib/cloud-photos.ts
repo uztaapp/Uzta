@@ -2,6 +2,8 @@ import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { productPhotoSchema } from "./product-photo";
 export const PHOTO_BUCKET = "uzta-product-photos";
+export const COVER_BUCKET = "uzta-producer-covers";
+type PhotoBucket = typeof PHOTO_BUCKET | typeof COVER_BUCKET;
 const ORIGIN = "https://abgysktjctrxfkcejjwu.supabase.co";
 const uuid = z.uuid();
 const pathSchema = z
@@ -13,11 +15,14 @@ export function photoPath(path: string) {
   pieces.forEach((p, i) => uuid.parse(i === 3 ? p.slice(0, -5) : p));
   return path;
 }
-export function signedPhotoUrl(value: string) {
+export function signedPhotoUrl(
+  value: string,
+  bucket: PhotoBucket = PHOTO_BUCKET,
+) {
   const url = new URL(value);
   if (
     url.origin !== ORIGIN ||
-    !url.pathname.startsWith(`/storage/v1/object/sign/${PHOTO_BUCKET}/`) ||
+    !url.pathname.startsWith(`/storage/v1/object/sign/${bucket}/`) ||
     url.username ||
     url.password ||
     url.hash ||
@@ -26,7 +31,7 @@ export function signedPhotoUrl(value: string) {
     throw Error("La fotografía no pertenece al almacenamiento de UZTA.");
   photoPath(
     decodeURIComponent(
-      url.pathname.slice(`/storage/v1/object/sign/${PHOTO_BUCKET}/`.length),
+      url.pathname.slice(`/storage/v1/object/sign/${bucket}/`.length),
     ),
   );
   return url.href;
@@ -37,6 +42,7 @@ export async function uploadProductPhoto(
   farmId: string,
   productId: string,
   dataUrl: string,
+  bucket: PhotoBucket = PHOTO_BUCKET,
 ) {
   uuid.parse(userId);
   uuid.parse(farmId);
@@ -57,7 +63,7 @@ export async function uploadProductPhoto(
     `${userId}/${farmId}/${productId}/${crypto.randomUUID()}.webp`,
   );
   const result = await api.storage
-    .from(PHOTO_BUCKET)
+    .from(bucket)
     .upload(path, new Blob([bytes], { type: "image/webp" }), {
       contentType: "image/webp",
       upsert: false,
@@ -65,11 +71,17 @@ export async function uploadProductPhoto(
     });
   if (result.error)
     throw Error(
-      "No se pudo subir la fotografía. El producto todavía no se ha guardado.",
+      bucket === COVER_BUCKET
+        ? "No se pudo subir la portada. La tienda todavía no se ha guardado."
+        : "No se pudo subir la fotografía. El producto todavía no se ha guardado.",
     );
   return path;
 }
-export async function loadProductPhotos(api: SupabaseClient, paths: string[]) {
+export async function loadProductPhotos(
+  api: SupabaseClient,
+  paths: string[],
+  bucket: PhotoBucket = PHOTO_BUCKET,
+) {
   const unique = [...new Set(paths)].filter((path) => {
     try {
       photoPath(path);
@@ -83,7 +95,7 @@ export async function loadProductPhotos(api: SupabaseClient, paths: string[]) {
   // Signed links are temporary and never persisted in the database or shared links.
   try {
     const response = await api.storage
-      .from(PHOTO_BUCKET)
+      .from(bucket)
       .createSignedUrls(unique, 900);
     if (response.error) return result;
     for (const row of response.data ?? []) {
@@ -95,7 +107,7 @@ export async function loadProductPhotos(api: SupabaseClient, paths: string[]) {
       )
         continue;
       try {
-        result.set(row.path, signedPhotoUrl(row.signedUrl));
+        result.set(row.path, signedPhotoUrl(row.signedUrl, bucket));
       } catch {
         /* Keep a neutral placeholder for an invalid response. */
       }

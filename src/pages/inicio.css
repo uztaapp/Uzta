@@ -286,3 +286,39 @@
 .uzta-home .categories::-webkit-scrollbar {
   display: none;
 }
+
+.uzta-home .home-location {
+  font-size: 12px;
+  color: #53604e;
+  margin-bottom: 0;
+}
+.uzta-home .product-copy {
+  padding: 10px;
+}
+.uzta-home .product-copy h3 {
+  font-size: 16px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.uzta-home .product-copy > p {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.uzta-home .product-copy > p strong {
+  font-size: 18px;
+}
+.uzta-home .product-copy > small {
+  font-size: 12px;
+  line-height: 1.4;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.uzta-home .product-copy small span:first-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.uzta-home .product-copy .availability-label,
+.uzta-home .product-copy .eusko-badge {
+  font-size: 12px;
+  white-space: normal;
+}

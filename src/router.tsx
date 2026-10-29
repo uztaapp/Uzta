@@ -1,6 +1,5 @@
 import { SheetIcon } from "./components/sheet-icon";
-import { Brand } from "./components/brand";
-import { Privacidad, PrivacyLink } from "./pages/privacidad";
+import { Privacidad } from "./pages/privacidad";
 import {
   createRootRoute,
   createRoute,
@@ -47,17 +46,11 @@ export function Shell() {
         <a className="skip" href="#contenido">
           Saltar al contenido
         </a>
-        <NotificationBell />
+        {pathname !== "/explorar" && <NotificationBell />}
         <main id="contenido">
           <AppRecovery key={pathname}>
             <Outlet />
           </AppRecovery>
-          <footer className="legal-footer">
-            {pathname !== "/" && pathname !== "/perfil" && (
-              <Brand variant="footer" decorative />
-            )}
-            <PrivacyLink />
-          </footer>
         </main>
         <BottomNavigation />
       </div>

@@ -1,5 +1,59 @@
 export const releaseLabels: Record<string, readonly [string, string, string]> =
   {
+    "Cerca de": ["Près de", "Near", "Inguruan:"],
+    "Ubicación aproximada": [
+      "Position approximative",
+      "Approximate location",
+      "Gutxi gorabeherako kokapena",
+    ],
+    Localidad: ["Localité", "Town", "Herria"],
+    "Selecciona una localidad para buscar cerca de ti.": [
+      "Choisissez une localité pour rechercher près de vous.",
+      "Choose a town to search nearby.",
+      "Aukeratu herri bat inguruan bilatzeko.",
+    ],
+    "Sin localidad configurada": [
+      "Aucune localité définie",
+      "No town selected",
+      "Ez da herririk aukeratu",
+    ],
+    "Usar localidad detectada": [
+      "Utiliser la localité détectée",
+      "Use detected town",
+      "Erabili hautemandako herria",
+    ],
+    "La localidad del comprador no modifica la ubicación pública de tu tienda.":
+      [
+        "La localité de l’acheteur ne modifie pas la position publique de votre boutique.",
+        "The buyer’s town does not change your store’s public location.",
+        "Eroslearen herriak ez du dendaren kokapen publikoa aldatzen.",
+      ],
+    "Las portadas aún no están disponibles.": [
+      "Les photos de couverture ne sont pas encore disponibles.",
+      "Cover photos are not available yet.",
+      "Azaleko argazkiak ez daude erabilgarri oraindik.",
+    ],
+    "Portada de la tienda": [
+      "Photo de couverture",
+      "Store cover photo",
+      "Dendaren azaleko argazkia",
+    ],
+    "Elegir portada": [
+      "Choisir une couverture",
+      "Choose cover photo",
+      "Aukeratu azaleko argazkia",
+    ],
+    "La portada se guarda al pulsar Guardar tienda. Se eliminan los metadatos de ubicación.":
+      [
+        "La couverture est enregistrée avec la boutique. Les métadonnées de localisation sont supprimées.",
+        "The cover is saved with the store. Location metadata is removed.",
+        "Azala denda gordetzean gordetzen da. Kokapen metadatuak kentzen dira.",
+      ],
+    "No se pudo cargar la portada.": [
+      "Impossible de charger la couverture.",
+      "The cover photo could not be loaded.",
+      "Ezin izan da azaleko argazkia kargatu.",
+    ],
     "Más categorías": [
       "Plus de catégories",
       "More categories",

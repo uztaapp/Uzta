@@ -1,3 +1,4 @@
+import { StoreCover } from "../components/store-cover";
 import {
   SellerReviews,
   RatingSummary,
@@ -66,7 +67,8 @@ export function Productor() {
   return (
     <div className="uzta-producer">
       <div className="producer-hero">
-        <Photo
+        <StoreCover
+          farm={farm}
           crop={mode === "demo" ? [480, 105, 170, 110] : [0, 0, 0, 0]}
           label={`${mode === "demo" ? "Explotación de ejemplo" : "Explotación"}: ${farm.name}`}
         />

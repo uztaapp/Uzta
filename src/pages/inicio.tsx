@@ -1,3 +1,11 @@
+import { StoreCover } from "../components/store-cover";
+import {
+  useBuyerLocation,
+  locateBuyer,
+  selectBuyerLocality,
+  nearbyLocality,
+  localityMatches,
+} from "../lib/buyer-location";
 import { SheetIcon, type SheetIconName } from "../components/sheet-icon";
 import { EuskoBadge } from "../components/eusko";
 import {
@@ -14,10 +22,9 @@ import { Brand } from "../components/brand";
 import { t, useLanguage } from "../lib/language";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import { Search, MapPin, Heart, ChevronRight, ChevronDown } from "lucide-react";
+import { MapPin, Heart, ChevronRight, ChevronDown } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
-import { NearbyControls } from "../components/nearby-controls";
-import { withinRadius, distanceLabel, type Position } from "../lib/nearby";
+import { withinRadius, distanceLabel } from "../lib/nearby";
 export function Inicio() {
   useLanguage();
   const categoriesRef = useRef<HTMLDivElement>(null);
@@ -50,20 +57,25 @@ export function Inicio() {
   }, []);
   const [locationOpen, setLocationOpen] = useState(false);
   const [allFarms, setAllFarms] = useState(false);
-  const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
-  const [center, setCenter] = useState<Position | null>(null);
-  const [radius, setRadius] = useState(10);
-  const normalize = (text: string) =>
-    text
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLocaleLowerCase("es")
-      .trim();
   const { data, run, mode, busy, storageError } = useDemo();
+  const buyerLocation = useBuyerLocation(!busy && !data.profile.location);
+  const center = buyerLocation.point;
+  const manualLocality =
+    buyerLocation.source === "manual" ? buyerLocation.locality : "";
+  const detectedTown = nearbyLocality(center, data.farms);
+  const locationLabel =
+    manualLocality ||
+    (detectedTown
+      ? `${t("Cerca de")} ${detectedTown}`
+      : center
+        ? t("Ubicación aproximada")
+        : (!buyerLocation.source ? data.profile.location : "") ||
+          t("Productos cerca de ti"));
+  const [radius, setRadius] = useState(10);
   const visible = data.products.filter(
     (p) =>
       p.active &&
@@ -76,7 +88,12 @@ export function Inicio() {
       ) &&
       (!category || p.category === category) &&
       (!onlyFavorites || data.favorites.includes(p.id)) &&
-      normalize(p.name).includes(normalize(query)),
+      (!manualLocality ||
+        center ||
+        localityMatches(
+          data.farms.find((f) => f.id === p.farmId)?.location ?? "",
+          manualLocality,
+        )),
   );
   return (
     <div className="uzta-home">
@@ -100,26 +117,93 @@ export function Inicio() {
         onClick={() => setLocationOpen(!locationOpen)}
       >
         <MapPin size={16} aria-hidden="true" />
-        {data.profile.location || t("Productos cerca de ti")}
+        {locationLabel}
         <ChevronDown size={13} aria-hidden="true" />
       </button>
       <div id="home-zone" className="home-zone" hidden={!locationOpen}>
-        <NearbyControls
-          center={center}
-          radius={radius}
-          onCenter={setCenter}
-          onRadius={setRadius}
-        />
+        <button
+          type="button"
+          className="text-button"
+          disabled={buyerLocation.status === "pending"}
+          onClick={() => void locateBuyer()}
+        >
+          {t(
+            buyerLocation.status === "pending"
+              ? "Obteniendo ubicación…"
+              : "Usar mi ubicación",
+          )}
+        </button>
+        {buyerLocation.status === "unavailable" && (
+          <p role="status">
+            {t("Selecciona una localidad para buscar cerca de ti.")}
+          </p>
+        )}
+        <form
+          className="uzta-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const label = String(
+              new FormData(e.currentTarget).get("locality") ?? "",
+            ).trim();
+            const farm = data.farms.find(
+              (f) =>
+                f.catalogVisible !== false &&
+                localityMatches(f.location, label) &&
+                localityMatches(label, f.location),
+            );
+            selectBuyerLocality(label, farm?.position);
+            setLocationOpen(false);
+          }}
+        >
+          <label>
+            {t("Localidad")}
+            <input
+              name="locality"
+              maxLength={200}
+              required
+              defaultValue={manualLocality}
+              list="home-localities"
+            />
+          </label>
+          <datalist id="home-localities">
+            {[
+              ...new Set(
+                data.farms
+                  .filter((f) => f.catalogVisible !== false)
+                  .map((f) => f.location),
+              ),
+            ].map((label) => (
+              <option key={label} value={label} />
+            ))}
+          </datalist>
+          <label>
+            {t("Radio de búsqueda")}
+            <select
+              value={radius}
+              onChange={(e) => setRadius(Number(e.target.value))}
+            >
+              {[5, 10, 25, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n} km
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="primary">{t("Aplicar zona")}</button>
+        </form>
+        {(center || manualLocality) && (
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => {
+              selectBuyerLocality("");
+              setLocationOpen(false);
+            }}
+          >
+            {t("Quitar filtro de zona")}
+          </button>
+        )}
       </div>
-      <label className="search">
-        <Search size={21} />
-        <input
-          aria-label="Buscar productos"
-          placeholder="¿Qué productos frescos buscas?"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </label>
       <div className="category-carousel">
         <div
           className="categories"
@@ -194,7 +278,6 @@ export function Inicio() {
         <button
           onClick={() => {
             setCategory("");
-            setQuery("");
             setOnlyFavorites(false);
           }}
         >
@@ -305,7 +388,10 @@ export function Inicio() {
           .filter(
             (f) =>
               f.catalogVisible !== false &&
-              withinRadius(f.position, center, radius),
+              withinRadius(f.position, center, radius) &&
+              (!manualLocality ||
+                center ||
+                localityMatches(f.location, manualLocality)),
           )
           .slice(0, allFarms ? undefined : 1)
           .map((f) => (
@@ -316,7 +402,8 @@ export function Inicio() {
                 search={{ tienda: f.id }}
                 className="farm-banner"
               >
-                <Photo
+                <StoreCover
+                  farm={f}
                   crop={mode === "demo" ? [365, 96, 285, 82] : [0, 0, 0, 0]}
                   label={`${mode === "demo" ? "Tienda de ejemplo" : "Tienda"}: ${f.name}`}
                 />

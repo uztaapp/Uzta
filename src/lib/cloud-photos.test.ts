@@ -102,3 +102,20 @@ test("an unavailable photo service degrades to placeholders without failing the 
   await loadProductPhotos(f.api, []);
   expect(f.sign).toHaveBeenCalledTimes(1);
 });
+
+test("cover upload reuses immutable processing in the separate private bucket", async () => {
+  const f = storage();
+  const path = await uploadProductPhoto(
+    f.api,
+    USER,
+    FARM,
+    FARM,
+    PHOTO,
+    "uzta-producer-covers",
+  );
+  expect(f.from).toHaveBeenCalledWith("uzta-producer-covers");
+  expect(path.startsWith(`${USER}/${FARM}/${FARM}/`)).toBe(true);
+  const coverUrl = `https://abgysktjctrxfkcejjwu.supabase.co/storage/v1/object/sign/uzta-producer-covers/${path}?token=temporary`;
+  expect(signedPhotoUrl(coverUrl, "uzta-producer-covers")).toBe(coverUrl);
+  expect(() => signedPhotoUrl(coverUrl)).toThrow();
+});

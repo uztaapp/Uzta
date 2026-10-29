@@ -6,6 +6,7 @@ import { cloudClient } from "./cloud-client";
 import { sellerPosition } from "./sellers";
 import cloudConfig from "../../config/uzta-cloud.public.json";
 import {
+  COVER_BUCKET,
   loadProductPhotos,
   uploadProductPhoto,
   photoPath,
@@ -145,6 +146,7 @@ function check<T>(result: { data: T; error: unknown }): T {
   return result.data;
 }
 const producerRow = z.object({
+  cover_path: z.string().nullable().optional(),
   eusko_notes: z.boolean().optional(),
   eusko_digital: z.boolean().optional(),
   seller_type: z.enum(["professional", "private"]).nullable().optional(),
@@ -271,7 +273,20 @@ export async function loadCloudData(
     language: "Español",
   };
   data.sessionActive = !!user;
+  const coverUrls = cloudConfig.producerCoversReady
+    ? await loadProductPhotos(
+        api,
+        farms.map((f) => f.cover_path ?? "").filter(Boolean),
+        COVER_BUCKET,
+      )
+    : new Map<string, string>();
   data.farms = farms.map((f) => ({
+    ...(cloudConfig.producerCoversReady
+      ? {
+          coverPath: f.cover_path ?? null,
+          coverUrl: f.cover_path ? coverUrls.get(f.cover_path) : undefined,
+        }
+      : {}),
     catalogVisible:
       !cloudConfig.knownExampleProducerIds.includes(f.id) ||
       products.some(
@@ -587,7 +602,24 @@ export async function persistCloudCommand(
         active: true,
       };
     });
+    let coverPathValue: string | null | undefined;
+    if (f.cover !== undefined) {
+      if (!cloudConfig.producerCoversReady)
+        throw Error("Portadas pendientes de activar en Supabase.");
+      coverPathValue =
+        f.cover === null
+          ? null
+          : await uploadProductPhoto(
+              api,
+              user.id,
+              f.id,
+              f.id,
+              f.cover,
+              COVER_BUCKET,
+            );
+    }
     const changed =
+      coverPathValue !== undefined ||
       !previous ||
       (cloudConfig.euskoReady &&
         (previous.euskoNotes !== f.euskoNotes ||
@@ -602,6 +634,9 @@ export async function persistCloudCommand(
           {
             id: f.id,
             owner_id: user.id,
+            ...(coverPathValue !== undefined
+              ? { cover_path: coverPathValue }
+              : {}),
             name: f.name.trim(),
             ...(cloudConfig.sellerTypesReady
               ? { seller_type: f.sellerType ?? null }

@@ -1,3 +1,4 @@
+import { selectBuyerLocality } from "./lib/buyer-location";
 import React from "react";
 import { test, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
@@ -8,7 +9,10 @@ import {
 } from "@tanstack/react-router";
 import { routeTree } from "./router";
 import { STORAGE_KEY, seedStore, type LocalStore } from "./lib/local-model";
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  localStorage.clear();
+  selectBuyerLocality("");
+});
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -32,17 +36,16 @@ test("a removed product photo stays removed in order thumbnails", async () => {
     screen.getByRole("img", { name: "Sin foto: Tomates" }),
   ).toBeInTheDocument();
 });
-test("nearby catalogue excludes other areas without storing the search coordinates", async () => {
+test("manual locality filters the nearby catalogue without storing coordinates", async () => {
   await open("/");
-  fireEvent.click(screen.getByRole("button", { name: "Bayona" }));
-  fireEvent.change(screen.getByLabelText("Latitud"), {
-    target: { value: "43.45" },
-  });
-  fireEvent.change(screen.getByLabelText("Longitud"), {
-    target: { value: "-1.46" },
+  fireEvent.click(
+    screen.getByRole("button", { name: "Productos cerca de ti" }),
+  );
+  fireEvent.change(screen.getByLabelText("Localidad"), {
+    target: { value: "Ustaritz" },
   });
   fireEvent.change(screen.getByLabelText("Radio de búsqueda"), {
-    target: { value: "1" },
+    target: { value: "5" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Aplicar zona" }));
   expect(screen.getByRole("heading", { name: "Tomates" })).toBeInTheDocument();
@@ -50,6 +53,7 @@ test("nearby catalogue excludes other areas without storing the search coordinat
     screen.queryByRole("heading", { name: "Miel de flores · 500 g" }),
   ).not.toBeInTheDocument();
   expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Ustaritz" }));
   fireEvent.click(
     screen.getByRole("button", { name: "Quitar filtro de zona" }),
   );
@@ -57,6 +61,7 @@ test("nearby catalogue excludes other areas without storing the search coordinat
     screen.getByRole("heading", { name: "Miel de flores · 500 g" }),
   ).toBeInTheDocument();
 });
+
 test("profile help explains the existing buyer and producer flows without promising payments", async () => {
   await open("/perfil");
   fireEvent.click(screen.getByRole("button", { name: /Ayuda y soporte/ }));
@@ -67,24 +72,19 @@ test("profile help explains the existing buyer and producer flows without promis
   expect(dialog).toHaveTextContent("todavía no tramita pagos");
 });
 
-test("search and all-products expose published products that are not featured", async () => {
+test("categories and all-products expose published products that are not featured", async () => {
   const data = seedStore();
   data.products.find((p) => p.id === "hierbas")!.featured = false;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   await open("/");
   expect(
-    screen.queryByRole("heading", { name: "Hierbas aromáticas" }),
-  ).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Buscar productos"), {
-    target: { value: "AROMATICAS" },
-  });
-  expect(
     screen.getByRole("heading", { name: "Hierbas aromáticas" }),
   ).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Buscar productos"), {
-    target: { value: "" },
-  });
-  fireEvent.click(screen.getByRole("button", { name: /Ver todos/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Frutas" }));
+  expect(
+    screen.queryByRole("heading", { name: "Hierbas aromáticas" }),
+  ).toBeNull();
+  fireEvent.click(screen.getAllByRole("button", { name: /Ver todos/ })[0]);
   expect(
     screen.getByRole("heading", { name: "Hierbas aromáticas" }),
   ).toBeInTheDocument();

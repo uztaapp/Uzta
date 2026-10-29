@@ -38,9 +38,12 @@ export function Gestion({ section }: { section: string }) {
   const [edit, setEdit] = useState<Product | null>(null);
   const [saved, setSaved] = useState("");
   const [error, setError] = useState("");
+  const [cover, setCover] = useState<string | null | undefined>(undefined);
+  const [coverPending, setCoverPending] = useState(false);
   const [photoPending, setPhotoPending] = useState(false);
   async function saveFarm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (coverPending) return;
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     let position = farm.position;
@@ -74,6 +77,7 @@ export function Gestion({ section }: { section: string }) {
         type: "farm",
         value: {
           ...farm,
+          ...(cover !== undefined ? { cover } : {}),
           ...(sellerTypesEnabled ? { sellerType: sellerType || null } : {}),
           position: sellerPosition(position, sellerType || farm.sellerType),
           name: String(form.get("name")).trim(),
@@ -83,8 +87,10 @@ export function Gestion({ section }: { section: string }) {
           ...(euskoEnabled ? { euskoNotes: notes, euskoDigital: digital } : {}),
         },
       })
-    )
+    ) {
+      setCover(undefined);
       setSaved("Tienda guardada.");
+    }
   }
   async function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -215,8 +221,25 @@ export function Gestion({ section }: { section: string }) {
       ) : null}
       {section === "tienda" ? (
         <form className="uzta-form" onSubmit={saveFarm}>
-          <fieldset disabled={busy}>
+          <fieldset disabled={busy || coverPending}>
             <h2>{t("Mi tienda")}</h2>
+            {mode === "demo" || cloudConfig.producerCoversReady ? (
+              <ProductPhotoEditor
+                cover
+                product={{
+                  name: farm.name,
+                  photo: cover,
+                  photoUrl: farm.coverUrl,
+                  crop: [0, 0, 0, 0],
+                }}
+                onChange={setCover}
+                onPending={setCoverPending}
+              />
+            ) : (
+              <p className="subtle">
+                {t("Las portadas aún no están disponibles.")}
+              </p>
+            )}
             <SellerFields
               value={sellerType}
               onChange={setSellerType}

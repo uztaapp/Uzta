@@ -262,3 +262,22 @@
   background: #31552b;
   margin-top: 18px;
 }
+
+.uzta-producer .producer-products h3 {
+  font-size: 16px;
+  line-height: 1.35;
+}
+.uzta-producer .producer-products p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.uzta-producer .producer-products p strong {
+  font-size: 17px;
+}
+.uzta-producer .producer-products small,
+.uzta-producer .producer-products .availability-label {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

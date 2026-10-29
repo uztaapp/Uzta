@@ -1205,3 +1205,13 @@ nav a.active svg {
 .primary[disabled] {
   opacity: 0.5;
 }
+
+.cover-error {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #eaf1e4;
+  color: #31552b;
+  text-align: center;
+  font-size: 14px;
+}
