@@ -1,3 +1,8 @@
+import {
+  NavigationOrigin,
+  useNavigationOrigin,
+  type NavigationSection,
+} from "./components/navigation-origin";
 import { SheetIcon } from "./components/sheet-icon";
 import { Privacidad } from "./pages/privacidad";
 import {
@@ -7,6 +12,7 @@ import {
   Outlet,
   Link,
   useRouterState,
+  useLinkProps,
 } from "@tanstack/react-router";
 import { DemoProvider, ModeBanner, useDemo } from "./design";
 import { lazy, Suspense } from "react";
@@ -46,16 +52,42 @@ export function Shell() {
         <a className="skip" href="#contenido">
           Saltar al contenido
         </a>
-        <HeaderLayout>
-          <main id="contenido">
-            <AppRecovery key={pathname}>
-              <Outlet />
-            </AppRecovery>
-          </main>
-          <BottomNavigation />
-        </HeaderLayout>
+        <NavigationOrigin>
+          <HeaderLayout>
+            <main id="contenido">
+              <AppRecovery key={pathname}>
+                <Outlet />
+              </AppRecovery>
+            </main>
+            <BottomNavigation />
+          </HeaderLayout>
+        </NavigationOrigin>
       </div>
     </DemoProvider>
+  );
+}
+function NavigationItem({
+  to,
+  label,
+  children,
+}: {
+  to: NavigationSection;
+  label: string;
+  children: React.ReactNode;
+}) {
+  const section = useNavigationOrigin();
+  const props = useLinkProps({ to });
+  const active = section === to;
+  return (
+    <a
+      {...props}
+      aria-label={t(label)}
+      className={active ? "active" : undefined}
+      aria-current={active ? "page" : undefined}
+      data-status={active ? "active" : undefined}
+    >
+      {children}
+    </a>
   );
 }
 function BottomNavigation() {
@@ -63,15 +95,9 @@ function BottomNavigation() {
   const { data } = useDemo();
   const count = Object.values(data.quantities).filter((q) => q > 0).length;
   return (
-    <nav aria-label="Navegación principal">
+    <nav className="bottom-navigation" aria-label="Navegación principal">
       {destinations.map(([to, label, icon]) => (
-        <Link
-          key={to}
-          to={to}
-          aria-label={t(label)}
-          activeOptions={{ exact: true }}
-          activeProps={{ className: "active", "aria-current": "page" }}
-        >
+        <NavigationItem key={to} to={to} label={label}>
           <span className="nav-icon">
             <SheetIcon name={icon} />
             {to === "/cesta" && count > 0 ? (
@@ -79,7 +105,7 @@ function BottomNavigation() {
             ) : null}
           </span>
           <span>{t(label)}</span>
-        </Link>
+        </NavigationItem>
       ))}
     </nav>
   );

@@ -20,6 +20,7 @@ vi.mock("./notification-bell", () => ({
 }));
 beforeEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
   selectBuyerLocality("");
 });
 afterEach(cleanup);
@@ -32,7 +33,7 @@ async function open(path: string) {
   render(<RouterProvider router={router} />);
   return router;
 }
-test("one persistent logo; bell only at home; seller actions occupy the shared row", async () => {
+test("logo only at home; bell only at home; seller actions occupy the compact row", async () => {
   const router = await open("/");
   const logo = screen.getByRole("img", { name: "UZTA" });
   expect(
@@ -42,7 +43,7 @@ test("one persistent logo; bell only at home; seller actions occupy the shared r
   await act(async () => {
     await router.navigate({ to: "/productor", search: { tienda: "urki" } });
   });
-  expect(screen.getByRole("img", { name: "UZTA" })).toBe(logo);
+  expect(screen.queryByRole("img", { name: "UZTA" })).toBeNull();
   expect(logo).toHaveAttribute("width", "128");
   expect(screen.queryByRole("button", { name: "Notificaciones" })).toBeNull();
   expect(
@@ -109,4 +110,58 @@ test("Explore retains its map header and no shared logo or notification controls
   expect(document.querySelector(".app-header")).toBeNull();
   expect(screen.queryByRole("img", { name: "UZTA" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Notificaciones" })).toBeNull();
+});
+
+function activeSection() {
+  const nav = screen.getByRole("navigation", { name: "Navegación principal" });
+  return within(nav)
+    .queryAllByRole("link")
+    .filter((link) => link.getAttribute("aria-current") === "page")
+    .map((link) => link.getAttribute("aria-label"));
+}
+test("seller preserves Home through reload, and Explore through back/forward history", async () => {
+  let router = await open("/");
+  expect(activeSection()).toEqual(["Inicio"]);
+  await act(async () => {
+    await router.navigate({ to: "/productor", search: { tienda: "urki" } });
+  });
+  expect(activeSection()).toEqual(["Inicio"]);
+  // Remount all app state while retaining the browser history entry, as a reload does.
+  cleanup();
+  render(<RouterProvider router={router} />);
+  expect(activeSection()).toEqual(["Inicio"]);
+  await act(async () => {
+    await router.navigate({ to: "/explorar" });
+  });
+  expect(activeSection()).toEqual(["Explorar"]);
+  await act(async () => {
+    await router.navigate({ to: "/productor", search: { tienda: "urki" } });
+  });
+  expect(activeSection()).toEqual(["Explorar"]);
+  expect(screen.getByRole("link", { name: "Volver" })).toHaveAttribute(
+    "href",
+    "/explorar",
+  );
+  await act(async () => {
+    router.history.back();
+  });
+  expect(activeSection()).toEqual(["Explorar"]);
+  await act(async () => {
+    router.history.forward();
+  });
+  expect(activeSection()).toEqual(["Explorar"]);
+});
+test("favorites retains its entry section without a second active Profile link", async () => {
+  const router = await open("/");
+  fireEvent.click(screen.getByRole("link", { name: "Mis favoritos" }));
+  await screen.findByRole("heading", { name: "Mis favoritos" });
+  expect(activeSection()).toEqual(["Inicio"]);
+  await act(async () => {
+    await router.navigate({ to: "/perfil", search: { apartado: "cuenta" } });
+  });
+  expect(activeSection()).toEqual(["Perfil"]);
+});
+test("direct seller link does not invent an origin section", async () => {
+  await open("/productor?tienda=urki");
+  expect(activeSection()).toEqual([]);
 });

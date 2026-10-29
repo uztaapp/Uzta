@@ -160,18 +160,6 @@
   font-size: 11px;
   color: #626c58;
 }
-.app:has(.uzta-orders) > nav {
-  background: #faf9f5f5;
-  border-color: #e8e7df;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
-.app:has(.uzta-orders) > nav a.active {
-  color: #31552b;
-}
-.app:has(.uzta-orders) > nav a.active .nav-icon > svg {
-  color: #31552b;
-  fill: #eaf1e4;
-}
 @media (max-width: 350px) {
   .app:has(.uzta-orders) {
     padding-inline: 16px;

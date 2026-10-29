@@ -8,6 +8,7 @@ import {
 import { createPortal } from "react-dom";
 import { Heart } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useNavigationOrigin } from "./navigation-origin";
 import { Brand } from "./brand";
 import { BackLink } from "./back-link";
 import { NotificationBell } from "./notification-bell";
@@ -21,17 +22,22 @@ export function HeaderActions({ children }: { children: ReactNode }) {
   return context.target ? createPortal(children, context.target) : null;
 }
 function HeaderFrame({
+  home = false,
   left,
   right,
   actionsRef,
 }: {
+  home?: boolean;
   left?: ReactNode;
   right?: ReactNode;
   actionsRef?: Ref<HTMLDivElement>;
 }) {
   useLanguage();
   return (
-    <header className="app-header" aria-label={t("Cabecera de UZTA")}>
+    <header
+      className={`app-header${home ? " app-header--home" : " app-header--compact"}`}
+      aria-label={t("Cabecera de UZTA")}
+    >
       <div className="app-header-navigation">
         <div className="app-header-back">{left}</div>
         <div className="app-header-right">
@@ -39,10 +45,12 @@ function HeaderFrame({
           <div ref={actionsRef} className="app-header-actions" />
         </div>
       </div>
-      <div className="app-header-brand">
-        <Brand />
-        <small>{t("Del productor a tu mesa")}</small>
-      </div>
+      {home && (
+        <div className="app-header-brand">
+          <Brand />
+          <small>{t("Del productor a tu mesa")}</small>
+        </div>
+      )}
     </header>
   );
 }
@@ -58,7 +66,7 @@ export function HeaderLoading() {
     );
   return (
     <div className="app">
-      <HeaderFrame />
+      <HeaderFrame home={pathname === "/"} />
       <p role="status" className="sr-only">
         {t("Abriendo UZTA…")}
       </p>
@@ -69,6 +77,7 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
   useLanguage();
   const location = useRouterState({ select: (state) => state.location });
   const pathname = location.pathname;
+  const origin = useNavigationOrigin();
   const section = (location.search as { apartado?: string }).apartado;
   const [target, setTarget] = useState<HTMLDivElement | null>(null);
   const personal = ["solicitudes", "favoritos", "comisiones"].includes(
@@ -82,6 +91,7 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
     <Actions.Provider value={{ target }}>
       {pathname !== "/explorar" && (
         <HeaderFrame
+          home={pathname === "/"}
           actionsRef={setTarget}
           right={pathname === "/" ? <NotificationBell /> : null}
           left={
@@ -109,7 +119,10 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
                 }
               />
             ) : (
-              <BackLink compact />
+              <BackLink
+                compact
+                to={pathname === "/productor" && origin ? origin : "/"}
+              />
             )
           }
         />

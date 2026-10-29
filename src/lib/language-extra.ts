@@ -409,6 +409,7 @@ export const extraLabels: Record<string, readonly [string, string, string]> = {
     "No published producers yet",
     "Oraindik ez dago argitaratutako ekoizlerik",
   ],
+  Volver: ["Retour", "Back", "Itzuli"],
   "Volver al inicio": [
     "Retour à l’accueil",
     "Back to home",

@@ -93,13 +93,67 @@
   pointer-events: none;
 }
 
-/* Keep both seller controls clear of the unchanged logo on narrow phones. */
-@media (max-width: 360px) {
-  .app-header-navigation {
-    align-items: flex-start;
-  }
-  .app-header-actions:has(> button + button) {
-    flex-direction: column;
-    gap: 0;
-  }
+/* Internal pages use one flow row: actions cannot overlap content or one another. */
+.app-header--compact {
+  padding-top: max(8px, env(safe-area-inset-top));
+  padding-bottom: 8px;
+}
+.app-header--compact .app-header-navigation {
+  position: static;
+  min-height: var(--app-header-row);
+  height: auto;
+}
+.app-header--compact .app-header-right {
+  margin-inline-start: auto;
+}
+.app-header--compact .app-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+/* Keep semantic page headings for readers without spending another visual row. */
+.app:has(> .app-header--compact) .page-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.app:has(> .app-header) > main {
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
+}
+/* All sections share fixed navigation geometry; the selected item has a shape and underline. */
+.app > nav.bottom-navigation {
+  padding: 8px 8px calc(10px + env(safe-area-inset-bottom));
+  background: #faf9f5f5;
+  align-items: stretch;
+}
+.app > nav.bottom-navigation a {
+  min-width: 0;
+  min-height: 52px;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 12px;
+  border-bottom: 3px solid transparent;
+  color: #4d514b;
+}
+.app > nav.bottom-navigation a.active {
+  color: #31552b;
+  background: #eaf1e4;
+  border-bottom-color: #31552b;
+}
+.app > nav.bottom-navigation a .nav-icon {
+  flex-shrink: 0;
+}
+
+.app:has(.uzta-explore) .uzta-explore {
+  height: calc(100dvh - 74px - env(safe-area-inset-bottom));
+}
+body:has(.uzta-explore) .local-strip + .app .uzta-explore {
+  height: calc(100dvh - 102px - env(safe-area-inset-bottom));
 }

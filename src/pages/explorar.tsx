@@ -218,7 +218,7 @@ export function Explorar() {
         <div className="explore-heading">
           <BackLink compact />
           <div>
-            <h1>{t("Explorar")}</h1>
+            <h1 className="sr-only">{t("Explorar")}</h1>
             <p role="status">
               {busy
                 ? t("Cargando productores…")

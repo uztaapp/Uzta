@@ -140,18 +140,6 @@
 .uzta-profile .profile-bottom .profile-row:last-child {
   border-bottom: 0;
 }
-.app:has(.uzta-profile) > nav {
-  background: #faf9f5f5;
-  border-color: #e8e7df;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
-.app:has(.uzta-profile) > nav a.active {
-  color: #31552b;
-}
-.app:has(.uzta-profile) > nav a.active .nav-icon > svg {
-  color: #31552b;
-  fill: #eaf1e4;
-}
 @media (max-width: 350px) {
   .app:has(.uzta-profile) {
     padding-inline: 16px;
