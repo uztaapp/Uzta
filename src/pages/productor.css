@@ -3,6 +3,7 @@
   background: #faf9f5;
   color: #171b15;
   padding-inline: 20px;
+  position: relative;
 }
 .app:has(.uzta-producer) main {
   padding-top: 0;
@@ -309,4 +310,36 @@
     justify-content: flex-end;
     align-items: center;
   }
+}
+
+/* Keep the shared controls on the cover without reserving a separate header row. */
+.app:has(.uzta-producer) > .app-header--compact {
+  position: absolute;
+  top: 0;
+  inset-inline: 20px;
+  z-index: 4;
+  pointer-events: none;
+}
+.app:has(.uzta-producer) > .app-header--compact::before {
+  content: "";
+  position: absolute;
+  inset: 0 -20px -20px;
+  background: linear-gradient(#0005, transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+.app:has(.uzta-producer) .app-header-back a,
+.app:has(.uzta-producer) .app-header-actions > button {
+  color: #fff;
+  background: #172311b3;
+  border-radius: 50%;
+}
+.app:has(.uzta-producer) .app-header-back a:hover,
+.app:has(.uzta-producer) .app-header-actions > button:hover {
+  background: #172311e6;
+}
+.app:has(.uzta-producer) .app-header-back a:focus-visible,
+.app:has(.uzta-producer) .app-header-actions > button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }
