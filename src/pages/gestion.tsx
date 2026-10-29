@@ -523,95 +523,6 @@ export function Gestion({
         >
           <form className="uzta-form" onSubmit={saveProduct}>
             <fieldset disabled={busy}>
-              <label>
-                {t("Nombre")}
-                <input
-                  name="name"
-                  required
-                  maxLength={100}
-                  defaultValue={edit.name}
-                />
-              </label>
-              <p>
-                {t(
-                  "La recogida usa la ubicación pública y los horarios de tu tienda.",
-                )}
-              </p>
-              <Link to="/perfil" search={{ apartado: "horarios" }}>
-                {t("Horarios y entregas")}
-              </Link>
-              <label>
-                {t("Descripción del producto")}
-                <textarea
-                  name="productDescription"
-                  maxLength={2000}
-                  defaultValue={edit.description ?? ""}
-                  disabled={!sellerTypesEnabled}
-                />
-              </label>
-              <div className="form-columns">
-                <label>
-                  {t("Precio (€)")}
-                  <input
-                    name="price"
-                    type="number"
-                    min="0.01"
-                    max="10000"
-                    step="0.01"
-                    required
-                    defaultValue={edit.priceCents / 100}
-                  />
-                </label>
-                <label>
-                  {t("Unidad")}
-                  <select name="unit" defaultValue={edit.unit}>
-                    <option value="kg">kg</option>
-                    <option value="docena">{t("docena")}</option>
-                    <option value="unidad">{t("unidad")}</option>
-                  </select>
-                </label>
-              </div>
-              <label>
-                {t("Existencias")}
-                <input
-                  name="stock"
-                  type="number"
-                  min="0"
-                  max="100000"
-                  step="1"
-                  required
-                  defaultValue={edit.stock}
-                />
-              </label>
-              {(mode === "demo" || cloudConfig.availabilityReady) && (
-                <AvailabilityFields key={edit.id} product={edit} />
-              )}
-              <label>
-                {t("Categoría")}
-                <select name="category" defaultValue={edit.category}>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {t(c)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="check-label">
-                <input
-                  type="checkbox"
-                  name="active"
-                  defaultChecked={edit.active}
-                />{" "}
-                {t("Publicado")}
-              </label>
-              <label className="check-label">
-                <input
-                  type="checkbox"
-                  name="featured"
-                  defaultChecked={edit.featured}
-                />{" "}
-                {t("Mostrar en inicio")}
-              </label>
               {mode === "demo" || cloudConfig.productPhotosReady ? (
                 <ProductPhotoEditor
                   key={edit.id}
@@ -628,6 +539,95 @@ export function Gestion({
                   {t(
                     "La carga de fotografías para cuentas reales necesita activar el almacenamiento de UZTA. Puedes continuar editando el producto.",
                   )}
+                  <label>
+                    {t("Nombre")}
+                    <input
+                      name="name"
+                      required
+                      maxLength={100}
+                      defaultValue={edit.name}
+                    />
+                  </label>
+                  <p>
+                    {t(
+                      "La recogida usa la ubicación pública y los horarios de tu tienda.",
+                    )}
+                  </p>
+                  <Link to="/perfil" search={{ apartado: "horarios" }}>
+                    {t("Horarios y entregas")}
+                  </Link>
+                  <label>
+                    {t("Descripción del producto")}
+                    <textarea
+                      name="productDescription"
+                      maxLength={2000}
+                      defaultValue={edit.description ?? ""}
+                      disabled={!sellerTypesEnabled}
+                    />
+                  </label>
+                  <div className="form-columns">
+                    <label>
+                      {t("Precio (€)")}
+                      <input
+                        name="price"
+                        type="number"
+                        min="0.01"
+                        max="10000"
+                        step="0.01"
+                        required
+                        defaultValue={edit.priceCents / 100}
+                      />
+                    </label>
+                    <label>
+                      {t("Unidad")}
+                      <select name="unit" defaultValue={edit.unit}>
+                        <option value="kg">kg</option>
+                        <option value="docena">{t("docena")}</option>
+                        <option value="unidad">{t("unidad")}</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label>
+                    {t("Existencias")}
+                    <input
+                      name="stock"
+                      type="number"
+                      min="0"
+                      max="100000"
+                      step="1"
+                      required
+                      defaultValue={edit.stock}
+                    />
+                  </label>
+                  {(mode === "demo" || cloudConfig.availabilityReady) && (
+                    <AvailabilityFields key={edit.id} product={edit} />
+                  )}
+                  <label>
+                    {t("Categoría")}
+                    <select name="category" defaultValue={edit.category}>
+                      {categories.map((c) => (
+                        <option key={c} value={c}>
+                          {t(c)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="check-label">
+                    <input
+                      type="checkbox"
+                      name="active"
+                      defaultChecked={edit.active}
+                    />{" "}
+                    {t("Publicado")}
+                  </label>
+                  <label className="check-label">
+                    <input
+                      type="checkbox"
+                      name="featured"
+                      defaultChecked={edit.featured}
+                    />{" "}
+                    {t("Mostrar en inicio")}
+                  </label>
                 </p>
               )}
               {error ? <p role="alert">{t(error)}</p> : null}
