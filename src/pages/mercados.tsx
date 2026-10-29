@@ -217,31 +217,30 @@ export function Mercados() {
                 : t("Pendiente")}
             </p>
             <small>{detail.source_license}</small>
-            {catalogueReview &&
-              (() => {
-                const evidence = marketCatalogue.find(
-                  (m) => m.catalog_id === detail.id,
-                );
-                return evidence ? (
-                  <aside>
-                    <p>
-                      {t("Confianza")}:{" "}
-                      {t(evidence.confidence === "high" ? "Alta" : "Media")}
-                    </p>
-                    {evidence.review_note && <p>{evidence.review_note}</p>}
-                    {evidence.source_urls
-                      .filter((s) => s.url !== detail.source_url)
-                      .map((s) => (
-                        <p key={s.url}>
-                          <a href={s.url} target="_blank" rel="noreferrer">
-                            {t("Fuente de información")}:{" "}
-                            {new URL(s.url).hostname}
-                          </a>
-                        </p>
-                      ))}
-                  </aside>
-                ) : null;
-              })()}
+            {(() => {
+              const evidence = marketCatalogue.find(
+                (m) => m.data.source_key === detail.source_key,
+              );
+              return evidence ? (
+                <aside>
+                  <p>
+                    {t("Confianza")}:{" "}
+                    {t(evidence.confidence === "high" ? "Alta" : "Media")}
+                  </p>
+                  {evidence.review_note && <p>{evidence.review_note}</p>}
+                  {evidence.source_urls
+                    .filter((s) => s.url !== detail.source_url)
+                    .map((s) => (
+                      <p key={s.url}>
+                        <a href={s.url} target="_blank" rel="noreferrer">
+                          {t("Fuente de información")}:{" "}
+                          {new URL(s.url).hostname}
+                        </a>
+                      </p>
+                    ))}
+                </aside>
+              ) : null;
+            })()}
             <h3>{t("Próximas fechas")}</h3>
             {cards(all.filter((o) => o.market.id === detail.id).slice(0, 12))}
             <h3>{t("Productores y artesanos participantes")}</h3>

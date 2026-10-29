@@ -1,6 +1,6 @@
 # Mercados y ferias — preparado para revisión, 29/10/2026
 
-Rama feature/markets-fairs. **Sin migraciones ni despliegue de esta función en producción.** marketsReady=false; no se simula que el guardado está activo. Una sola interfaz y las reservas existentes, sin segundo carrito ni sistema de entregas.
+Rama feature/markets-fairs. **Activación autorizada el 29/10/2026.** Migración aplicada con respaldo y controles transaccionales; 67 mercados publicados, 69 reglas y ninguna participación externa. marketsReady=true; datos servidos por Supabase. Una sola interfaz y las reservas existentes, sin segundo carrito ni sistema de entregas.
 
 ## A. Base y calendario
 - Ruta /mercados desde Inicio, sin añadir pestañas a la barra inferior. Calendario mensual, lista, fichas, filtros y estados de carga/error/vacío separados. Meses históricos consultables; próximos eventos solo desde hoy.
@@ -35,10 +35,10 @@ Rama feature/markets-fairs. **Sin migraciones ni despliegue de esta función en 
 - Migración preparada: supabase/migrations/20261029190537_markets_and_fairs.sql.
 - Pantalla/estilos: src/pages/mercados.*. Formularios: src/components/market-manager.tsx y market-pickup-choices.tsx. Modelo/API/idiomas: src/lib/markets.ts, market-api.ts, market-labels.ts. Se reutilizan mapa, ubicación y panel actuales; cesta/pedidos solo muestran y eligen el nuevo lugar.
 
-## Verificación y activación pendiente
-- 71 pruebas de aplicación específicas de calendario, interfaz, adaptador y navegación; 38 comprobaciones SQL/RLS y 9 pruebas con conexiones simultáneas reales. SQL/RLS aislado con datos sintéticos; concurrencia real PostgreSQL 17 con sesiones distintas para preparación duplicada, reserva frente a ausencia/cancelación de mercado y dos vendedores a la vez. Se prueba también la recuperación.
-- No se han insertado mercados, vendedores ni pedidos de prueba en producción. El catálogo ampliado está preparado para importación **solo tras revisión**, no publicado automáticamente.
-- Antes de activar: revisión final del propietario, respaldo recuperable y copia de la definición vigente de reserve_order; comprobar que coincide con el patrón esperado. Aplicar exclusivamente esta migración dentro de una transacción, nunca un db push de todas las migraciones históricas. La migración se detiene si la función base difiere.
-- Después: verificar RLS/privilegios e históricos, activar marketsReady, revisar las propuestas del catálogo y publicar bajo autorización. El formulario permanece deshabilitado en la vista previa mientras falte esa activación.
-- Recuperación preparada: desactivar marketsReady y ejecutar supabase/rollback/disable_markets.sql con autorización. Bloquea nuevas recogidas en mercados incluso mediante franjas antiguas; conserva datos, stock y pedidos, que siguen pudiéndose cancelar o marcar recogidos. No borrar tablas ni restaurar automáticamente funciones antiguas después de tener reservas vinculadas.
-
+## Activación autorizada — 29/10/2026
+- Propietario autorizó expresamente migración, publicación de los 67 mercados verificados y activación en Vercel. Los 32 candidatos pendientes no se han importado.
+- Respaldo local fuera de Git: `../uzta-recovery/20261029-markets`, con datos afectados, columnas, políticas, ocho funciones y hashes. Se ha comprobado su lectura y se han conservado definiciones recuperables.
+- Solo se aplicó `20261029190537_markets_and_fairs.sql`, en una transacción con bloqueo acotado y comprobaciones previas/posteriores. Históricos, productos, stock y funciones de cancelación/recogida no cambiaron. No había registro `supabase_migrations.schema_migrations`; queda recibo de activación y hash local sin crear un esquema adicional.
+- Catálogo importado por la RPC existente con la cuenta administradora ya autorizada: 67 mercados publicados, 69 reglas y 0 participaciones. Lectura pública contrastada por API sin exponer `created_by`. No se crearon reservas de prueba en producción.
+- Verificación previa: 40 comprobaciones SQL aisladas, 9 pruebas de concurrencia PostgreSQL; después de activar: 19 pruebas específicas de catálogo, recurrencias y vistas, TypeScript y compilación correctos.
+- Recuperación: desactivar marketsReady y, con autorización, aplicar `supabase/rollback/disable_markets.sql`. Conserva tablas, stock e históricos y permite gestionar las reservas ya existentes. No restaurar automáticamente funciones antiguas ni borrar datos.
