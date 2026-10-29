@@ -1,3 +1,4 @@
+import { BackLink } from "./back-link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useUzta } from "../app-context";
 import config from "../../config/uzta-cloud.public.json";
@@ -172,9 +173,15 @@ export function ProducerRequestsAdmin() {
     };
   }, [allowed, revision]);
   if (!allowed)
-    return <p role="alert">{t("Acceso reservado a administración.")}</p>;
+    return (
+      <>
+        <BackLink to="/perfil" section="cuenta" label="Volver al perfil" />
+        <p role="alert">{t("Acceso reservado a administración.")}</p>
+      </>
+    );
   return (
     <section className="management">
+      <BackLink to="/perfil" section="cuenta" label="Volver al perfil" />
       <h1>{t("Solicitudes de productores")}</h1>
       <button className="text-button" onClick={() => setRevision((v) => v + 1)}>
         {t("Actualizar")}

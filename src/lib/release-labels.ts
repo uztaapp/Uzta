@@ -1,5 +1,10 @@
 export const releaseLabels: Record<string, readonly [string, string, string]> =
   {
+    "Volver al perfil": [
+      "Retour au profil",
+      "Back to profile",
+      "Profilera itzuli",
+    ],
     "Quiero ser productor": [
       "Je veux devenir producteur",
       "Become a producer",

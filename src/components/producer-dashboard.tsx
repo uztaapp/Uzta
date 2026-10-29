@@ -1,3 +1,4 @@
+import { BackLink } from "./back-link";
 import { canManageProducer } from "../lib/producer-approval";
 import { Link } from "@tanstack/react-router";
 import {
@@ -106,6 +107,7 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
         </Link>
       </aside>
       <div className="dashboard-content">
+        {section === "panel" && <BackLink />}
         <header className="dashboard-header">
           <div>
             <h1>
@@ -124,13 +126,7 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
         </header>
         {section !== "panel" ? (
           <>
-            <Link
-              className="text-button"
-              to="/perfil"
-              search={{ apartado: "panel" }}
-            >
-              {t("Volver al panel")}
-            </Link>
+            <BackLink to="/perfil" section="panel" label="Volver al panel" />
             <Gestion
               key={section}
               section={section === "nuevo" ? "productos" : section}

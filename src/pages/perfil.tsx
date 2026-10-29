@@ -1,3 +1,4 @@
+import { BackLink } from "../components/back-link";
 import {
   ProducerApplication,
   ProducerRequestsAdmin,
@@ -126,7 +127,12 @@ export function Perfil() {
     ].includes(search.apartado ?? "") &&
     !producerAllowed
   )
-    return <ProducerApplication />;
+    return (
+      <>
+        <BackLink to="/perfil" section="cuenta" label="Volver al perfil" />
+        <ProducerApplication />
+      </>
+    );
   if (producerAllowed && !managedFarmId && search.apartado !== "cuenta")
     return <CreateStore />;
   if (
@@ -173,7 +179,7 @@ export function Perfil() {
     return (
       <>
         <div className="page-title">
-          <Link to="/perfil" aria-label="Volver al perfil">
+          <Link to="/perfil" aria-label={t("Volver al perfil")}>
             <ArrowLeft />
           </Link>
           <h1>{t(labels[search.apartado])}</h1>
@@ -184,6 +190,7 @@ export function Perfil() {
   return (
     <div className="uzta-profile">
       <div className="page-title">
+        <BackLink compact />
         <h1>{t("Mi perfil")}</h1>
         <button
           className="profile-settings"

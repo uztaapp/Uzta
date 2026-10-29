@@ -1,3 +1,4 @@
+import { BackLink } from "../components/back-link";
 import {
   RatingSummary,
   useReviewSummaries,
@@ -215,6 +216,7 @@ export function Explorar() {
       </div>
       <div className="explore-top">
         <div className="explore-heading">
+          <BackLink compact />
           <div>
             <h1>{t("Explorar")}</h1>
             <p role="status">

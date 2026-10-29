@@ -1,3 +1,4 @@
+import { BackLink } from "./back-link";
 import { Brand } from "./brand";
 import { PasswordReset } from "./password-recovery";
 import { PrivacyLink } from "../pages/privacidad";
@@ -42,6 +43,7 @@ export function Access() {
   if (reset) return <PasswordReset close={() => setReset(false)} />;
   return (
     <section className="access-panel">
+      <BackLink />
       <Brand variant="main" />
       <h1>{register ? t("Crear cuenta en UZTA") : t("Entrar en UZTA")}</h1>
       <details className="language-access">
