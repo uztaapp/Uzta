@@ -85,117 +85,162 @@
   gap: 1px;
   min-height: 32px;
 }
-.uzta-home .home-filters {
-  margin: -4px 0 7px;
-  font-size: 10px;
-  color: #5d813c;
-}
-.uzta-home .home-filters > summary {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  width: fit-content;
-  padding-block: 3px;
-}
-.uzta-home .home-filters .filter-pill {
-  margin-top: 6px;
-}
 .uzta-home .product-grid {
-  gap: 12px 10px;
+  gap: 14px 12px;
+  align-items: stretch;
 }
 .uzta-home .product-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   background: #fff;
-  border: 0;
-  border-radius: 10px;
+  border: 1px solid #e9e9df;
+  border-radius: 16px;
   overflow: hidden;
+}
+.uzta-home .product-image > a {
+  display: block;
 }
 .uzta-home .product-image .photo {
-  aspect-ratio: 1.35;
+  aspect-ratio: 4 / 3;
   width: 100%;
-  border-radius: 10px;
+  height: auto;
+  border-radius: 0;
+}
+.uzta-home .product-image .photo-placeholder {
+  background: #edf2e6;
+}
+.uzta-home .product-image .photo-placeholder svg {
+  width: 42px;
+  height: 42px;
+  color: #91a47e;
 }
 .uzta-home .product-copy {
-  padding: 7px 7px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 10px 10px;
+  flex: 1;
+  min-width: 0;
 }
 .uzta-home .product-copy h3 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 750;
-  line-height: 1.15;
+  line-height: 1.25;
   letter-spacing: -0.25px;
-}
-.uzta-home .product-copy > p {
-  margin: 4px 0 7px;
-  font-size: 13px;
-  line-height: 1.2;
-}
-.uzta-home .product-copy > p strong {
-  font-size: 15px;
-  font-weight: 750;
-}
-.uzta-home .product-copy > small {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  gap: 3px;
-  color: #353e2e;
-  line-height: 1.3;
-}
-.uzta-home .product-copy small span:first-child {
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+.uzta-home .product-copy .product-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 5px;
+  margin: 0;
+  line-height: 1.25;
+}
+.uzta-home .product-price strong {
+  font-size: 19px;
+  font-weight: 750;
+  color: #31552b;
   white-space: nowrap;
 }
-.uzta-home .product-copy small span:last-child {
-  flex-shrink: 0;
+.uzta-home .product-price > span {
+  font-size: 12px;
+  color: #666d60;
+  white-space: nowrap;
 }
-.uzta-home .product-copy small svg {
-  flex-shrink: 0;
-  width: 10px;
+.uzta-home .product-copy .availability-label {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  gap: 0 3px;
+  font-size: 11px;
+  line-height: 1.5;
   color: #31552b;
+  background: #eaf1e4;
+  border-radius: 7px;
+  padding: 2px 6px;
+  white-space: normal;
+}
+.uzta-home .availability-label strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+.uzta-home .product-card[data-availability="upcoming"] .availability-label {
+  color: #815d21;
+  background: #faf1df;
+}
+.uzta-home .product-card[data-availability="sold_out"] .availability-label {
+  color: #63685f;
+  background: #f0f0ea;
+}
+.uzta-home .product-seller {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 8px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0e9;
+}
+.uzta-home .product-seller > a {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  color: #59634f;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.uzta-home .product-seller > a > span {
+  overflow-wrap: anywhere;
+}
+.uzta-home .product-seller svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.uzta-home .product-seller > small {
+  font-size: 11px;
+  color: #737c69;
 }
 .uzta-home .heart {
-  top: 7px;
-  right: 7px;
-  background: #21301b80;
-  width: 29px;
-  height: 29px;
-  border: 1px solid #ffffff55;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  min-width: 40px;
+  background: #faf9f5ed;
+  color: #31552b;
+  border: 1px solid #ffffffa6;
+  box-shadow: 0 1px 5px #172b2410;
 }
 .uzta-home .heart svg {
-  width: 20px;
-  height: 20px;
-  stroke-width: 1.6;
+  width: 21px;
+  height: 21px;
+  stroke-width: 1.8;
+}
+.uzta-home .heart[aria-pressed="true"] {
+  background: #eaf1e4;
+  color: #31552b;
 }
 .uzta-home .eco {
-  left: 6px;
-  bottom: 6px;
-  padding: 2px 5px;
+  left: 8px;
+  bottom: 8px;
+  padding: 3px 6px;
   font-size: 10px;
-  background: #5d813c;
-  border-radius: 5px;
+  background: #31552bea;
 }
-.uzta-home .farm-banner {
-  border-radius: 11px;
-}
-.uzta-home .farm-banner > .photo {
-  height: 112px;
-}
-.uzta-home .farm-banner > div:not(.photo) {
-  left: 14px;
-  bottom: 12px;
-}
-.uzta-home .farm-banner strong {
-  font-size: 19px;
-  line-height: 1.3;
-}
-.uzta-home .farm-banner span {
-  font-size: 12px;
-}
-.uzta-home .farm-banner > svg {
-  right: 13px;
-  bottom: 22px;
-  width: 19px;
+@media (pointer: coarse) {
+  .uzta-home .heart {
+    width: 44px;
+    height: 44px;
+  }
 }
 .app:has(.uzta-home) > nav {
   background: #faf9f5f5;
@@ -254,34 +299,4 @@
   font-size: 12px;
   color: #53604e;
   margin-bottom: 0;
-}
-.uzta-home .product-copy {
-  padding: 10px;
-}
-.uzta-home .product-copy h3 {
-  font-size: 16px;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-.uzta-home .product-copy > p {
-  font-size: 14px;
-  line-height: 1.4;
-}
-.uzta-home .product-copy > p strong {
-  font-size: 18px;
-}
-.uzta-home .product-copy > small {
-  font-size: 12px;
-  line-height: 1.4;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.uzta-home .product-copy small span:first-child {
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.uzta-home .product-copy .availability-label,
-.uzta-home .product-copy .eusko-badge {
-  font-size: 12px;
-  white-space: normal;
 }

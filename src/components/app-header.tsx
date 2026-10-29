@@ -6,7 +6,8 @@ import {
   type Ref,
 } from "react";
 import { createPortal } from "react-dom";
-import { useRouterState } from "@tanstack/react-router";
+import { Heart } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Brand } from "./brand";
 import { BackLink } from "./back-link";
 import { NotificationBell } from "./notification-bell";
@@ -84,8 +85,17 @@ export function HeaderLayout({ children }: { children: ReactNode }) {
           actionsRef={setTarget}
           right={pathname === "/" ? <NotificationBell /> : null}
           left={
-            pathname === "/" ? null : internalProfile ||
-              pathname === "/privacidad" ? (
+            pathname === "/" ? (
+              <Link
+                to="/perfil"
+                search={{ apartado: "favoritos" }}
+                className="uzta-back uzta-back--compact"
+                aria-label={t("Mis favoritos")}
+                title={t("Mis favoritos")}
+              >
+                <Heart size={22} aria-hidden="true" />
+              </Link>
+            ) : internalProfile || pathname === "/privacidad" ? (
               <BackLink
                 compact
                 to="/perfil"

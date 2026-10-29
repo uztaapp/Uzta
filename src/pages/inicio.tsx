@@ -7,12 +7,12 @@ import {
   localityMatches,
 } from "../lib/buyer-location";
 import { SheetIcon, type SheetIconName } from "../components/sheet-icon";
-import { EuskoBadge } from "../components/eusko";
 import {
   AvailabilityLabel,
   AvailabilitySelect,
 } from "../components/product-availability";
 import {
+  availabilityOf,
   matchesAvailability,
   type AvailabilityFilter,
 } from "../lib/availability";
@@ -21,7 +21,7 @@ import "./inicio.css";
 import { t, useLanguage } from "../lib/language";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import { MapPin, Heart, ChevronRight, ChevronDown } from "lucide-react";
+import { MapPin, ChevronRight, ChevronDown } from "lucide-react";
 import { Photo, euro, useDemo } from "../design";
 import { withinRadius, distanceLabel } from "../lib/nearby";
 export function Inicio() {
@@ -58,7 +58,6 @@ export function Inicio() {
   const [allFarms, setAllFarms] = useState(false);
   const [category, setCategory] = useState("");
   const [availability, setAvailability] = useState<AvailabilityFilter>("all");
-  const [onlyFavorites, setOnlyFavorites] = useState(false);
 
   const { data, run, mode, busy, storageError } = useDemo();
   const buyerLocation = useBuyerLocation(!busy && !data.profile.location);
@@ -86,7 +85,6 @@ export function Inicio() {
         radius,
       ) &&
       (!category || p.category === category) &&
-      (!onlyFavorites || data.favorites.includes(p.id)) &&
       (!manualLocality ||
         center ||
         localityMatches(
@@ -283,33 +281,22 @@ export function Inicio() {
         <button
           onClick={() => {
             setCategory("");
-            setOnlyFavorites(false);
           }}
         >
           {t("Ver todos")}
           <ChevronRight size={14} />
         </button>
       </div>
-      <details className="home-filters">
-        <summary>
-          <Heart size={13} />
-          {t("Mis favoritos")}
-        </summary>
-        <button
-          className="filter-pill"
-          aria-pressed={onlyFavorites}
-          onClick={() => setOnlyFavorites(!onlyFavorites)}
-        >
-          <Heart size={15} />
-          {t("Mis favoritos")}
-        </button>
-      </details>
       <AvailabilitySelect value={availability} onChange={setAvailability} />
       <div className="product-grid">
         {visible.map((p) => {
           const farm = data.farms.find((f) => f.id === p.farmId)!;
           return (
-            <article key={p.id} className="product-card">
+            <article
+              key={p.id}
+              className="product-card"
+              data-availability={availabilityOf(p)}
+            >
               <div className="product-image">
                 <Link
                   to="/productor"
@@ -328,23 +315,31 @@ export function Inicio() {
                 ) : null}
               </div>
               <div className="product-copy">
-                <h3>{p.name}</h3>
-                <p>
-                  <strong>{euro(p.priceCents)}</strong> / {p.unit}
+                <h3>
+                  <Link to="/productor" search={{ tienda: p.farmId }}>
+                    {p.name}
+                  </Link>
+                </h3>
+                <p className="product-price">
+                  <strong>{euro(p.priceCents)}</strong>
+                  <span>/ {t(p.unit)}</span>
                 </p>
-                <small>
-                  <span>
-                    <MapPin size={12} />
-                    {farm.name}
-                  </span>
-                  <span>
-                    {center
-                      ? distanceLabel(center, farm.position)
-                      : farm.distance}
-                  </span>
-                </small>
                 <AvailabilityLabel product={p} />
-                <EuskoBadge farm={farm} />
+                <div className="product-seller">
+                  <Link to="/productor" search={{ tienda: p.farmId }}>
+                    <MapPin size={13} aria-hidden="true" />
+                    <span>{farm.name}</span>
+                  </Link>
+                  {(center
+                    ? distanceLabel(center, farm.position)
+                    : farm.distance) && (
+                    <small>
+                      {center
+                        ? distanceLabel(center, farm.position)
+                        : farm.distance}
+                    </small>
+                  )}
+                </div>
               </div>
             </article>
           );
