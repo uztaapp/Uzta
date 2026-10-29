@@ -86,6 +86,9 @@ export function Productor() {
       <div className="producer-intro">
         <Photo
           className="avatar farm-avatar"
+          src={
+            farm.avatar === null ? undefined : (farm.avatar ?? farm.avatarUrl)
+          }
           crop={mode === "demo" ? [383, 184, 78, 82] : [0, 0, 0, 0]}
           label={
             mode === "demo" ? "Productor de ejemplo" : `Avatar de ${farm.name}`

@@ -9,9 +9,11 @@ export function ProductPhotoEditor({
   onChange,
   onPending,
   cover = false,
+  label,
 }: {
   product: Pick<Product, "name" | "photo" | "photoUrl" | "crop">;
   cover?: boolean;
+  label?: string;
   onChange: (src: string | null) => void;
   onPending: (pending: boolean) => void;
 }) {
@@ -55,7 +57,9 @@ export function ProductPhotoEditor({
   return (
     <section
       className="photo-editor"
-      aria-label={t(cover ? "Portada de la tienda" : "Fotografía del producto")}
+      aria-label={t(
+        label ?? (cover ? "Portada de la tienda" : "Fotografía del producto"),
+      )}
     >
       <Photo
         src={product.photo === undefined ? product.photoUrl : product.photo}
@@ -63,9 +67,13 @@ export function ProductPhotoEditor({
         label={product.name || "Producto"}
       />
       <label>
-        {t(cover ? "Portada de la tienda" : "Fotografía del producto")}
+        {t(
+          label ?? (cover ? "Portada de la tienda" : "Fotografía del producto"),
+        )}
         <input
-          aria-label={t(cover ? "Elegir portada" : "Elegir fotografía")}
+          aria-label={t(
+            label ?? (cover ? "Elegir portada" : "Elegir fotografía"),
+          )}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           disabled={pending}
@@ -89,9 +97,11 @@ export function ProductPhotoEditor({
       ) : null}
       <p className="subtle">
         {t(
-          cover
-            ? "La portada se guarda al pulsar Guardar tienda. Se eliminan los metadatos de ubicación."
-            : "JPG, PNG o WebP. Se reduce el tamaño y se eliminan los metadatos de ubicación. La foto se guarda al pulsar Guardar producto.",
+          label
+            ? "La foto se guarda al guardar la tienda."
+            : cover
+              ? "La portada se guarda al pulsar Guardar tienda. Se eliminan los metadatos de ubicación."
+              : "JPG, PNG o WebP. Se reduce el tamaño y se eliminan los metadatos de ubicación. La foto se guarda al pulsar Guardar producto.",
         )}
       </p>
     </section>

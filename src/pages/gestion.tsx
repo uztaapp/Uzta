@@ -59,12 +59,14 @@ export function Gestion({
   }, [create, farm?.id]);
   const [saved, setSaved] = useState("");
   const [error, setError] = useState("");
+  const [avatar, setAvatar] = useState<string | null | undefined>(undefined);
+  const [avatarPending, setAvatarPending] = useState(false);
   const [cover, setCover] = useState<string | null | undefined>(undefined);
   const [coverPending, setCoverPending] = useState(false);
   const [photoPending, setPhotoPending] = useState(false);
   async function saveFarm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (coverPending) return;
+    if (coverPending || avatarPending) return;
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     let position = farm.position;
@@ -98,6 +100,7 @@ export function Gestion({
         type: "farm",
         value: {
           ...farm,
+          ...(avatar !== undefined ? { avatar } : {}),
           ...(cover !== undefined ? { cover } : {}),
           ...(sellerTypesEnabled ? { sellerType: sellerType || null } : {}),
           position: sellerPosition(position, sellerType || farm.sellerType),
@@ -110,6 +113,7 @@ export function Gestion({
       })
     ) {
       setCover(undefined);
+      setAvatar(undefined);
       setSaved("Tienda guardada.");
     }
   }
@@ -242,8 +246,22 @@ export function Gestion({
       ) : null}
       {section === "tienda" ? (
         <form className="uzta-form" onSubmit={saveFarm}>
-          <fieldset disabled={busy || coverPending}>
+          <fieldset disabled={busy || coverPending || avatarPending}>
             <h2>{t("Mi tienda")}</h2>
+            {(mode === "demo" || cloudConfig.producerAvatarsReady) && (
+              <ProductPhotoEditor
+                cover
+                label="Foto del productor"
+                product={{
+                  name: farm.name,
+                  photo: avatar,
+                  photoUrl: farm.avatarUrl,
+                  crop: [0, 0, 0, 0],
+                }}
+                onChange={setAvatar}
+                onPending={setAvatarPending}
+              />
+            )}
             {mode === "demo" || cloudConfig.producerCoversReady ? (
               <ProductPhotoEditor
                 cover

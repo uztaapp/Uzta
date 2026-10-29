@@ -21,6 +21,19 @@ const slotSchema = z.object({
   end: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
 });
 export const farmSchema = z.object({
+  avatar: productPhotoSchema,
+  avatarPath: z.string().nullable().optional(),
+  avatarUrl: z
+    .string()
+    .refine((v) => {
+      try {
+        signedPhotoUrl(v, "uzta-producer-covers");
+        return true;
+      } catch {
+        return false;
+      }
+    })
+    .optional(),
   catalogVisible: z.boolean().optional(),
   cover: productPhotoSchema,
   coverPath: z

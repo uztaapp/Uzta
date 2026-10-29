@@ -152,7 +152,21 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
                 </Link>
               </div>
               <div className="dashboard-farm-name">
-                <Photo crop={[0, 0, 0, 0]} label={farm.name} />
+                <Link
+                  to="/perfil"
+                  search={{ apartado: "tienda" }}
+                  aria-label={t("Cambiar foto del productor")}
+                >
+                  <Photo
+                    src={
+                      farm.avatar === null
+                        ? undefined
+                        : (farm.avatar ?? farm.avatarUrl)
+                    }
+                    crop={[0, 0, 0, 0]}
+                    label={farm.name}
+                  />
+                </Link>
                 <div>
                   <h2>{farm.name}</h2>
                   <p>{data.profile.name}</p>

@@ -172,6 +172,7 @@ export function Perfil() {
         <div className="profile-person">
           <Photo
             className="avatar"
+            src={data.farms.find((f) => f.id === managedFarmId)?.avatarUrl}
             crop={mode === "demo" ? [1294, 123, 57, 60] : [0, 0, 0, 0]}
             label={
               mode === "demo"

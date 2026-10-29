@@ -1,5 +1,20 @@
 export const releaseLabels: Record<string, readonly [string, string, string]> =
   {
+    "La foto se guarda al guardar la tienda.": [
+      "La photo est enregistrée avec la boutique.",
+      "The photo is saved with the store.",
+      "Argazkia dendarekin batera gordetzen da.",
+    ],
+    "Foto del productor": [
+      "Photo du producteur",
+      "Producer photo",
+      "Ekoizlearen argazkia",
+    ],
+    "Cambiar foto del productor": [
+      "Changer la photo du producteur",
+      "Change producer photo",
+      "Aldatu ekoizlearen argazkia",
+    ],
     "Buenos días": ["Bonjour", "Good morning", "Egun on"],
     "Buenas tardes": ["Bon après-midi", "Good afternoon", "Arratsalde on"],
     "Buenas noches": ["Bonsoir", "Good evening", "Gabon"],

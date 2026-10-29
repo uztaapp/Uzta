@@ -138,7 +138,7 @@ body {
 }
 main {
   min-height: 100dvh;
-  padding: 24px 0 104px;
+  padding: max(12px, env(safe-area-inset-top)) 0 104px;
 }
 h1,
 h2,
@@ -571,7 +571,7 @@ nav a.active .nav-icon > svg {
   border-radius: 0 0 9px 9px;
 }
 .access-panel {
-  margin: 20px 0;
+  margin: 8px 0;
 }
 .access-panel h1 {
   font-size: 25px;

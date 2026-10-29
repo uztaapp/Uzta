@@ -146,6 +146,7 @@ function check<T>(result: { data: T; error: unknown }): T {
   return result.data;
 }
 const producerRow = z.object({
+  avatar_path: z.string().nullable().optional(),
   cover_path: z.string().nullable().optional(),
   eusko_notes: z.boolean().optional(),
   eusko_digital: z.boolean().optional(),
@@ -280,7 +281,20 @@ export async function loadCloudData(
         COVER_BUCKET,
       )
     : new Map<string, string>();
+  const avatarUrls = cloudConfig.producerAvatarsReady
+    ? await loadProductPhotos(
+        api,
+        farms.map((f) => f.avatar_path ?? "").filter(Boolean),
+        COVER_BUCKET,
+      )
+    : new Map<string, string>();
   data.farms = farms.map((f) => ({
+    ...(cloudConfig.producerAvatarsReady
+      ? {
+          avatarPath: f.avatar_path ?? null,
+          avatarUrl: f.avatar_path ? avatarUrls.get(f.avatar_path) : undefined,
+        }
+      : {}),
     ...(cloudConfig.producerCoversReady
       ? {
           coverPath: f.cover_path ?? null,
@@ -618,7 +632,24 @@ export async function persistCloudCommand(
               COVER_BUCKET,
             );
     }
+    let avatarPathValue: string | null | undefined;
+    if (f.avatar !== undefined) {
+      if (!cloudConfig.producerAvatarsReady)
+        throw Error("Fotografía de productor no activada.");
+      avatarPathValue =
+        f.avatar === null
+          ? null
+          : await uploadProductPhoto(
+              api,
+              user.id,
+              f.id,
+              f.id,
+              f.avatar,
+              COVER_BUCKET,
+            );
+    }
     const changed =
+      avatarPathValue !== undefined ||
       coverPathValue !== undefined ||
       !previous ||
       (cloudConfig.euskoReady &&
@@ -634,6 +665,9 @@ export async function persistCloudCommand(
           {
             id: f.id,
             owner_id: user.id,
+            ...(avatarPathValue !== undefined
+              ? { avatar_path: avatarPathValue }
+              : {}),
             ...(coverPathValue !== undefined
               ? { cover_path: coverPathValue }
               : {}),

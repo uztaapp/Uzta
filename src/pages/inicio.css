@@ -5,7 +5,7 @@
   color: #171b15;
 }
 .app:has(.uzta-home) main {
-  padding-top: max(22px, env(safe-area-inset-top));
+  padding-top: max(12px, env(safe-area-inset-top));
 }
 .uzta-home {
   --home-green: #31552b;
