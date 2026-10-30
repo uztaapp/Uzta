@@ -13,23 +13,36 @@ import {
   Plus,
   ChevronRight,
   ExternalLink,
+  RefreshCw,
+  CheckCircle2,
+  Truck,
+  UserRound,
 } from "lucide-react";
 import { useUzta } from "../app-context";
-import { StoreCover } from "./store-cover";
+import { useState } from "react";
+import { Brand } from "./brand";
+import { HeaderActions } from "./app-header";
+import { NotificationBell } from "./notification-bell";
+import { useMarkets } from "./market-data";
+import {
+  producerActivity,
+  producerMarketActivity,
+} from "../lib/producer-activity";
+import { pickupDate } from "../lib/pickup-date";
+import config from "../../config/uzta-cloud.public.json";
+import type { Farm } from "../lib/local-model";
 import { Photo } from "./presentation";
-import { euro as money } from "../lib/local-model";
-import { AvailabilityLabel } from "./product-availability";
 import { Gestion } from "../pages/gestion";
-import { t, useLanguage, currentLanguage } from "../lib/language";
+import { t, useLanguage } from "../lib/language";
 import "./producer-dashboard.css";
 const items = [
-  ["Inicio", "panel", Home],
-  ["Productos", "productos", Package],
-  ["Pedidos", "pedidos", ShoppingCart],
+  ["Mi actividad", "panel", Home],
+  ["Mis productos", "productos", Package],
+  ["Reservas y entregas", "pedidos", ShoppingCart],
   ["Mensajes", "mensajes", MessageCircle],
   ["Calendario", "horarios", CalendarDays],
   ["Mis mercados", "mercados", CalendarDays],
-  ["Mi tienda", "tienda", Store],
+  ["Mi perfil de productor", "tienda", Store],
   ["Estadísticas", "estadisticas", ChartNoAxesColumn],
   ["Ajustes", "cuenta", Settings],
 ] as const;
@@ -43,20 +56,8 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
     (mode !== "demo" && !canManageProducer(data, managedFarmId))
   )
     return null;
-  const products = data.products.filter(
-      (p) => p.farmId === farm.id && p.catalogVisible !== false,
-    ),
-    orders = data.orders.filter((o) => o.farmId === farm.id && !o.example);
-  const pending = orders.filter((o) => o.status === "Pendiente").length;
-  const hour = Number(
-    new Intl.DateTimeFormat("en-GB", {
-      hour: "numeric",
-      hourCycle: "h23",
-      timeZone: "Europe/Madrid",
-    }).format(new Date()),
-  );
-  const greeting =
-    hour < 12 ? "Buenos días" : hour < 20 ? "Buenas tardes" : "Buenas noches";
+  const activity = producerActivity(data, farm.id);
+  const pending = activity.pending.length;
   const add = (
     <Link
       className="primary dashboard-add"
@@ -110,22 +111,20 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
         </Link>
       </aside>
       <div className="dashboard-content">
-        <header className="dashboard-header">
-          <div>
-            <h1>
-              {section === "panel"
-                ? `${t(greeting)}, ${data.profile.name.split(" ")[0] || farm.name} 👋`
-                : t(
-                    section === "nuevo"
-                      ? "Añadir producto"
-                      : (items.find((i) => i[1] === section)?.[0] ??
-                          "Mi tienda"),
-                  )}
-            </h1>
-            <p>{t("Aquí tienes un resumen de tu actividad")}</p>
-          </div>
-          {add}
-        </header>
+        {section !== "panel" && (
+          <header className="dashboard-header">
+            <div>
+              <h1>
+                {t(
+                  section === "nuevo"
+                    ? "Añadir producto"
+                    : (items.find((i) => i[1] === section)?.[0] ?? "Mi tienda"),
+                )}
+              </h1>
+            </div>
+            {section !== "nuevo" && add}
+          </header>
+        )}
         {section !== "panel" ? (
           <>
             {section === "mercados" ? (
@@ -139,218 +138,325 @@ export function ProducerDashboard({ section = "panel" }: { section?: string }) {
             )}
           </>
         ) : (
-          <>
-            <section className="dashboard-store-mobile">
-              <div className="dashboard-store-title">
-                <h2>{t("Mi tienda")}</h2>
-                <Link to="/productor" search={{ tienda: farm.id }}>
-                  {t("Ver perfil")} ›
-                </Link>
-              </div>
-              <div className="dashboard-cover">
-                <StoreCover farm={farm} crop={[0, 0, 0, 0]} label={farm.name} />
-                <Link to="/perfil" search={{ apartado: "tienda" }}>
-                  {t("Cambiar portada")}
-                </Link>
-              </div>
-              <div className="dashboard-farm-name">
-                <Link
-                  to="/perfil"
-                  search={{ apartado: "tienda" }}
-                  aria-label={t("Cambiar foto del productor")}
-                >
-                  <Photo
-                    src={
-                      farm.avatar === null
-                        ? undefined
-                        : (farm.avatar ?? farm.avatarUrl)
-                    }
-                    crop={[0, 0, 0, 0]}
-                    label={farm.name}
-                  />
-                </Link>
-                <div>
-                  <h2>{farm.name}</h2>
-                  <p>{data.profile.name}</p>
-                </div>
-              </div>
-            </section>
-            <section
-              className="dashboard-metrics"
-              aria-label={t("Resumen de actividad")}
-            >
-              {[
-                [
-                  products.filter((p) => p.active).length,
-                  "Productos activos",
-                  Package,
-                  "green",
-                ],
-                [pending, "Pedidos pendientes", ShoppingCart, "orange"],
-                ["—", "Mensajes nuevos", MessageCircle, "blue"],
-                ["—", "Visitas esta semana", ChartNoAxesColumn, "green"],
-              ].map(([value, label, Icon, color]) => {
-                const Symbol = Icon as typeof Home;
-                return (
-                  <div className={`metric ${color}`} key={String(label)}>
-                    <Symbol size={28} />
-                    <div>
-                      <strong>{String(value)}</strong>
-                      <span>{t(String(label))}</span>
-                      {value === "—" && (
-                        <small>{t("No disponible todavía")}</small>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </section>
-            <div className="dashboard-mobile-add">{add}</div>
-            <div className="dashboard-mobile-menu">
-              {items.slice(1).map(([label, key, Icon]) => (
-                <div key={key}>{destination(label, key, Icon)}</div>
-              ))}
-            </div>
-            <section className="dashboard-quick">
-              <div>
-                <h2>{t("Gestión rápida")}</h2>
-                <div className="dashboard-actions">
-                  <Link to="/perfil" search={{ apartado: "nuevo" }}>
-                    <Package />
-                    {t("Añadir producto")} ›
-                  </Link>
-                  <Link to="/pedidos" search={{ vista: "productor" }}>
-                    <ShoppingCart />
-                    {t("Ver pedidos")} ›
-                  </Link>
-                  <span aria-disabled="true">
-                    <MessageCircle />
-                    {t("Ver mensajes")}
-                    <small>{t("No disponible todavía")}</small>
-                  </span>
-                  <Link to="/perfil" search={{ apartado: "productos" }}>
-                    <CalendarDays />
-                    {t("Actualizar disponibilidad")} ›
-                  </Link>
-                </div>
-              </div>
-              <div className="dashboard-tip">
-                <Store size={42} />
-                <h2>{t("Tu tienda siempre al día")}</h2>
-                <p>
-                  {t(
-                    "Añade productos y gestiona tus pedidos desde un mismo lugar.",
-                  )}
-                </p>
-              </div>
-            </section>
-            <div className="dashboard-lower">
-              <section className="dashboard-products">
-                <div className="dashboard-section-title">
-                  <h2>{t("Tus productos")}</h2>
-                  <Link to="/perfil" search={{ apartado: "productos" }}>
-                    {t("Ver todos")} ›
-                  </Link>
-                </div>
-                <div className="dashboard-product-grid">
-                  {products.slice(0, 4).map((p) => (
-                    <Link
-                      key={p.id}
-                      to="/perfil"
-                      search={{ apartado: "productos" }}
-                    >
-                      <Photo
-                        src={
-                          p.photo === null ? undefined : (p.photo ?? p.photoUrl)
-                        }
-                        crop={[0, 0, 0, 0]}
-                        label={p.name}
-                      />
-                      <h3>{p.name}</h3>
-                      <strong>
-                        {money(p.priceCents)} / {p.unit}
-                      </strong>
-                      <AvailabilityLabel product={p} />
-                      <small>
-                        {t(p.active ? "Publicado" : "Oculto")} · {p.stock}{" "}
-                        {p.unit}
-                      </small>
-                    </Link>
-                  ))}
-                  <Link
-                    className="dashboard-new-product"
-                    to="/perfil"
-                    search={{ apartado: "nuevo" }}
-                  >
-                    <Plus />
-                    {t("Añadir producto")}
-                  </Link>
-                </div>
-                {!products.length && (
-                  <p>{t("Todavía no tienes productos publicados.")}</p>
-                )}
-              </section>
-              <section className="dashboard-orders">
-                <div className="dashboard-section-title">
-                  <h2>{t("Pedidos recientes")}</h2>
-                  <Link to="/pedidos" search={{ vista: "productor" }}>
-                    {t("Ver todos")} ›
-                  </Link>
-                </div>
-                {orders
-                  .slice()
-                  .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-                  .slice(0, 3)
-                  .map((o) => (
-                    <Link
-                      className="dashboard-order"
-                      key={o.id}
-                      to="/pedidos"
-                      search={{ vista: "productor", pedido: o.id }}
-                    >
-                      <Photo
-                        crop={[0, 0, 0, 0]}
-                        src={
-                          data.products.find(
-                            (p) => p.id === o.lines[0]?.productId,
-                          )?.photoUrl
-                        }
-                        label={o.lines[0]?.name ?? t("Pedido")}
-                      />
-                      <div>
-                        <strong>{o.lines.map((l) => l.name).join(", ")}</strong>
-                        <small>
-                          {o.lines.reduce((n, l) => n + l.quantity, 0)} ·{" "}
-                          {money(
-                            o.lines.reduce(
-                              (n, l) => n + l.priceCents * l.quantity,
-                              0,
-                            ),
-                          )}
-                        </small>
-                        <small>
-                          {new Intl.DateTimeFormat(currentLanguage(), {
-                            dateStyle: "short",
-                          }).format(new Date(o.createdAt))}
-                        </small>
-                      </div>
-                      <span
-                        className={
-                          o.status === "Pendiente"
-                            ? "dashboard-status pending"
-                            : "dashboard-status"
-                        }
-                      >
-                        {t(o.status)}
-                      </span>
-                    </Link>
-                  ))}
-                {!orders.length && <p>{t("No hay pedidos todavía")}</p>}
-              </section>
-            </div>
-          </>
+          <ProducerActivity farm={farm} activity={activity} />
         )}
       </div>
     </div>
+  );
+}
+
+function ProducerActivity({
+  farm,
+  activity,
+}: {
+  farm: Farm;
+  activity: ReturnType<typeof producerActivity>;
+}) {
+  const { data } = useUzta();
+  const markets = useMarkets();
+  const [expanded, setExpanded] = useState(false);
+  const upcoming = producerMarketActivity(markets.data, farm.id);
+  const marketsUnavailable =
+    !config.marketsReady || markets.loading || !!markets.error;
+  const avatar =
+    farm.avatar === null ? undefined : (farm.avatar ?? farm.avatarUrl);
+  const tasks = [
+    ...activity.pending
+      .slice()
+      .sort(
+        (a, b) =>
+          Number(activity.collectionDue.has(b.id)) -
+            Number(activity.collectionDue.has(a.id)) ||
+          a.createdAt.localeCompare(b.createdAt),
+      )
+      .map((order) => ({
+        id: "order-" + order.id,
+        label: activity.collectionDue.has(order.id)
+          ? "Confirmar entrega"
+          : "Gestionar reserva",
+        title: order.lines.map((l) => l.name).join(", "),
+        detail: `${pickupDate(order.pickup.date)} · ${order.pickup.start}–${order.pickup.end}`,
+        photo: activity.products.find(
+          (p) => p.id === order.lines[0]?.productId,
+        ),
+        Icon: activity.collectionDue.has(order.id) ? Truck : ShoppingCart,
+        to: "/pedidos" as const,
+        search: { vista: "productor", pedido: order.id },
+      })),
+    ...activity.depleted.map((p) => ({
+      id: "stock-" + p.id,
+      label: "Producto agotado",
+      title: p.name,
+      detail: t("Revisar existencias"),
+      photo: p,
+      Icon: RefreshCw,
+      to: "/perfil" as const,
+      search: { apartado: "productos" },
+    })),
+    ...upcoming.map((o) => ({
+      id: "market-" + o.market.id,
+      label: "Preparar mercado",
+      title: o.market.name,
+      detail: `${o.market.locality} · ${pickupDate(o.day)}${o.opens && o.closes ? ` · ${o.opens}–${o.closes}` : ""}`,
+      photo: undefined,
+      Icon: CalendarDays,
+      to: "/perfil" as const,
+      search: { apartado: "mercados" },
+    })),
+  ];
+  const metrics = [
+    {
+      value: activity.active,
+      label: "Productos activos",
+      Icon: Package,
+      color: "green",
+      to: "/perfil",
+      search: { apartado: "productos" },
+    },
+    {
+      value: activity.pending.length,
+      label: "Reservas pendientes",
+      Icon: ShoppingCart,
+      color: "orange",
+      to: "/pedidos",
+      search: { vista: "productor" },
+    },
+    {
+      value: marketsUnavailable ? "—" : upcoming.length,
+      label: "Próximos mercados confirmados",
+      Icon: CalendarDays,
+      color: "blue",
+      to: "/perfil",
+      search: { apartado: "mercados" },
+    },
+    {
+      value: activity.completed,
+      label: "Entregas realizadas",
+      Icon: CheckCircle2,
+      color: "purple",
+      to: "/pedidos",
+      search: { vista: "productor" },
+    },
+  ] as const;
+  return (
+    <section
+      className="producer-activity"
+      aria-labelledby="producer-activity-title"
+    >
+      <HeaderActions>
+        <div className="activity-identity">
+          <Brand variant="footer" />
+          <NotificationBell />
+          <Link
+            className="activity-avatar"
+            to="/perfil"
+            search={{ apartado: "cuenta" }}
+            aria-label={t("Mi perfil")}
+          >
+            <Photo src={avatar} crop={[0, 0, 0, 0]} label={data.profile.name} />
+          </Link>
+        </div>
+      </HeaderActions>
+      <header className="activity-intro">
+        <h1 id="producer-activity-title">{t("Mi actividad")}</h1>
+        <h2>
+          {t("Hola")}, {data.profile.name.trim().split(/\s+/)[0] || farm.name}
+        </h2>
+        <p>{t("Aquí tienes un resumen de tu actividad")}</p>
+      </header>
+      <div className="dashboard-metrics" aria-label={t("Resumen de actividad")}>
+        {metrics.map(({ value, label, Icon, color, to, search }) => (
+          <Link
+            key={label}
+            to={to}
+            search={search}
+            className={`metric ${color}`}
+          >
+            <span className="metric-icon">
+              <Icon size={22} aria-hidden="true" />
+            </span>
+            <strong>{value}</strong>
+            <span>{t(label)}</span>
+          </Link>
+        ))}
+      </div>
+      {markets.loading && (
+        <p className="activity-status" role="status">
+          {t("Cargando mercados…")}
+        </p>
+      )}
+      {markets.error && (
+        <div className="activity-status" role="alert">
+          <p>{t(markets.error)}</p>
+          <button type="button" onClick={markets.reload}>
+            {t("Reintentar")}
+          </button>
+        </div>
+      )}
+      {!config.marketsReady && (
+        <p className="activity-status">
+          {t("Mercados pendiente de activación. No se han guardado cambios.")}
+        </p>
+      )}
+      <div className="activity-quick" aria-label={t("Gestión rápida")}>
+        <Link
+          className="activity-add"
+          to="/perfil"
+          search={{ apartado: "nuevo" }}
+        >
+          <Plus size={25} aria-hidden="true" />
+          <span>
+            <strong>{t("Añadir producto")}</strong>
+            <small>{t("Publica con el formulario habitual")}</small>
+          </span>
+          <ChevronRight size={19} aria-hidden="true" />
+        </Link>
+        <Link to="/perfil" search={{ apartado: "productos" }}>
+          <RefreshCw size={22} aria-hidden="true" />
+          {t("Reponer producto")}
+        </Link>
+        {config.marketsReady && (
+          <Link to="/perfil" search={{ apartado: "mercados" }}>
+            <CalendarDays size={22} aria-hidden="true" />
+            {t("Añadir mercado")}
+          </Link>
+        )}
+      </div>
+      <section
+        className="activity-tasks"
+        aria-labelledby="activity-tasks-title"
+      >
+        <div className="dashboard-section-title">
+          <h2 id="activity-tasks-title">{t("Tareas pendientes")}</h2>
+          {tasks.length > 5 && (
+            <button
+              type="button"
+              className="text-button"
+              aria-expanded={expanded}
+              onClick={() => setExpanded(!expanded)}
+            >
+              {t(expanded ? "Ver menos" : "Ver todas")}
+            </button>
+          )}
+        </div>
+        {!tasks.length && (
+          <p className="activity-empty">
+            <CheckCircle2 size={21} aria-hidden="true" />
+            {t("Todo al día. No tienes tareas pendientes.")}
+          </p>
+        )}
+        {(expanded ? tasks : tasks.slice(0, 5)).map(
+          ({ id, label, title, detail, photo, Icon, to, search }) => (
+            <Link
+              className="activity-task"
+              key={id}
+              to={to}
+              search={search}
+              aria-label={`${t(label)} · ${title}`}
+            >
+              {photo ? (
+                <Photo
+                  src={
+                    photo.photo === null
+                      ? undefined
+                      : (photo.photo ?? photo.photoUrl)
+                  }
+                  crop={photo.crop}
+                  label={photo.name}
+                />
+              ) : (
+                <span className="activity-task-icon">
+                  <Icon size={23} aria-hidden="true" />
+                </span>
+              )}
+              <span>
+                <strong>{t(label)}</strong>
+                <span>{title}</span>
+                <small>{detail}</small>
+              </span>
+              <ChevronRight size={18} aria-hidden="true" />
+            </Link>
+          ),
+        )}
+      </section>
+      <nav
+        className="activity-sections"
+        aria-label={t("Herramientas del productor")}
+      >
+        {[
+          {
+            label: "Mis productos",
+            Icon: Package,
+            to: "/perfil",
+            search: { apartado: "productos" },
+          },
+          {
+            label: "Reservas y entregas",
+            Icon: ShoppingCart,
+            to: "/pedidos",
+            search: { vista: "productor" },
+          },
+          ...(config.marketsReady
+            ? [
+                {
+                  label: "Mis mercados y ferias",
+                  Icon: CalendarDays,
+                  to: "/perfil",
+                  search: { apartado: "mercados" },
+                },
+              ]
+            : []),
+          {
+            label: "Mi perfil de productor",
+            Icon: UserRound,
+            to: "/perfil",
+            search: { apartado: "tienda" },
+          },
+        ].map(({ label, Icon, to, search }) => (
+          <Link key={label} to={to} search={search}>
+            <Icon size={21} aria-hidden="true" />
+            <span>{t(label)}</span>
+            <ChevronRight size={17} aria-hidden="true" />
+          </Link>
+        ))}
+        <Link to="/productor" search={{ tienda: farm.id }}>
+          <ExternalLink size={21} aria-hidden="true" />
+          <span>{t("Ver mi perfil público")}</span>
+          <ChevronRight size={17} aria-hidden="true" />
+        </Link>
+      </nav>
+      <details className="activity-more">
+        <summary>{t("Más herramientas")}</summary>
+        <div className="dashboard-mobile-menu">
+          <Link to="/perfil" search={{ apartado: "horarios" }}>
+            <CalendarDays size={20} />
+            {t("Horarios y entregas")}
+            <ChevronRight size={17} />
+          </Link>
+          <Link to="/perfil" search={{ apartado: "estadisticas" }}>
+            <ChartNoAxesColumn size={20} />
+            {t("Estadísticas")}
+            <ChevronRight size={17} />
+          </Link>
+          <Link to="/perfil" search={{ apartado: "ventas" }}>
+            <Store size={20} />
+            {t("Mis ventas")}
+            <ChevronRight size={17} />
+          </Link>
+          <Link to="/perfil" search={{ apartado: "cuenta" }}>
+            <Settings size={20} />
+            {t("Ajustes")}
+            <ChevronRight size={17} />
+          </Link>
+          <span className="dashboard-unavailable" aria-disabled="true">
+            <MessageCircle size={20} />
+            <span>
+              {t("Mensajes")}
+              <small>{t("No disponible todavía")}</small>
+            </span>
+          </span>
+        </div>
+      </details>
+    </section>
   );
 }

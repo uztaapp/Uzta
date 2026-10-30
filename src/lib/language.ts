@@ -1,4 +1,5 @@
 import { marketLabels } from "./market-labels";
+import { producerActivityLabels } from "./producer-activity-labels";
 import { releaseLabels } from "./release-labels";
 import { googleLabels } from "./google-labels";
 import { reviewLabels } from "./review-labels";
@@ -102,6 +103,7 @@ const dictionary: Record<string, readonly [string, string, string]> = {
   ...sellerLabels,
   ...notificationLabels,
   ...releaseLabels,
+  ...producerActivityLabels,
   ...googleLabels,
   ...reviewLabels,
   ...euskoLabels,

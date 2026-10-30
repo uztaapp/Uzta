@@ -557,7 +557,7 @@ export function Gestion({
             <fieldset disabled={busy}>
               {mode === "demo" || cloudConfig.productPhotosReady ? (
                 <ProductPhotoEditor
-                  key={edit.id}
+                  key={`photo-${edit.id}`}
                   product={edit}
                   onPending={setPhotoPending}
                   onChange={(photo) =>
@@ -634,7 +634,7 @@ export function Gestion({
                 />
               </label>
               {(mode === "demo" || cloudConfig.availabilityReady) && (
-                <AvailabilityFields key={edit.id} product={edit} />
+                <AvailabilityFields key={`availability-${edit.id}`} product={edit} />
               )}
               <label>
                 {t("Categoría")}
